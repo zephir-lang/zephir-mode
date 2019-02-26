@@ -99,23 +99,8 @@
   :link '(url-link :tag "Zephir Site" "https://zephir-lang.com")
   :link '(emacs-commentary-link :tag "Commentary" "zephir-mode"))
 
-(defvar zephir-zephir-website "https://zephir-lang.com"
-  "Official website of Zephir programming language.")
-
-(defvar zephir-github-mode "https://github.com/zephir-lang/zephir-mode"
-  "Zephir Mode GitHub Page.")
-
-(defvar zephir-github-zephir "https://github.com/phalcon/zephir"
-  "Zephir GitHub Page.")
-
 (defvar zephir-mode-hook nil
   "List of functions to call when entering Zephir Mode.")
-
-(defcustom zephir-indent-tabs-mode t
-  "Indentation can insert tabs in Zephir Mode if this is non-nil."
-  :type 'boolean
-  :group 'zephir
-  :safe 'booleanp)
 
 
 ;;; Version information
@@ -141,6 +126,25 @@ just return nil."
 
 ;;; Utilities
 
+(defun zephir-syntax-context (&optional pos)
+  "Determine the syntax context at POS, defaulting to point.
+Return nil, if there is no special context at POS, or one of
+`comment'
+     POS is inside a comment
+`single-quoted'
+     POS is inside a single-quoted string
+`double-quoted'
+     POS is inside a double-quoted string"
+  (let ((state (save-excursion (syntax-ppss pos))))
+    (if (nth 4 state)
+        'comment
+      (pcase (nth 3 state)
+        (`?\' 'single-quoted)
+        (`?\" 'double-quoted)))))
+
+(defun zephir-in-string-or-comment-p (&optional pos)
+  "Determine whether POS is inside a string or comment."
+  (not (null (zephir-syntax-context pos))))
 
 ;;; Specialized rx
 
@@ -152,7 +156,6 @@ just return nil."
 
 
 ;;; Font Locking
-
 
 
 ;;; Alignment
@@ -170,12 +173,12 @@ just return nil."
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
   ;; Navigation
-  ;; (setq-local beginning-of-defun-function #'zephir-beginning-of-defun)
-  ;; (setq-local end-of-defun-function #'zephir-end-of-defun)
+  ;; TODO
+  ;; TODO
   ;; Indentation
-  ;; (setq indent-tabs-mode zephir-indent-tabs-mode)
+  ;; TODO
   ;; Font locking
-  ;;(setq font-lock-defaults '((zephir-font-lock-keywords) nil nil))
+  ;; TODO
   )
 
 
@@ -186,8 +189,9 @@ just return nil."
 
 (provide 'zephir-mode)
 
-;; Local Variables:
-;; firestarter: ert-run-tests-interactively
-;; End:
+;; TODO: Disabled due to "the local variables list contains values that may not be safe"
+;; TODO: Local Variables:
+;; TODO: firestarter: ert-run-tests-interactively
+;; TODO: End:
 
 ;;; zephir-mode.el ends here
