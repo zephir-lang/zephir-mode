@@ -33,12 +33,6 @@
 ;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
 ;; indentation, alignment and navigation support.
 ;;
-;;   Zephir -- is a high level language that eases the creation and
-;; maintainability of extensions for PHP.  Zephir extensions are
-;; exported to C code that can be compiled and optimized by major C
-;; compilers such as gcc/clang/vc++.  Functionality is exposed to the
-;; PHP language.  For more information see https://zephir-lang.com
-;;
 ;; Syntax checking: Flymake support is not provided.
 ;;
 ;; Movement: Move to the beginning or end of the current block with
@@ -55,6 +49,15 @@
 ;;
 ;; Many options available under Help:Customize
 ;; Options specific to zephir-mode are in Programming/Languages/Zephir
+;;
+;; The following variables are available for customization (see more via
+;; `M-x customize-group zephir`):
+;;
+;; - Var `zephir-indent-level':
+;;   indentation offset in spaces
+;;
+;; - Var `zephir-mode-hook':
+;;   list of functions to execute when zephir-mode is initialized
 ;;
 ;; Bugs: Bug tracking is currently handled using the GitHub issue tracker at
 ;; https://github.com/zephir-lang/zephir-mode/issues
@@ -99,8 +102,17 @@
   :link '(url-link :tag "Zephir Site" "https://zephir-lang.com")
   :link '(emacs-commentary-link :tag "Commentary" "zephir-mode"))
 
-(defvar zephir-mode-hook nil
-  "List of functions to call when entering Zephir Mode.")
+(defcustom zephir-mode-hook nil
+  "List of functions to call when entering Zephir Mode."
+  :tag "Hook"
+  :type  'hook
+  :group 'zephir)
+
+(defcustom zephir-indent-level 4
+  "Amount by which Zephir code is indented.  Default is 4."
+  :type 'integer
+  :group 'zephir
+  :safe #'integerp)
 
 
 ;;; Version information
@@ -189,9 +201,9 @@ Return nil, if there is no special context at POS, or one of
 
 (provide 'zephir-mode)
 
-;; TODO: Disabled due to "the local variables list contains values that may not be safe"
-;; TODO: Local Variables:
-;; TODO: firestarter: ert-run-tests-interactively
-;; TODO: End:
+;; Disabled due to "the local variables list contains values that may not be safe"
+;; Local Variables:
+;; firestarter: ert-run-tests-interactively
+;; End:
 
 ;;; zephir-mode.el ends here
