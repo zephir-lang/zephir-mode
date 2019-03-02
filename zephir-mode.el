@@ -243,7 +243,7 @@ Return nil, if there is no special context at POS, or one of
            ;;              |
            ;;              |            .------------------- offset
            ;;              |            |
-           ;; let foo = bar;░░░░░░░░░░░░░░░░░░░░░░░░░░░█
+           ;; let foo = bar;###########################I
            ;;                                          |
            ;; the current cursor position  ____________/
            ;;
