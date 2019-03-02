@@ -161,8 +161,6 @@ Return nil, if there is no special context at POS, or one of
 
 (defun zephir-in-string-p (&optional pos)
   "Determine whether POS is inside either a single-quoted or double-quoted string."
-  (interactive)
-
   (let ((ctx (zephir-syntax-context pos)))
     (or (eq ctx 'single-quoted)
     (eq ctx 'double-quoted))))
@@ -175,6 +173,84 @@ Return nil, if there is no special context at POS, or one of
 
 
 ;;; Indentation code
+
+;; There are five common rules for indenting Zephir code.  The rules are as
+;; follows:
+;;
+;; 1. If we are at the beginning of the buffer, indent to column 0.
+;; 2. If we are currently at the end of a block line, then de-indent relative
+;;    to the previous line.  In Zephir, blocks are ended by "}", "]" and ")".
+;; 3. If we first see an end block before our current line, then we
+;;    should indent our current line to the same indentation as the the end
+;;    block line.
+;; 4. If we first see a start block, then we need to increase our indentation
+;;    relative to that start line.
+;; 5. If none of the above apply, then do not indent at all.
+;;
+;; ┌──┬──────────────────────── Buffer: zephir-mode ───────────────────────────┐
+;; │ 1│/* some comment */                          // Rule 1                   │
+;; │ 2│namespace Foo;                              // Rule 5                   │
+;; │ 3│                                                                        │
+;; │ 4│class Test                                  // Rule 5                   │
+;; │ 5│{                                           // Rule 5                   │
+;; │ 6│    function foo(variable)                  // Rule 4 (based on l5)     │
+;; │ 7│    {                                       // Rule 4 (based on l5)     │
+;; │ 8│        var a, b, c;                        // Rule 4 (based on l7)     │
+;; │ 9│                                                                        │
+;; │10│        if typeof variable == "string" {    // Rule 4 (based on l7)     │
+;; │11│            doWork();                       // Rule 4 (based on l10)    │
+;; │12│        }                                   // Rule 2                   │
+;; │13│                                                                        │
+;; │14│        for a in ["a", "b", "c", "d"] {     // Rule 4 (based on l7)     │
+;; │15│            let b = [                       // Rule 4 (based on l14)    │
+;; │16│                "some": value               // Rule 4 (based on l15)    │
+;; │17│            ];                              // Rule 2                   │
+;; │18│            let b = null;                   // Rule 3                   │
+;; │19│                                                                        │
+;; │20│            let c = function () {           // Rule 4 (based on l14)    │
+;; │21│                return true;                // Rule 4 (based on l20)    │
+;; │22│            }                               // Rule 2                   │
+;; │23│            unset(a);                       // Rule 3                   │
+;; │24│        }                                   // Rule 2                   │
+;; │25│                                                                        │
+;; │26│        baz(                                // Rule 4 (based on l7)     │
+;; │27│            "foo",                          // Rule 4 (based on l26)    │
+;; │28│            "bar"                           // Rule 4 (based on l26)    │
+;; │29│        );                                  // Rule 2                   │
+;; │30│                                                                        │
+;; │31│        var                                 // Rule 4 (based on l7)     │
+;; │32│            d = "foo",                      // Rule 4 (based on l31)    │
+;; │33│            e = c;                          // Rule 4 (based on l41)    │
+;; │34│    }                                       // Rule 2                   │
+;; │35│}                                           // Rule 5                   │
+;; └──┴────────────────────────────────────────────────────────────────────────┘
+;;
+;; There is a special case for comments which will be considered separately.
+
+(defun zephir--do-line-indentation (parse-ctx)
+  "Return the proper indentation for the current line using info from PARSE-CTX."
+  0)
+
+(defun zephir-indent-line ()
+  "Indent current line as Zephir code."
+  (interactive)
+
+  (if (bobp)
+      ;; First line is always non-indented
+      (indent-line-to 0)
+    (let* ((ctx (zephir-syntax-context))
+           ;; the first non-whitespace character
+           ;;              │
+           ;;              │            ╭─────────────────── offset
+           ;;              │            │
+           ;; let foo = bar;░░░░░░░░░░░░░░░░░░░░░░░░░░░█
+           ;;                                          │
+           ;; the current cursor position  ────────────╯
+           ;;
+           (offset (- (point) (save-excursion (back-to-indentation) (point)))))
+      (unless (zephir-in-string-p)
+        (indent-line-to (zephir--do-line-indentation ctx))
+        (when (> offset 0) (forward-char offset))))))
 
 
 ;;; Font Locking
@@ -206,9 +282,9 @@ Return nil, if there is no special context at POS, or one of
   (setq-local comment-auto-fill-only-comments t)
   ;; Navigation
   ;; TODO
-  ;; TODO
   ;; Indentation
   ;; TODO
+  ;; (setq-local indent-line-function #'zephir-indent-line)
   ;; Font locking
   ;; TODO
   )
