@@ -187,43 +187,43 @@ Return nil, if there is no special context at POS, or one of
 ;;    relative to that start line.
 ;; 5. If none of the above apply, then do not indent at all.
 ;;
-;; ┌──┬──────────────────────── Buffer: zephir-mode ───────────────────────────┐
-;; │ 1│/* some comment */                          // Rule 1                   │
-;; │ 2│namespace Foo;                              // Rule 5                   │
-;; │ 3│                                                                        │
-;; │ 4│class Test                                  // Rule 5                   │
-;; │ 5│{                                           // Rule 5                   │
-;; │ 6│    function foo(variable)                  // Rule 4 (based on l5)     │
-;; │ 7│    {                                       // Rule 4 (based on l5)     │
-;; │ 8│        var a, b, c;                        // Rule 4 (based on l7)     │
-;; │ 9│                                                                        │
-;; │10│        if typeof variable == "string" {    // Rule 4 (based on l7)     │
-;; │11│            doWork();                       // Rule 4 (based on l10)    │
-;; │12│        }                                   // Rule 2                   │
-;; │13│                                                                        │
-;; │14│        for a in ["a", "b", "c", "d"] {     // Rule 4 (based on l7)     │
-;; │15│            let b = [                       // Rule 4 (based on l14)    │
-;; │16│                "some": value               // Rule 4 (based on l15)    │
-;; │17│            ];                              // Rule 2                   │
-;; │18│            let b = null;                   // Rule 3                   │
-;; │19│                                                                        │
-;; │20│            let c = function () {           // Rule 4 (based on l14)    │
-;; │21│                return true;                // Rule 4 (based on l20)    │
-;; │22│            }                               // Rule 2                   │
-;; │23│            unset(a);                       // Rule 3                   │
-;; │24│        }                                   // Rule 2                   │
-;; │25│                                                                        │
-;; │26│        baz(                                // Rule 4 (based on l7)     │
-;; │27│            "foo",                          // Rule 4 (based on l26)    │
-;; │28│            "bar"                           // Rule 4 (based on l26)    │
-;; │29│        );                                  // Rule 2                   │
-;; │30│                                                                        │
-;; │31│        var                                 // Rule 4 (based on l7)     │
-;; │32│            d = "foo",                      // Rule 4 (based on l31)    │
-;; │33│            e = c;                          // Rule 4 (based on l41)    │
-;; │34│    }                                       // Rule 2                   │
-;; │35│}                                           // Rule 5                   │
-;; └──┴────────────────────────────────────────────────────────────────────────┘
+;; ____________________________ Buffer: zephir-mode ___________________________
+;; | 1|/* some comment */                          // Rule 1                   |
+;; | 2|namespace Foo;                              // Rule 5                   |
+;; | 3|                                                                        |
+;; | 4|class Test                                  // Rule 5                   |
+;; | 5|{                                           // Rule 5                   |
+;; | 6|    function foo(variable)                  // Rule 4 (based on l5)     |
+;; | 7|    {                                       // Rule 4 (based on l5)     |
+;; | 8|        var a, b, c;                        // Rule 4 (based on l7)     |
+;; | 9|                                                                        |
+;; |10|        if typeof variable == "string" {    // Rule 4 (based on l7)     |
+;; |11|            doWork();                       // Rule 4 (based on l10)    |
+;; |12|        }                                   // Rule 2                   |
+;; |13|                                                                        |
+;; |14|        for a in ["a", "b", "c", "d"] {     // Rule 4 (based on l7)     |
+;; |15|            let b = [                       // Rule 4 (based on l14)    |
+;; |16|                "some": value               // Rule 4 (based on l15)    |
+;; |17|            ];                              // Rule 2                   |
+;; |18|            let b = null;                   // Rule 3                   |
+;; |19|                                                                        |
+;; |20|            let c = function () {           // Rule 4 (based on l14)    |
+;; |21|                return true;                // Rule 4 (based on l20)    |
+;; |22|            }                               // Rule 2                   |
+;; |23|            unset(a);                       // Rule 3                   |
+;; |24|        }                                   // Rule 2                   |
+;; |25|                                                                        |
+;; |26|        baz(                                // Rule 4 (based on l7)     |
+;; |27|            "foo",                          // Rule 4 (based on l26)    |
+;; |28|            "bar"                           // Rule 4 (based on l26)    |
+;; |29|        );                                  // Rule 2                   |
+;; |30|                                                                        |
+;; |31|        var                                 // Rule 4 (based on l7)     |
+;; |32|            d = "foo",                      // Rule 4 (based on l31)    |
+;; |33|            e = c;                          // Rule 4 (based on l41)    |
+;; |34|    }                                       // Rule 2                   |
+;; |35|}                                           // Rule 5                   |
+;; .---------------------------------------------------------------------------.
 ;;
 ;; There is a special case for comments which will be considered separately.
 
@@ -240,12 +240,12 @@ Return nil, if there is no special context at POS, or one of
       (indent-line-to 0)
     (let* ((ctx (zephir-syntax-context))
            ;; the first non-whitespace character
-           ;;              │
-           ;;              │            ╭─────────────────── offset
-           ;;              │            │
+           ;;              |
+           ;;              |            .------------------- offset
+           ;;              |            |
            ;; let foo = bar;░░░░░░░░░░░░░░░░░░░░░░░░░░░█
-           ;;                                          │
-           ;; the current cursor position  ────────────╯
+           ;;                                          |
+           ;; the current cursor position  ____________/
            ;;
            (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (unless (zephir-in-string-p)
