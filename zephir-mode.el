@@ -244,6 +244,8 @@ Return nil, if there is no special context at POS, or one of
           )))
 
 (defun zephir--get-c-offset (symbol anchor)
+  "Act as a wrapper to call `c-get-syntactic-indentation'.
+Takes SYMBOL and ANCHOR to create language element."
   (let ((c-offsets-alist
          (list (cons 'c zephir-comment-lineup-func))))
     (c-get-syntactic-indentation (list (cons symbol anchor)))))
