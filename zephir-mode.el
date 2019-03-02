@@ -85,6 +85,7 @@
 (eval-when-compile
   (require 'rx))
 
+(require 'cc-mode)
 (require 'cl-lib)
 (require 'pkg-info)
 
@@ -157,6 +158,15 @@ Return nil, if there is no special context at POS, or one of
 (defun zephir-in-string-or-comment-p (&optional pos)
   "Determine whether POS is inside a string or comment."
   (not (null (zephir-syntax-context pos))))
+
+(defun zephir-in-string-p (&optional pos)
+  "Determine whether POS is inside either a single-quoted or double-quoted string."
+  (interactive)
+
+  (let ((ctx (zephir-syntax-context pos)))
+    (or (eq ctx 'single-quoted)
+    (eq ctx 'double-quoted))))
+
 
 ;;; Specialized rx
 
@@ -177,6 +187,16 @@ Return nil, if there is no special context at POS, or one of
 
 
 ;;; Initialization
+
+(defvar zephir-mode-syntax-table
+  (let ((table (make-syntax-table)))
+    (c-populate-syntax-table table)
+    (modify-syntax-entry ?_ "_" table)
+    (modify-syntax-entry ?$ "'" table)
+    ;; TODO See: https://github.com/phalcon/php-zephir-parser/issues/63
+    ;; (modify-syntax-entry ?\` "\"" table)
+    table)
+  "Syntax table in use in `zephir-mode' buffers.")
 
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
   "A major mode for editing Zephir code."
@@ -201,7 +221,6 @@ Return nil, if there is no special context at POS, or one of
 
 (provide 'zephir-mode)
 
-;; Disabled due to "the local variables list contains values that may not be safe"
 ;; Local Variables:
 ;; firestarter: ert-run-tests-interactively
 ;; End:
