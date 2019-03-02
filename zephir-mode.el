@@ -31,9 +31,10 @@
 ;;; Commentary:
 
 ;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
-;; indentation, alignment and navigation support.
+;; indentation, alignment and navigation support.  It works with cc-mode's
+;; comment filling (mostly).
 ;;
-;; Syntax checking: Flymake support is not provided.
+;; Syntax checking: At this version the flymake support is not provided.
 ;;
 ;; Movement: Move to the beginning or end of the current block with
 ;; `beginning-of-defun' (C-M-a) and `end-of-defun' (C-M-e) respectively.
@@ -55,9 +56,10 @@
 ;;
 ;; - Var `zephir-indent-level':
 ;;   indentation offset in spaces
-;;
 ;; - Var `zephir-mode-hook':
 ;;   list of functions to execute when zephir-mode is initialized
+;; - Var `zephi-comment-lineup-func':
+;;   lineup function used comments
 ;;
 ;; Bugs: Bug tracking is currently handled using the GitHub issue tracker at
 ;; https://github.com/zephir-lang/zephir-mode/issues
@@ -114,6 +116,11 @@
   :type 'integer
   :group 'zephir
   :safe #'integerp)
+
+(defcustom zephir-comment-lineup-func #'c-lineup-C-comments
+  "Lineup function for `cc-mode-style', for C comments in `zephir-mode'."
+  :type 'function
+  :group 'zephir)
 
 
 ;;; Version information
@@ -227,9 +234,19 @@ Return nil, if there is no special context at POS, or one of
 ;;
 ;; There is a special case for comments which will be considered separately.
 
-(defun zephir--do-line-indentation (parse-ctx)
-  "Return the proper indentation for the current line using info from PARSE-CTX."
-  0)
+(defun zephir--do-line-indentation (ctx)
+  "Return the proper indentation for the current line using CTX as a context."
+  (save-excursion
+    (back-to-indentation)
+    (cond ((nth 4 parse-ctx) ; We're inside a comment
+           (message "%% We're inside a comment")
+           (zephir--get-c-offset 'c (nth 8 ctx)))
+          )))
+
+(defun zephir--get-c-offset (symbol anchor)
+  (let ((c-offsets-alist
+         (list (cons 'c zephir-comment-lineup-func))))
+    (c-get-syntactic-indentation (list (cons symbol anchor)))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
@@ -238,14 +255,18 @@ Return nil, if there is no special context at POS, or one of
   (if (bobp)
       ;; First line is always non-indented
       (indent-line-to 0)
-    (let* ((ctx (zephir-syntax-context))
-           ;; the first non-whitespace character
+    (let* (
+           ;; Save current parse context.
+           ;; We will need him in the furthest operations.
+           (ctx (save-excursion (syntax-ppss (point-at-bol))))
+           ;; The first non-whitespace character
            ;;              |
-           ;;              |            .------------------- offset
+           ;;              |            .------------------- The offset
            ;;              |            |
            ;; let foo = bar;###########################I
+           ;;                                          ^
            ;;                                          |
-           ;; the current cursor position  ____________/
+           ;; The current cursor position  ____________+
            ;;
            (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (unless (zephir-in-string-p)
@@ -285,6 +306,30 @@ Return nil, if there is no special context at POS, or one of
   ;; Indentation
   ;; TODO
   ;; (setq-local indent-line-function #'zephir-indent-line)
+
+  ;; for filling, pretend we're cc-mode
+  (setq c-comment-prefix-regexp "//+\\|\\**"
+        c-paragraph-start "\\(@[[:alpha:]]+\\>\\|$\\)"
+        c-paragraph-separate "$"
+        c-block-comment-prefix "* "
+        c-line-comment-starter "//"
+        c-comment-start-regexp "/[*/]\\|\\s!"
+        comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
+  (setq-local comment-line-break-function #'c-indent-new-comment-line)
+  (setq-local c-block-comment-start-regexp "/\\*")
+  (setq-local comment-multi-line t)
+
+  (let ((c-buffer-is-cc-mode t))
+    ;; FIXME: These are normally set by `c-basic-common-init'.  Should
+    ;; we call it instead?  (Bug#6071)
+    (make-local-variable 'paragraph-start)
+    (make-local-variable 'paragraph-separate)
+    (make-local-variable 'paragraph-ignore-fill-prefix)
+    (make-local-variable 'adaptive-fill-mode)
+    (make-local-variable 'adaptive-fill-regexp)
+    (c-setup-paragraph-variables))
+
+
   ;; Font locking
   ;; TODO
   )
