@@ -1,6 +1,6 @@
 ;;; zephir-mode.el --- Major mode for editing Zephir code -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017 Serghei Iakovlev
+;; Copyright (C) 2017-2019 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev (serghei@phalconphp.com)
 ;; Maintainer: Serghei Iakovlev
