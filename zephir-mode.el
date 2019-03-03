@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2017-2019 Serghei Iakovlev
 
-;; Author: Serghei Iakovlev (serghei@phalconphp.com)
+;; Author: Serghei Iakovlev <serghei@phalconphp.com>
 ;; Maintainer: Serghei Iakovlev
 ;; Version: 0.4.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
@@ -49,7 +49,8 @@
 ;;     '(lambda () (define-abbrev zephir-mode-abbrev-table "ex" "extends")))
 ;;
 ;; Many options available under Help:Customize
-;; Options specific to zephir-mode are in Programming/Languages/Zephir
+;; Options specific to zephir-mode are in
+;;  Programming/Languages/Zephir
 ;;
 ;; The following variables are available for customization (see more via
 ;; `M-x customize-group zephir`):
@@ -194,7 +195,7 @@ Return nil, if there is no special context at POS, or one of
 ;;    relative to that start line.
 ;; 5. If none of the above apply, then do not indent at all.
 ;;
-;; ____________________________ Buffer: zephir-mode ___________________________
+;; +--+------------------------ Buffer: zephir-mode ---------------------------+
 ;; | 1|/* some comment */                          // Rule 1                   |
 ;; | 2|namespace Foo;                              // Rule 5                   |
 ;; | 3|                                                                        |
@@ -230,22 +231,29 @@ Return nil, if there is no special context at POS, or one of
 ;; |33|            e = c;                          // Rule 4 (based on l41)    |
 ;; |34|    }                                       // Rule 2                   |
 ;; |35|}                                           // Rule 5                   |
-;; .---------------------------------------------------------------------------.
+;; +--+------------------------------------------------------------------------+
 ;;
 ;; There is a special case for comments which will be considered separately.
 
 (defun zephir--do-line-indentation (ctx)
-  "Return the proper indentation for the current line using CTX as a context."
+  "Return the proper indentation for the current line.
+This uses CTX as a current parser context."
   (save-excursion
     (back-to-indentation)
-    (cond ((nth 4 parse-ctx) ; We're inside a comment
-           (message "%% We're inside a comment")
-           (zephir--get-c-offset 'c (nth 8 ctx)))
-          )))
+    (cond
+     ;; We're inside a comment
+     ((nth 4 ctx) (zephir--get-c-offset 'c (nth 8 ctx)))
+
+     ;; We're inside a string
+     ((nth 3 ctx) 0)
+
+     ;; Otherwise, return the indentation column
+     ;; normally used for top-level constructs
+     (t (prog-first-column)))))
 
 (defun zephir--get-c-offset (symbol anchor)
   "Act as a wrapper to call `c-get-syntactic-indentation'.
-Takes SYMBOL and ANCHOR to create language element."
+Takes SYMBOL and ANCHOR to create a language element."
   (let ((c-offsets-alist
          (list (cons 'c zephir-comment-lineup-func))))
     (c-get-syntactic-indentation (list (cons symbol anchor)))))
@@ -263,12 +271,12 @@ Takes SYMBOL and ANCHOR to create language element."
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
            ;; The first non-whitespace character
            ;;              |
-           ;;              |            .------------------- The offset
+           ;;              |            +------------------- The offset
            ;;              |            |
            ;; let foo = bar;###########################I
            ;;                                          ^
            ;;                                          |
-           ;; The current cursor position  ____________+
+           ;; The current cursor position  ------------+
            ;;
            (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (unless (zephir-in-string-p)
@@ -306,8 +314,7 @@ Takes SYMBOL and ANCHOR to create language element."
   ;; Navigation
   ;; TODO
   ;; Indentation
-  ;; TODO
-  ;; (setq-local indent-line-function #'zephir-indent-line)
+  (setq-local indent-line-function #'zephir-indent-line)
 
   ;; for filling, pretend we're cc-mode
   (setq c-comment-prefix-regexp "//+\\|\\**"
