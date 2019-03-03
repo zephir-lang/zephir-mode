@@ -30,14 +30,8 @@
 
 ;;; Commentary:
 
-;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
-;; indentation, alignment and navigation support.  It works with cc-mode's
-;; comment filling (mostly).
-;;
-;; Syntax checking: At this version the flymake support is not provided.
-;;
-;; Movement: Move to the beginning or end of the current block with
-;; `beginning-of-defun' (C-M-a) and `end-of-defun' (C-M-e) respectively.
+;;   GNU Emacs major mode for editing Zephir code.  Presently it provides
+;; indentation support only.  It works with cc-mode's comment filling (mostly).
 ;;
 ;; Usage:  Put this file in your Emacs Lisp path (eg. site-lisp) and add to
 ;; your .emacs file:
@@ -51,16 +45,6 @@
 ;; Many options available under Help:Customize
 ;; Options specific to zephir-mode are in
 ;;  Programming/Languages/Zephir
-;;
-;; The following variables are available for customization (see more via
-;; `M-x customize-group zephir`):
-;;
-;; - Var `zephir-indent-level':
-;;   indentation offset in spaces
-;; - Var `zephir-mode-hook':
-;;   list of functions to execute when zephir-mode is initialized
-;; - Var `zephi-comment-lineup-func':
-;;   lineup function used comments
 ;;
 ;; Bugs: Bug tracking is currently handled using the GitHub issue tracker at
 ;; https://github.com/zephir-lang/zephir-mode/issues
@@ -111,12 +95,6 @@
   :tag "Hook"
   :type  'hook
   :group 'zephir)
-
-(defcustom zephir-indent-level 4
-  "Amount by which Zephir code is indented.  Default is 4."
-  :type 'integer
-  :group 'zephir
-  :safe #'integerp)
 
 (defcustom zephir-comment-lineup-func #'c-lineup-C-comments
   "Lineup function for `cc-mode-style', for C comments in `zephir-mode'."
@@ -182,62 +160,9 @@ Return nil, if there is no special context at POS, or one of
 
 ;;; Indentation code
 
-;; There are five common rules for indenting Zephir code.  The rules are as
-;; follows:
-;;
-;; 1. If we are at the beginning of the buffer, indent to column 0.
-;; 2. If we are currently at the end of a block line, then de-indent relative
-;;    to the previous line.  In Zephir, blocks are ended by "}", "]" and ")".
-;; 3. If we first see an end block before our current line, then we
-;;    should indent our current line to the same indentation as the the end
-;;    block line.
-;; 4. If we first see a start block, then we need to increase our indentation
-;;    relative to that start line.
-;; 5. If none of the above apply, then do not indent at all.
-;;
-;; +--+------------------------ Buffer: zephir-mode ---------------------------+
-;; | 1|/* some comment */                          // Rule 1                   |
-;; | 2|namespace Foo;                              // Rule 5                   |
-;; | 3|                                                                        |
-;; | 4|class Test                                  // Rule 5                   |
-;; | 5|{                                           // Rule 5                   |
-;; | 6|    function foo(variable)                  // Rule 4 (based on l5)     |
-;; | 7|    {                                       // Rule 4 (based on l5)     |
-;; | 8|        var a, b, c;                        // Rule 4 (based on l7)     |
-;; | 9|                                                                        |
-;; |10|        if typeof variable == "string" {    // Rule 4 (based on l7)     |
-;; |11|            doWork();                       // Rule 4 (based on l10)    |
-;; |12|        }                                   // Rule 2                   |
-;; |13|                                                                        |
-;; |14|        for a in ["a", "b", "c", "d"] {     // Rule 4 (based on l7)     |
-;; |15|            let b = [                       // Rule 4 (based on l14)    |
-;; |16|                "some": value               // Rule 4 (based on l15)    |
-;; |17|            ];                              // Rule 2                   |
-;; |18|            let b = null;                   // Rule 3                   |
-;; |19|                                                                        |
-;; |20|            let c = function () {           // Rule 4 (based on l14)    |
-;; |21|                return true;                // Rule 4 (based on l20)    |
-;; |22|            }                               // Rule 2                   |
-;; |23|            unset(a);                       // Rule 3                   |
-;; |24|        }                                   // Rule 2                   |
-;; |25|                                                                        |
-;; |26|        baz(                                // Rule 4 (based on l7)     |
-;; |27|            "foo",                          // Rule 4 (based on l26)    |
-;; |28|            "bar"                           // Rule 4 (based on l26)    |
-;; |29|        );                                  // Rule 2                   |
-;; |30|                                                                        |
-;; |31|        var                                 // Rule 4 (based on l7)     |
-;; |32|            d = "foo",                      // Rule 4 (based on l31)    |
-;; |33|            e = c;                          // Rule 4 (based on l41)    |
-;; |34|    }                                       // Rule 2                   |
-;; |35|}                                           // Rule 5                   |
-;; +--+------------------------------------------------------------------------+
-;;
-;; There is a special case for comments which will be considered separately.
-
 (defun zephir--do-line-indentation (ctx)
   "Return the proper indentation for the current line.
-This uses CTX as a current parser context."
+This uses CTX as a current parse state."
   (save-excursion
     (back-to-indentation)
     (cond
@@ -266,8 +191,8 @@ Takes SYMBOL and ANCHOR to create a language element."
       ;; First line is always non-indented
       (indent-line-to 0)
     (let* (
-           ;; Save current parse context.
-           ;; We will need him in the furthest operations.
+           ;; Save the current parse state.
+           ;; We will need this in the `zephir--do-line-indentation'.
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
            ;; The first non-whitespace character
            ;;              |
