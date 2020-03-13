@@ -1,6 +1,6 @@
 ;;; test-helper.el --- Zephir Mode: Non-interactive unit-test setup -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2019 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev (serghei@phalconphp.com)
 ;; Maintainer: Serghei Iakovlev

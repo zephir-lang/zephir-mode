@@ -1,6 +1,6 @@
 ;;; zephir-mode.el --- Major mode for editing Zephir code -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2019 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev <serghei@phalconphp.com>
 ;; Maintainer: Serghei Iakovlev
@@ -53,15 +53,6 @@
 ;; See https://github.com/zephir-lang/zephir-mode/blob/master/CHANGELOG.md
 
 ;;; Code:
-
-
-;;; Compatibility
-
-;; Work around emacs bug#18845, cc-mode expects cl to be loaded
-;; while zephir-mode only uses cl-lib (without compatibility aliases)
-(eval-and-compile
-  (if (and (= emacs-major-version 24) (>= emacs-minor-version 4))
-      (require 'cl)))
 
 
 ;;; Requirements
@@ -230,6 +221,7 @@ Takes SYMBOL and ANCHOR to create a language element."
     table)
   "Syntax table in use in `zephir-mode' buffers.")
 
+;;;###autoload
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
   "A major mode for editing Zephir code."
   :group 'zephir-mode
