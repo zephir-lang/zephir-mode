@@ -1,4 +1,4 @@
-;; -*- mode: emacs-lisp -*-
+;; -*- mode: cask -*-
 
 (source gnu)
 (source melpa)
@@ -7,9 +7,10 @@
 
 (files "*.el")
 
+(depends-on "cl-lib" "0.5")
+
 (development
  (depends-on "f")
  (depends-on "ert-x")
- (depends-on "cl-lib")
  (depends-on "ert-runner")
  (depends-on "undercover"))
