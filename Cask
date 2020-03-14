@@ -11,6 +11,7 @@
 (depends-on "pkg-info" "0.4")
 
 (development
+ (depends-on "s")
  (depends-on "f")
  (depends-on "ert-x")
  (depends-on "ert-runner")

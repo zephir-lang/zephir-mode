@@ -30,8 +30,9 @@
 
 ;;; Code:
 
-(require 'ert-x)          ; `ert-with-test-buffer'
-(require 'cl-lib)         ; `cl-defmacro'
+(require 's)      ; `s-contains?'
+(require 'ert-x)  ; `ert-with-test-buffer'
+(require 'cl-lib) ; `cl-defmacro'
 
 ;; Make sure the exact Emacs version can be found in the build output
 (message "Running tests on Emacs %s" emacs-version)
@@ -42,7 +43,12 @@
               indent-tabs-mode nil)
 
 (when (require 'undercover nil t)
-  (undercover "zephir-mode.el"))
+  ;; Track coverage, but don't send to coveralls.  Save in parent
+  ;; directory as undercover saves paths relative to the repository
+  ;; root.
+  (undercover "*.el"
+              (:report-file "coverage-final.json")
+              (:send-report nil)))
 
 (let* ((current-file (if load-in-progress load-file-name (buffer-file-name)))
        (source-directory (locate-dominating-file current-file "Cask"))
