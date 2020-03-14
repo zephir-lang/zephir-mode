@@ -7,7 +7,7 @@
 ;; Version: 0.4.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
-;; This file is not part of GNU Emacs.
+;; This file is NOT part of GNU Emacs.
 
 ;;; License
 
