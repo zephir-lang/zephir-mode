@@ -8,6 +8,7 @@
 (files "*.el")
 
 (depends-on "cl-lib" "0.5")
+(depends-on "pkg-info" "0.4")
 
 (development
  (depends-on "f")
