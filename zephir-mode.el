@@ -11,7 +11,7 @@
 
 ;; This file is not part of GNU Emacs.
 
-;;; License
+;;;; License
 
 ;; This file is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -28,27 +28,29 @@
 
 ;;; Commentary:
 
-;;   GNU Emacs major mode for editing Zephir code.  Presently it provides
-;; indentation support only.  It works with cc-mode's comment filling (mostly).
+;;   GNU Emacs major mode for editing Zephir code.
 ;;
-;; Usage:  Put this file in your Emacs Lisp path (eg. site-lisp) and add to
+;; Usage: Put this file in your Emacs Lisp path (eg. site-lisp) and add to
 ;; your .emacs file:
 ;;
 ;;   (require 'zephir-mode)
 ;;
 ;; To use abbrev-mode, add lines like this:
-;;   (add-hook 'zephir-mode-hook
-;;     '(lambda () (define-abbrev zephir-mode-abbrev-table "ex" "extends")))
 ;;
-;; Many options available under Help:Customize
+;;   (add-hook 'bnf-mode-hook
+;;             '(lambda () (define-abbrev
+;;                           zephir-mode-abbrev-table
+;;                           "ex" "extends")))
+;;
+;; Many options available under the ‘Help->Customize’ submenu.
 ;; Options specific to zephir-mode are in
 ;;  Programming/Languages/Zephir
 ;;
 ;; Bugs: Bug tracking is currently handled using the GitHub issue tracker at
-;; https://github.com/zephir-lang/zephir-mode/issues
+;; `https://github.com/zephir-lang/zephir-mode/issues'
 ;;
 ;; History: History is tracked in the Git repository rather than in this file.
-;; See https://github.com/zephir-lang/zephir-mode/blob/master/CHANGELOG.md
+;; See URL `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
 
 ;;; Code:
 
@@ -59,11 +61,9 @@
 (declare-function pkg-info-version-info "pkg-info" (package))
 
 (eval-when-compile
-  (require 'rx))
+  (require 'rx))    ; `rx'
 
-(require 'cc-mode)
-(require 'cl-lib)
-(require 'pkg-info)
+(require 'pkg-info) ; `pkg-info-version-info'
 
 
 ;;; Customization
@@ -75,7 +75,6 @@
   :prefix "zephir-"
   :group 'languages
   :link '(url-link :tag "GitHub Page" "https://github.com/zephir-lang/zephir-mode")
-  :link '(url-link :tag "Zephir Forum" "https://forum.zephir-lang.com")
   :link '(url-link :tag "Zephir Site" "https://zephir-lang.com")
   :link '(emacs-commentary-link :tag "Commentary" "zephir-mode"))
 
@@ -83,11 +82,6 @@
   "List of functions to call when entering Zephir Mode."
   :tag "Hook"
   :type  'hook
-  :group 'zephir)
-
-(defcustom zephir-comment-lineup-func #'c-lineup-C-comments
-  "Lineup function for `cc-mode-style', for C comments in `zephir-mode'."
-  :type 'function
   :group 'zephir)
 
 
@@ -149,54 +143,6 @@ Return nil, if there is no special context at POS, or one of
 
 ;;; Indentation code
 
-(defun zephir--do-line-indentation (ctx)
-  "Return the proper indentation for the current line.
-This uses CTX as a current parse state."
-  (save-excursion
-    (back-to-indentation)
-    (cond
-     ;; We're inside a comment
-     ((nth 4 ctx) (zephir--get-c-offset 'c (nth 8 ctx)))
-
-     ;; We're inside a string
-     ((nth 3 ctx) 0)
-
-     ;; Otherwise, return the indentation column
-     ;; normally used for top-level constructs
-     (t (prog-first-column)))))
-
-(defun zephir--get-c-offset (symbol anchor)
-  "Act as a wrapper to call `c-get-syntactic-indentation'.
-Takes SYMBOL and ANCHOR to create a language element."
-  (let ((c-offsets-alist
-         (list (cons 'c zephir-comment-lineup-func))))
-    (c-get-syntactic-indentation (list (cons symbol anchor)))))
-
-(defun zephir-indent-line ()
-  "Indent current line as Zephir code."
-  (interactive)
-
-  (if (bobp)
-      ;; First line is always non-indented
-      (indent-line-to 0)
-    (let* (
-           ;; Save the current parse state.
-           ;; We will need this in the `zephir--do-line-indentation'.
-           (ctx (save-excursion (syntax-ppss (point-at-bol))))
-           ;; The first non-whitespace character
-           ;;              |
-           ;;              |            +------------------- The offset
-           ;;              |            |
-           ;; let foo = bar;###########################I
-           ;;                                          ^
-           ;;                                          |
-           ;; The current cursor position  ------------+
-           ;;
-           (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (unless (zephir-in-string-p)
-        (indent-line-to (zephir--do-line-indentation ctx))
-        (when (> offset 0) (forward-char offset))))))
-
 
 ;;; Font Locking
 
@@ -211,11 +157,6 @@ Takes SYMBOL and ANCHOR to create a language element."
 
 (defvar zephir-mode-syntax-table
   (let ((table (make-syntax-table)))
-    (c-populate-syntax-table table)
-    (modify-syntax-entry ?_ "_" table)
-    (modify-syntax-entry ?$ "'" table)
-    ;; TODO See: https://github.com/phalcon/php-zephir-parser/issues/63
-    ;; (modify-syntax-entry ?\` "\"" table)
     table)
   "Syntax table in use in `zephir-mode' buffers.")
 
@@ -226,37 +167,10 @@ Takes SYMBOL and ANCHOR to create a language element."
   ;; Comment setup
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
-  ;; Navigation
-  ;; TODO
-  ;; Indentation
-  (setq-local indent-line-function #'zephir-indent-line)
-
-  ;; for filling, pretend we're cc-mode
-  (setq c-comment-prefix-regexp "//+\\|\\**"
-        c-paragraph-start "\\(@[[:alpha:]]+\\>\\|$\\)"
-        c-paragraph-separate "$"
-        c-block-comment-prefix "* "
-        c-line-comment-starter "//"
-        c-comment-start-regexp "/[*/]\\|\\s!"
-        comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
-  (setq-local comment-line-break-function #'c-indent-new-comment-line)
-  (setq-local c-block-comment-start-regexp "/\\*")
-  (setq-local comment-multi-line t)
-
-  (let ((c-buffer-is-cc-mode t))
-    ;; FIXME: These are normally set by `c-basic-common-init'.  Should
-    ;; we call it instead?  (Bug#6071)
-    (make-local-variable 'paragraph-start)
-    (make-local-variable 'paragraph-separate)
-    (make-local-variable 'paragraph-ignore-fill-prefix)
-    (make-local-variable 'adaptive-fill-mode)
-    (make-local-variable 'adaptive-fill-regexp)
-    (c-setup-paragraph-variables))
-
-
-  ;; Font locking
-  ;; TODO
-  )
+  ;; TODO(serghei): Navigation
+  ;; TODO(serghei): Indentation
+  ;; TODO(serghei): Font locking
+  (setq-local comment-multi-line t))
 
 
 ;; Invoke zephir-mode when appropriate
@@ -265,9 +179,5 @@ Takes SYMBOL and ANCHOR to create a language element."
 (add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
 
 (provide 'zephir-mode)
-
-;; Local Variables:
-;; firestarter: ert-run-tests-interactively
-;; End:
 
 ;;; zephir-mode.el ends here
