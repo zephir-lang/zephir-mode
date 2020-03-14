@@ -1,5 +1,7 @@
 * Zephir Mode for GNU Emacs
 
 [[https://www.gnu.org/licenses/gpl-3.0.txt][https://img.shields.io/badge/license-GPL_3-green.svg]]
+[[https://github.com/zephir-lang/zephir-mode/actions][https://github.com/zephir-lang/zephir-mode/workflows/build/badge.svg]]
+[[https://codecov.io/gh/zephir-lang/zephir-mode][https://codecov.io/gh/zephir-lang/zephir-mode/branch/master/graph/badge.svg]]
 
 Work In Progress
