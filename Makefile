@@ -17,86 +17,68 @@
 # You should have received a copy of the GNU General Public License
 # along with this file.  If not, see <https://www.gnu.org/licenses/>.
 
-SHELL := $(shell which bash)
+include default.mk
+
+# Run “make build” by default
+.DEFAULT_GOAL = build
+
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-EMACS = emacs
-CASK = cask
-EMACSFLAGS ?=
 TESTFLAGS ?=
 PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 
-# File lists
-SRCS = zephir-mode.el
-OBJS = $(SRCS:.el=.elc)
+%.elc: %.el
+	@printf "Compiling $<\n"
+	@$(RUNEMACS) --eval '(setq byte-compile-error-on-warn t)' \
+		-f batch-byte-compile $<
 
-.SILENT: ;               # no need for @
-.ONESHELL: ;             # recipes execute in same shell
-.NOTPARALLEL: ;          # wait for this target to finish
-.EXPORT_ALL_VARIABLES: ; # send all vars to shell
-Makefile: ; # skip prerequisite discovery
-
-# Run make help by default
-.DEFAULT_GOAL = help
-
-# Internal variables
-EMACSBATCH = $(EMACS) -Q --batch -L . $(EMACSFLAGS)
-RUNEMACS =
-
-# Program availability
-HAVE_CASK := $(shell sh -c "command -v $(CASK)")
-ifndef HAVE_CASK
-$(warning "$(CASK) is not available.  Please run make help")
-RUNEMACS = $(EMACSBATCH)
-else
-RUNEMACS = $(CASK) exec $(EMACSBATCH)
-endif
-
-%.elc: %.el $(PKGDIR)
-	$(RUNEMACS) -f batch-byte-compile $<
-
-$(PKGDIR): Cask
-	$(CASK) install
-	touch $(PKGDIR)
-
-# Public targets
+## Public targets
 
 .PHONY: .title
 .title:
-	$(info Zepphir Mode $(shell cat $(ROOT_DIR)/$(SRCS) | grep ";; Version:" | awk -F': ' '{print $$2}'))
-	$(info )
+	$(info Zepphir Mode $(VERSION))
 
 .PHONY: init
-init: $(PKGDIR)
+init: Cask
+	@$(CASK) install
 
 .PHONY: checkdoc
 checkdoc:
-	$(EMACSBATCH) --eval '(checkdoc-file "$(SRCS)")'
+	@$(EMACSBATCH) --eval '(checkdoc-file "$(SRCS)")'
+	$(info Done.)
 
 .PHONY: build
 build: $(OBJS)
 
 .PHONY: test
 test:
-	$(CASK) exec ert-runner $(TESTFLAGS)
+	@$(CASK) exec ert-runner $(TESTFLAGS)
 
 .PHONY: clean
 clean:
-	$(CASK) clean-elc
+	$(info Remove all byte compiled Elisp files...)
+	@$(CASK) clean-elc
+	$(info Remove build artefacts...)
+	@$(RM) README ChangeLog coverage-final.json
+	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar
 
 .PHONY: help
 help: .title
-	echo 'Run `make init` first to install and update all local dependencies.'
-	echo ''
-	echo 'Available targets:'
-	echo '  help:     Show this help and exit'
-	echo '  init:     Initialise the project (has to be launched first)'
-	echo '  checkdoc: Checks Zephir Mode code for errors in documentation'
-	echo '  build:    Byte compile Zephir Mode package'
-	echo '  test:     Run the non-interactive unit test suite'
-	echo '  clean:    Remove all byte compiled Elisp files'
-	echo ''
-	echo 'Available programs:'
-	echo '  $(CASK): $(if $(HAVE_CASK),yes,no)'
-	echo ''
-	echo 'You need $(CASK) to develop Zephir Mode.  See http://cask.readthedocs.io/ for more.'
-	echo ''
+	@echo ''
+	@echo 'Run "make init" first to install and update all local dependencies.'
+	@echo 'See "default.mk" for variables you might want to set.'
+	@echo ''
+	@echo 'Available targets:'
+	@echo '  help:       Show this help and exit'
+	@echo '  init:       Initialize the project (has to be launched first)'
+	@echo '  checkdoc:   Checks Zephir Mode code for errors in the documentation'
+	@echo '  build:      Byte compile Zephir Mode package'
+	@echo '  test:       Run the non-interactive unit test suite'
+	@echo '  clean:      Remove all byte compiled Elisp files, documentation,'
+	@echo '              build artefacts and tarball'
+	@echo ''
+	@echo 'Available programs:'
+	@echo '  $(CASK): $(if $(HAVE_CASK),yes,no)'
+	@echo ''
+	@echo 'You need $(CASK) to develop Zephir Mode.'
+	@echo 'See http://cask.readthedocs.io/ for more.'
+	@echo ''
