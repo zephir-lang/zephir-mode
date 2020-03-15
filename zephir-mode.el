@@ -222,10 +222,19 @@ the comment syntax tokens handle both line style \"//\" and block style
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
   "A major mode for editing Zephir code."
   :group 'zephir-mode
-  ;; Comment setup
+
+  ;; Comments setup
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
   (setq-local comment-multi-line t)
+  (setq-local comment-start "// ")
+  (setq-local comment-start-skip
+              (eval-when-compile
+                (rx (group (or (: "/" (+ "/"))
+                               (: "/*")))
+                    (* (syntax whitespace)))))
+  (setq-local comment-end "")
+
   ;; TODO(serghei): Navigation
   (setq-local indent-line-function #'zephir-indent-line)
   ;; TODO(serghei): Font locking
