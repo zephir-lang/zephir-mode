@@ -143,6 +143,40 @@ Return nil, if there is no special context at POS, or one of
 
 ;;; Indentation code
 
+(defun zephir--proper-indentation (ctx)
+    "Return the proper indentation for the current line.
+This uses CTX as a current parse state."
+    (save-excursion
+      (back-to-indentation)
+      ;; TODO(serghei): Implement me
+      (current-indentation)))
+
+(defun zephir-indent-line ()
+  "Indent current line as Zephir code."
+  (interactive)
+  (if (bobp)
+      (indent-line-to 0) ; First line is always non-indented.
+    (let* (
+	   ;; Save the current parse state.
+	   ;; We will need it in `zephir--proper-indentation'.
+	   (ctx (save-excursion (syntax-ppss (point-at-bol))))
+
+           ;; The first non-whitespace character (l)
+	   ;; |          +-------------------------- The offset (-)
+           ;; |          |
+           ;; |          |              +------------- Whitespace characters (.)
+           ;; |_________________________|______________
+           ;; let foo = bar;...........................#
+           ;;                                          |
+           ;;                                          |
+           ;; The current point position (#) ----------+
+	   ;;
+	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
+      (unless (zephir-in-string-p)
+        (indent-line-to (zephir--proper-indentation ctx))
+	;; Move point to the previous offset.
+	(when (> offset 0) (forward-char offset))))))
+
 
 ;;; Font Locking
 
@@ -168,7 +202,7 @@ Return nil, if there is no special context at POS, or one of
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
   ;; TODO(serghei): Navigation
-  ;; TODO(serghei): Indentation
+  (setq-local indent-line-function #'zephir-indent-line)
   ;; TODO(serghei): Font locking
   (setq-local comment-multi-line t))
 
