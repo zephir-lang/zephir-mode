@@ -132,7 +132,7 @@ Return nil, if there is no special context at POS, or one of
   "Determine whether POS is inside either a single-quoted or double-quoted string."
   (let ((ctx (zephir-syntax-context pos)))
     (or (eq ctx 'single-quoted)
-    (eq ctx 'double-quoted))))
+        (eq ctx 'double-quoted))))
 
 
 ;;; Specialized rx
@@ -144,12 +144,12 @@ Return nil, if there is no special context at POS, or one of
 ;;; Indentation code
 
 (defun zephir--proper-indentation (ctx)
-    "Return the proper indentation for the current line.
+  "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
-    (save-excursion
-      (back-to-indentation)
-      ;; TODO(serghei): Implement me
-      (current-indentation)))
+  (save-excursion
+    (back-to-indentation)
+    ;; TODO(serghei): Implement me
+    (current-indentation)))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
@@ -157,12 +157,12 @@ This uses CTX as a current parse state."
   (if (bobp)
       (indent-line-to 0) ; First line is always non-indented.
     (let* (
-	   ;; Save the current parse state.
-	   ;; We will need it in `zephir--proper-indentation'.
-	   (ctx (save-excursion (syntax-ppss (point-at-bol))))
+           ;; Save the current parse state.
+           ;; We will need it in `zephir--proper-indentation'.
+           (ctx (save-excursion (syntax-ppss (point-at-bol))))
 
            ;; The first non-whitespace character (l)
-	   ;; |          +-------------------------- The offset (-)
+           ;; |          +-------------------------- The offset (-)
            ;; |          |
            ;; |          |              +------------- Whitespace characters (.)
            ;; |_________________________|______________
@@ -174,8 +174,8 @@ This uses CTX as a current parse state."
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (unless (zephir-in-string-p)
         (indent-line-to (zephir--proper-indentation ctx))
-	;; Move point to the previous offset.
-	(when (> offset 0) (forward-char offset))))))
+        ;; Move point to the previous offset.
+        (when (> offset 0) (forward-char offset))))))
 
 
 ;;; Font Locking
