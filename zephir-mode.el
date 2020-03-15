@@ -191,8 +191,32 @@ This uses CTX as a current parse state."
 
 (defvar zephir-mode-syntax-table
   (let ((table (make-syntax-table)))
+    ;; Symbol constituents
+    (modify-syntax-entry ?_   "_"      table)
+    (modify-syntax-entry ?$   "_"      table)
+    ;; Characters used to delimit string constants
+    (modify-syntax-entry ?\"  "\""     table)
+    (modify-syntax-entry ?\'  "\""     table)
+    ;; Comment enders
+    (modify-syntax-entry ?\n  "> b"    table)
+    ;; Give CR the same syntax as newline
+    (modify-syntax-entry ?\^m "> b"    table)
+    ;; Set up block and line oriented comments
+    (modify-syntax-entry ?/   ". 124b" table)
+    (modify-syntax-entry ?*   ". 23"   table)
+    ;; The parenthesis, braces and brackets
+    (modify-syntax-entry ?\(  "()"     table)
+    (modify-syntax-entry ?\)  ")("     table)
+    (modify-syntax-entry ?\{  "(}"     table)
+    (modify-syntax-entry ?\}  "){"     table)
+    (modify-syntax-entry ?\[  "(]"     table)
+    (modify-syntax-entry ?\]  ")["     table)
     table)
-  "Syntax table in use in `zephir-mode' buffers.")
+  "Syntax table in use in `zephir-mode' buffers.
+
+This includes setting ' and \" as string delimiters, and setting up
+the comment syntax tokens handle both line style \"//\" and block style
+\"/*\" \"*/\" comments.")
 
 ;;;###autoload
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
@@ -201,10 +225,11 @@ This uses CTX as a current parse state."
   ;; Comment setup
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
+  (setq-local comment-multi-line t)
   ;; TODO(serghei): Navigation
   (setq-local indent-line-function #'zephir-indent-line)
   ;; TODO(serghei): Font locking
-  (setq-local comment-multi-line t))
+  )
 
 
 ;; Invoke zephir-mode when appropriate
