@@ -26,6 +26,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
 
+;; This field is expanded to commit SHA, date & associated heads/tags during
+;; archive creation.
+;; Revision: $Format:%h (%cD %d)$
+
 ;;; Commentary:
 
 ;;   GNU Emacs major mode for editing Zephir code.

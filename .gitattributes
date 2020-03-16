@@ -1,0 +1,5 @@
+.git*           export-ignore
+.codecov.yml    export-ignore
+.elpaignore     export-ignore
+
+zephir-mode.el  export-subst
