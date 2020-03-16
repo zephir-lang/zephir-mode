@@ -36,6 +36,11 @@
 ;; Make sure the exact Emacs version can be found in the build output
 (message "Running tests on Emacs %s" emacs-version)
 
+;; `ert--print-backtrace' has been removed in GNU Emacs > 26.
+;; See URL `https://github.com/emacs-mirror/emacs/commit/e09120d'.
+(when (> emacs-major-version 26)
+  (defalias 'ert--print-backtrace 'backtrace-to-string))
+
 ;; The test fixtures assume an indentation width of 4, so we need to set that
 ;; up for the tests.
 (setq-default default-tab-width 4
@@ -79,7 +84,7 @@ and the test succeeds if the result did not change."
   (zephir-test-with-temp-buffer
    code
    (indent-region (point-min) (point-max))
-   (should (string= (buffer-string) code))))
+   (should (string-equal (buffer-string) code))))
 
 (when (s-contains? "--win" (getenv "ERT_RUNNER_ARGS"))
   (defun ert-runner/run-tests-batch-and-exit (selector)
