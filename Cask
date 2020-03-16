@@ -13,6 +13,5 @@
 (development
  (depends-on "s")
  (depends-on "f")
- (depends-on "ert-x")
  (depends-on "ert-runner")
  (depends-on "undercover"))

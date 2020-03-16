@@ -31,7 +31,6 @@
 ;;; Code:
 
 (require 's)      ; `s-contains?'
-(require 'ert-x)  ; `ert-with-test-buffer'
 (require 'cl-lib) ; `cl-defmacro'
 
 ;; Make sure the exact Emacs version can be found in the build output
@@ -43,9 +42,8 @@
               indent-tabs-mode nil)
 
 (when (require 'undercover nil t)
-  ;; Track coverage, but don't send to coveralls.  Save in parent
-  ;; directory as undercover saves paths relative to the repository
-  ;; root.
+  ;; Track coverage, but don't send to coverage serivice.  Save in parent
+  ;; directory as undercover saves paths relative to the repository root.
   (undercover "*.el"
               (:report-file "coverage-final.json")
               (:send-report nil)))
@@ -57,21 +55,6 @@
   ;; Load the file under test
   (load (expand-file-name "zephir-mode" source-directory)))
 
-;; Helpers
-
-(cl-defmacro zephir-deftest (name args &body body)
-  (declare (indent 2))
-  `(ert-deftest ,(intern (format "zephir-ert-%s" name)) ()
-     ""
-     ,@args))
-
-(cl-defmacro zephir-ert-with-test-buffer ((&rest args) initial-contents &body body)
-  (declare (indent 2))
-  `(ert-with-test-buffer (,@args)
-     (zephir-mode)
-     (insert ,initial-contents)
-     ,@body))
-
 (defmacro zephir-test-with-temp-buffer (content &rest body)
   "Evaluate BODY in a temporary buffer with CONTENT."
   (declare (debug t)
@@ -79,22 +62,24 @@
   `(with-temp-buffer
      (insert ,content)
      (zephir-mode)
-     (font-lock-fontify-buffer)
+
+     ,(if (fboundp 'font-lock-ensure)
+          '(font-lock-ensure)
+        '(with-no-warnings (font-lock-fontify-buffer)))
+
      (goto-char (point-min))
      ,@body))
 
-(cl-defmacro zephir-def-indentation-test (name args initial-contents expected-output)
-  (declare (indent 2))
-  `(zephir-deftest ,name ,args
-                   (zephir-ert-with-test-buffer (:name ,(format "(Expected)" name))
-                                                ,initial-contents
-                                                (let ((indented (ert-buffer-string-reindented)))
-                                                  (delete-region (point-min) (point-max))
-                                                  (insert ,expected-output)
-                                                  (ert-with-test-buffer (:name ,(format "(Actual)" name))
-                                                    (zephir-mode)
-                                                    (insert indented)
-                                                    (should (equal indented ,expected-output)))))))
+(defun zephir-test-indent (code)
+  "Test indentation of Zephir code.
+
+The CODE argument is a string that should contain correctly
+indented Zephir code.  The CODE is indented using `indent-region'
+and the test succeeds if the result did not change."
+  (zephir-test-with-temp-buffer
+   code
+   (indent-region (point-min) (point-max))
+   (should (string= (buffer-string) code))))
 
 (when (s-contains? "--win" (getenv "ERT_RUNNER_ARGS"))
   (defun ert-runner/run-tests-batch-and-exit (selector)
