@@ -84,6 +84,12 @@
   :type  'hook
   :group 'zephir)
 
+(defcustom zephir-indent-level 4
+  "Amount by which Zephir subexpressions are indented."
+  :type 'integer
+  :group 'zephir
+  :safe #'integerp)
+
 
 ;;; Version information
 
@@ -134,6 +140,16 @@ Return nil, if there is no special context at POS, or one of
     (or (eq ctx 'single-quoted)
         (eq ctx 'double-quoted))))
 
+(defun zephir-in-comment-p (&optional pos)
+  "Determine whether POS is inside comment."
+  (and (zephir-in-string-or-comment-p pos)
+       (not (zephir-in-string-p pos))))
+
+(defun zephir-comment-start-pos (ctx)
+  "Return position of comment containing current point.
+If point is not inside a comment, return nil.  Uses CTX as a syntax context."
+  (and ctx (nth 4 ctx) (nth 8 ctx)))
+
 
 ;;; Specialized rx
 
@@ -147,16 +163,48 @@ Return nil, if there is no special context at POS, or one of
   "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
   (save-excursion
+    ;; Move `point' to the first non-whitespace character in the current line.
     (back-to-indentation)
-    ;; TODO(serghei): Implement me
-    (current-indentation)))
+
+    (cond
+     ;; Multiline commentary.
+     ((zephir-in-comment-p)
+      ;; Make sure comment line is indentet proper way relative to
+      ;; open-comment (“/*”) for all possible use-cases.
+      ;;
+      ;;   /**
+      ;;    * Dockblock
+      ;;    * commentary.
+      ;;    */
+      ;;
+      ;;   /*
+      ;;    * Multiline
+      ;;    * commentary.
+      ;;    */
+      ;;
+      ;;   /*
+      ;;     Multiline
+      ;;     commentary.
+      ;;   */
+      (let ((asteriks-marker-p (looking-at-p "\\*+")))
+        (save-excursion
+          (goto-char (zephir-comment-start-pos ctx))
+          (+ (current-indentation)
+             (if asteriks-marker-p 0 1)
+             1))))
+
+     ;; TODO(serghei): Cover use-case for single-line comments (“//”)
+
+     ;; Otherwise return current indentation.
+     ;; TODO(serghei): Take a look at `prog-first-column'.
+     (t (current-indentation)))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
   (interactive)
   (if (bobp)
       (indent-line-to 0) ; First line is always non-indented.
-    (let* (
+    (let* (indent
            ;; Save the current parse state.
            ;; We will need it in `zephir--proper-indentation'.
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
@@ -172,10 +220,11 @@ This uses CTX as a current parse state."
            ;; The current point position (#) ----------+
 	   ;;
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (unless (zephir-in-string-p)
-        (indent-line-to (zephir--proper-indentation ctx))
-        ;; Move point to the previous offset.
-        (when (> offset 0) (forward-char offset))))))
+      (setq indent (zephir--proper-indentation ctx))
+      (message "[DEBUG] indent size: %s" indent)
+      (indent-line-to indent)
+      ;; Move point to the previous offset.
+      (when (> offset 0) (forward-char offset)))))
 
 
 ;;; Font Locking
