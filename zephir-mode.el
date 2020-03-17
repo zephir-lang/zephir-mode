@@ -177,19 +177,20 @@ This uses CTX as a current parse state."
       ;; open-comment (“/*”) for all possible use-cases.
       ;;
       ;;   /**
-      ;;    * Dockblock
-      ;;    * commentary.
+      ;;    * This is the summary for a DocBlock.
+      ;;    *
+      ;;    * This is the description for a DocBlock.
       ;;    */
       ;;
       ;;   /*
-      ;;    * Multiline
-      ;;    * commentary.
+      ;;    * C-style comments
+      ;;    * can contain multiple lines.
       ;;    */
       ;;
       ;;   /*
-      ;;     Multiline
-      ;;     commentary.
-      ;;   */
+      ;;     C-style comments
+      ;;     can contain multiple lines.
+      ;;    */
       (let ((asteriks-marker-p (looking-at-p "\\*+")))
         (save-excursion
           (goto-char (zephir-comment-start-pos ctx))
