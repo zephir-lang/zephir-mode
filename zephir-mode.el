@@ -208,7 +208,7 @@ This uses CTX as a current parse state."
   (interactive)
   (if (bobp)
       (indent-line-to 0) ; First line is always non-indented.
-    (let* (indent
+    (let* (
            ;; Save the current parse state.
            ;; We will need it in `zephir--proper-indentation'.
            (ctx (save-excursion (syntax-ppss (point-at-bol))))

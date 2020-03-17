@@ -36,9 +36,10 @@
 
 ;;;; Tests
 
-(describe "Commentary indentation"
-  (it "indents Java-like dockblocks"
-    (zephir-test-indent "
+(describe
+ "Commentary indentation"
+ (it "indents Java-like dockblocks"
+     (zephir-test-indent "
       /**
        * This is the summary for a DocBlock.
        *
@@ -46,35 +47,35 @@
        * This text may contain multiple lines.
        */"))
 
-  (it "indents C-style comments (1)"
-    (zephir-test-indent "
+ (it "indents C-style comments (1)"
+     (zephir-test-indent "
       /* C-style comments
        * can contain
        * multiple lines.
        */"))
 
-  (it "indents C-style comments (2)"
-    (zephir-test-indent "
+ (it "indents C-style comments (2)"
+     (zephir-test-indent "
       /*
        * C-style comments
        * can contain
        * multiple lines. */"))
 
-  (it "indents C-style comments (3)"
-    (zephir-test-indent "
+ (it "indents C-style comments (3)"
+     (zephir-test-indent "
       /*
         C-style comments
         can contain
         multiple lines.
        */"))
 
-  (it "carefully indents offsets"
-    (expect (zephir-get-indented-code "/* test */   ")
-            :to-equal "/* test */   "))
+ (it "carefully indents offsets"
+     (expect (zephir-get-indented-code "/* test */   ")
+             :to-equal "/* test */   "))
 
-  (it "unindents first line"
-    (expect (zephir-get-indented-code "   /* test */")
-            :to-equal "/* test */")))
+ (it "unindents first line"
+     (expect (zephir-get-indented-code "   /* test */")
+             :to-equal "/* test */")))
 
 
 ;;; zephir-mode-indent-test.el ends here
