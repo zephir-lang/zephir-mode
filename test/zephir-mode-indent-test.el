@@ -1,11 +1,13 @@
-;;; zephir-mode-indent-test.el --- Zephir Mode: Indentation test suite -*- lexical-binding: t; -*-
+;;; zephir-mode-indent-test.el --- Indentation tests for zephir-mode.el -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019, 2020 Free Software Foundation, Inc.
+;; Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.4.4
-;; URL: https://github.com/sergeyklay/bnf-mode
+;; Version: 0.4.0
+;; URL: https://github.com/zephir-lang/zephir-mode
+
+;; This file is NOT part of GNU Emacs.
 
 ;;;; License
 
@@ -24,45 +26,46 @@
 
 ;;; Commentary:
 
-;;   Automate tests from the "test" directory using `ert', which comes bundled
-;; with Emacs >= 24.1.
+;; Define test-suites to test indentation for `zephir-mode' using `buttercup'.
 
 ;;; Code:
 
-(ert-deftest zephir-mode-indentation/dockblocks ()
-  :tags '(indentation)
-  (zephir-test-indent "
-  /**
-   * This is the summary for a DocBlock.
-   *
-   * This is the description for a DocBlock.
-   * This text may contain multiple lines.
-   */"))
+(load (concat (file-name-directory (or load-file-name (buffer-file-name)
+                                       default-directory))
+              "utils.el") nil 'nomessage 'nosuffix)
 
-(ert-deftest zephir-mode-indentation/c-style-comments-1 ()
-  :tags '(indentation)
-  (zephir-test-indent "
-  /* C-style comments
-   * can contain
-   * multiple lines.
-   */"))
+;;;; Tests
 
-(ert-deftest zephir-mode-indentation/c-style-comments-2 ()
-  :tags '(indentation)
-  (zephir-test-indent "
-  /*
-   * C-style comments
-   * can contain
-   * multiple lines. */"))
+(describe "Commentary indentation"
+  (it "indents Java-like dockblocks"
+    (zephir-test-indent "
+      /**
+       * This is the summary for a DocBlock.
+       *
+       * This is the description for a DocBlock.
+       * This text may contain multiple lines.
+       */"))
 
-(ert-deftest zephir-mode-indentation/c-style-comments-3 ()
-  :tags '(indentation)
-  (zephir-test-indent "
-  /*
-    C-style comments
-    can contain
-    multiple lines.
-   */"))
+  (it "indents C-style comments (1)"
+    (zephir-test-indent "
+      /* C-style comments
+       * can contain
+       * multiple lines.
+       */"))
 
-(provide 'zephir-mode-indent-test)
+  (it "indents C-style comments (2)"
+    (zephir-test-indent "
+      /*
+       * C-style comments
+       * can contain
+       * multiple lines. */"))
+
+  (it "indents C-style comments (3)"
+    (zephir-test-indent "
+      /*
+        C-style comments
+        can contain
+        multiple lines.
+      */")))
+
 ;;; zephir-mode-indent-test.el ends here

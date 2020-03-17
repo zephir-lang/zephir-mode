@@ -13,5 +13,5 @@
 (development
  (depends-on "s")
  (depends-on "f")
- (depends-on "ert-runner")
+ (depends-on "buttercup")
  (depends-on "undercover"))

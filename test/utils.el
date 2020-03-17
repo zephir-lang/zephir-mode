@@ -1,4 +1,4 @@
-;;; test-helper.el --- Zephir Mode: Non-interactive unit-test setup -*- lexical-binding: t; -*-
+;;; utils.el --- Zephir Mode: Non-interactive unit-test setup -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
 
@@ -9,7 +9,7 @@
 
 ;; This file is NOT part of GNU Emacs.
 
-;;; License
+;;;; License
 
 ;; This file is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -26,25 +26,16 @@
 
 ;;; Commentary:
 
-;; Non-interactive test suite setup for ERT Runner.
+;; Non-interactive test suite setup for `buttercup'.
 
 ;;; Code:
 
-(require 's)      ; `s-contains?'
+(require 'buttercup)
+
 (require 'cl-lib) ; `cl-defmacro'
 
 ;; Make sure the exact Emacs version can be found in the build output
 (message "Running tests on Emacs %s" emacs-version)
-
-;; `ert--print-backtrace' has been removed in GNU Emacs > 26.
-;; See URL `https://github.com/emacs-mirror/emacs/commit/e09120d'.
-(when (> emacs-major-version 26)
-  (defalias 'ert--print-backtrace 'backtrace-to-string))
-
-;; The test fixtures assume an indentation width of 4, so we need to set that
-;; up for the tests.
-(setq-default default-tab-width 4
-              indent-tabs-mode nil)
 
 (when (require 'undercover nil t)
   ;; Track coverage, but don't send to coverage serivice.  Save in parent
@@ -60,38 +51,46 @@
   ;; Load the file under test
   (load (expand-file-name "zephir-mode" source-directory)))
 
-(defmacro zephir-test-with-temp-buffer (content &rest body)
-  "Evaluate BODY in a temporary buffer with CONTENT."
-  (declare (debug t)
-           (indent 1))
+(defmacro with-zephir-buffer (&rest body)
+  "Evaluate BODY in a temporary buffer."
+  (declare (debug (&rest form)))
   `(with-temp-buffer
-     (insert ,content)
      (zephir-mode)
-
      ,(if (fboundp 'font-lock-ensure)
           '(font-lock-ensure)
         '(with-no-warnings (font-lock-fontify-buffer)))
-
+     (pop-to-buffer (current-buffer))
      (goto-char (point-min))
-     ,@body))
+     (unwind-protect
+         (progn ,@body))))
+
+(defun zephir-join-strings (strs)
+  "Join all strings in STRS in a series with \\n as a delimiter."
+  (mapconcat (lambda (x) (concat x "\n")) strs ""))
+
+(defun zephir-get-indented-strs (strs)
+  "Indent all strings in STRS using `indent-region'."
+  (butlast
+   (split-string
+    (with-zephir-buffer
+     (let ((inhibit-message t))
+       (insert (replace-regexp-in-string "^\\s *" "" (zephir-join-strings strs)))
+       (if (fboundp 'font-lock-ensure)
+           (font-lock-ensure)
+         (with-no-warnings (font-lock-fontify-buffer)))
+       (indent-region (point-min) (point-max))
+       (buffer-substring-no-properties
+        (point-min) (point-max))))
+    "\n" nil)))
 
 (defun zephir-test-indent (code)
   "Test indentation of Zephir code.
 
 The CODE argument is a string that should contain correctly
-indented Zephir code.  The CODE is indented using `indent-region'
-and the test succeeds if the result did not change."
-  (zephir-test-with-temp-buffer
-   code
-   (indent-region (point-min) (point-max))
-   (should (string-equal (buffer-string) code))))
+indented Zephir code."
+  (let ((strs (split-string code "\n"))
+        (indent-tabs-mode nil)
+        (font-lock-verbose nil))
+    (equal strs (zephir-get-indented-strs strs))))
 
-(when (s-contains? "--win" (getenv "ERT_RUNNER_ARGS"))
-  (defun ert-runner/run-tests-batch-and-exit (selector)
-    (ert-run-tests-interactively selector)))
-
-;; Local Variables:
-;; indent-tabs-mode: nil
-;; End:
-
-;;; test-helper.el ends here
+;;; utils.el ends here
