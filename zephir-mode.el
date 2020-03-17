@@ -224,9 +224,7 @@ This uses CTX as a current parse state."
            ;; The current point position (#) ----------+
 	   ;;
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (setq indent (zephir--proper-indentation ctx))
-      (message "[DEBUG] indent size: %s" indent)
-      (indent-line-to indent)
+      (indent-line-to (zephir--proper-indentation ctx))
       ;; Move point to the previous offset.
       (when (> offset 0) (forward-char offset)))))
 

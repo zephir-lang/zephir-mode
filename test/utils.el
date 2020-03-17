@@ -31,7 +31,7 @@
 ;;; Code:
 
 (require 'buttercup)
-(require 'cl-lib) ; `cl-defmacro'
+(require 'cl-lib)    ; `cl-defmacro'
 
 ;; Make sure the exact Emacs version can be found in the build output
 (message "Running tests on Emacs %s" emacs-version)
