@@ -66,6 +66,6 @@
         C-style comments
         can contain
         multiple lines.
-      */")))
+       */")))
 
 ;;; zephir-mode-indent-test.el ends here
