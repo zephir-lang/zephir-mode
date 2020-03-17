@@ -31,7 +31,6 @@
 ;;; Code:
 
 (require 'buttercup)
-
 (require 'cl-lib) ; `cl-defmacro'
 
 ;; Make sure the exact Emacs version can be found in the build output
@@ -51,46 +50,42 @@
   ;; Load the file under test
   (load (expand-file-name "zephir-mode" source-directory)))
 
-(defmacro with-zephir-buffer (&rest body)
-  "Evaluate BODY in a temporary buffer."
-  (declare (debug (&rest form)))
+(defmacro with-zephir-buffer (content &rest body)
+  "Evaluate BODY in a temporary buffer with CONTENT."
+  (declare (debug t)
+           (indent 1))
   `(with-temp-buffer
+     (insert ,content)
      (zephir-mode)
+
      ,(if (fboundp 'font-lock-ensure)
           '(font-lock-ensure)
         '(with-no-warnings (font-lock-fontify-buffer)))
+
      (pop-to-buffer (current-buffer))
      (goto-char (point-min))
      (unwind-protect
          (progn ,@body))))
 
-(defun zephir-join-strings (strs)
-  "Join all strings in STRS in a series with \\n as a delimiter."
-  (mapconcat (lambda (x) (concat x "\n")) strs ""))
-
-(defun zephir-get-indented-strs (strs)
-  "Indent all strings in STRS using `indent-region'."
-  (butlast
-   (split-string
-    (with-zephir-buffer
-     (let ((inhibit-message t))
-       (insert (replace-regexp-in-string "^\\s *" "" (zephir-join-strings strs)))
-       (if (fboundp 'font-lock-ensure)
-           (font-lock-ensure)
-         (with-no-warnings (font-lock-fontify-buffer)))
-       (indent-region (point-min) (point-max))
-       (buffer-substring-no-properties
-        (point-min) (point-max))))
-    "\n" nil)))
+(defun zephir-get-indented-code (code)
+  "Indent Zephir CODE using `indent-region'.
+Return the whole buffer, without the text properties."
+  (with-zephir-buffer
+   code
+   (let ((inhibit-message t))
+     (indent-region (point-min) (point-max))
+     (buffer-substring-no-properties
+      (point-min) (point-max)))))
 
 (defun zephir-test-indent (code)
   "Test indentation of Zephir code.
-
 The CODE argument is a string that should contain correctly
-indented Zephir code."
-  (let ((strs (split-string code "\n"))
+indented Zephir code.  The CODE is indented using
+`zephir-get-indented-code' and the test succeeds if the result did not
+change."
+  (let ((content code)
         (indent-tabs-mode nil)
         (font-lock-verbose nil))
-    (equal strs (zephir-get-indented-strs strs))))
+    (expect (zephir-get-indented-code content) :to-equal code)))
 
 ;;; utils.el ends here
