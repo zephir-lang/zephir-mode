@@ -30,6 +30,7 @@
 
 ;;; Code:
 
+(require 'buttercup)
 (load (concat (file-name-directory (or load-file-name (buffer-file-name)
                                        default-directory))
               "utils.el") nil 'nomessage 'nosuffix)
@@ -77,5 +78,4 @@
      (expect (zephir-get-indented-code "   /* test */")
              :to-equal "/* test */")))
 
-
-;;; zephir-mode-indent-test.el ends here
+;;; test-zephir-mode-indent.el ends here
