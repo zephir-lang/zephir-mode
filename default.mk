@@ -21,7 +21,7 @@ EMACS  ?= emacs
 CASK   ?= cask
 
 EMACSFLAGS ?=
-TESTFLAGS  ?= --reporter ert+duration
+TESTFLAGS  ?= -L .
 
 EMACSBATCH = $(EMACS) -Q --batch -L . $(EMACSFLAGS)
 RUNEMACS   =

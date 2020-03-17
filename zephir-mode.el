@@ -177,19 +177,20 @@ This uses CTX as a current parse state."
       ;; open-comment (“/*”) for all possible use-cases.
       ;;
       ;;   /**
-      ;;    * Dockblock
-      ;;    * commentary.
+      ;;    * This is the summary for a DocBlock.
+      ;;    *
+      ;;    * This is the description for a DocBlock.
       ;;    */
       ;;
       ;;   /*
-      ;;    * Multiline
-      ;;    * commentary.
+      ;;    * C-style comments
+      ;;    * can contain multiple lines.
       ;;    */
       ;;
       ;;   /*
-      ;;     Multiline
-      ;;     commentary.
-      ;;   */
+      ;;     C-style comments
+      ;;     can contain multiple lines.
+      ;;    */
       (let ((asteriks-marker-p (looking-at-p "\\*+")))
         (save-excursion
           (goto-char (zephir-comment-start-pos ctx))
@@ -208,7 +209,7 @@ This uses CTX as a current parse state."
   (interactive)
   (if (bobp)
       (indent-line-to 0) ; First line is always non-indented.
-    (let* (indent
+    (let* (
            ;; Save the current parse state.
            ;; We will need it in `zephir--proper-indentation'.
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
@@ -224,9 +225,7 @@ This uses CTX as a current parse state."
            ;; The current point position (#) ----------+
 	   ;;
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (setq indent (zephir--proper-indentation ctx))
-      (message "[DEBUG] indent size: %s" indent)
-      (indent-line-to indent)
+      (indent-line-to (zephir--proper-indentation ctx))
       ;; Move point to the previous offset.
       (when (> offset 0) (forward-char offset)))))
 

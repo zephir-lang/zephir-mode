@@ -51,7 +51,7 @@ build: $(OBJS)
 
 .PHONY: test
 test:
-	@$(CASK) exec ert-runner $(TESTFLAGS)
+	@$(CASK) exec buttercup $(TESTFLAGS)
 
 .PHONY: clean
 clean:
