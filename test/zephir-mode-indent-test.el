@@ -66,6 +66,15 @@
         C-style comments
         can contain
         multiple lines.
-       */")))
+       */"))
+
+  (it "carefully indents offsets"
+    (expect (zephir-get-indented-code "/* test */   ")
+            :to-equal "/* test */   "))
+
+  (it "unindents first line"
+    (expect (zephir-get-indented-code "   /* test */")
+            :to-equal "/* test */")))
+
 
 ;;; zephir-mode-indent-test.el ends here

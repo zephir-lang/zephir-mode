@@ -84,7 +84,10 @@ indented Zephir code.  The CODE is indented using
 `zephir-get-indented-code' and the test succeeds if the result did not
 change."
   (let ((content code)
+        ;; The test fixtures assume an indentation width of 4,
+        ;; so we need to set that up for the tests.
         (indent-tabs-mode nil)
+        (default-tab-width 4)
         (font-lock-verbose nil))
     (expect (zephir-get-indented-code content) :to-equal code)))
 
