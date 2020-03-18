@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this file.  If not, see <https://www.gnu.org/licenses/>.
 
+# Run “make build” by default
+.DEFAULT_GOAL = build
+
 EMACS  ?= emacs
 CASK   ?= cask
 
@@ -35,7 +38,7 @@ else
 RUNEMACS = $(CASK) exec $(EMACSBATCH)
 endif
 
-VERSION = 0.4.0
+VERSION="$(shell sed -nre '/^;; Version:/ { s/^;; Version:[ \t]+//; p }' zephir-mode.el)"
 
 PACKAGE = zephir-mode
 ARCHIVE_NAME = $(PACKAGE)-$(VERSION)

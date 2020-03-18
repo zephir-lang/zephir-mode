@@ -33,16 +33,6 @@
 (require 'buttercup)
 (require 'cl-lib)    ; `cl-defmacro'
 
-;; Make sure the exact Emacs version can be found in the build output
-(message "Running tests on Emacs %s" emacs-version)
-
-(when (require 'undercover nil t)
-  ;; Track coverage, but don't send to coverage serivice.  Save in parent
-  ;; directory as undercover saves paths relative to the repository root.
-  (undercover "*.el"
-              (:report-file "coverage-final.json")
-              (:send-report nil)))
-
 (let* ((current-file (if load-in-progress load-file-name (buffer-file-name)))
        (source-directory (locate-dominating-file current-file "Cask"))
        ;; Don't load old byte-compiled versions
@@ -83,12 +73,11 @@ The CODE argument is a string that should contain correctly
 indented Zephir code.  The CODE is indented using
 `zephir-get-indented-code' and the test succeeds if the result did not
 change."
-  (let ((content code)
-        ;; The test fixtures assume an indentation width of 4,
-        ;; so we need to set that up for the tests.
-        (indent-tabs-mode nil)
-        (default-tab-width 4)
-        (font-lock-verbose nil))
+  (let ((content code))
+    ;; The test fixtures assume an indentation width of 4,
+    ;; so we need to set that up for the tests.
+    (setq-default indent-tabs-mode nil)
+    (setq-default default-tab-width 4)
     (expect (zephir-get-indented-code content) :to-equal code)))
 
 ;;; utils.el ends here
