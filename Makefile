@@ -19,13 +19,6 @@
 
 include default.mk
 
-# Run “make build” by default
-.DEFAULT_GOAL = build
-
-ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-TESTFLAGS ?=
-PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
-
 %.elc: %.el
 	@printf "Compiling $<\n"
 	@$(RUNEMACS) --eval '(setq byte-compile-error-on-warn t)' \
@@ -35,7 +28,7 @@ PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 
 .PHONY: .title
 .title:
-	$(info Zepphir Mode $(VERSION))
+	@echo "Zepphir Mode $(VERSION)"
 
 .PHONY: init
 init: Cask
