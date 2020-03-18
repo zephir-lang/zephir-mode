@@ -1,4 +1,4 @@
-;;; zephir-mode-indent-test.el --- Indentation tests for zephir-mode.el -*- lexical-binding: t; -*-
+;;; zephir-mode-indent-test.el --- Zephir Mode: Indentation tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
 
@@ -26,21 +26,29 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test indentation for `zephir-mode' using `buttercup'.
+;; Define test-suites to test `zephir-mode' indentation using `buttercup'.
 
 ;;; Code:
 
 (require 'buttercup)
-(load (concat (file-name-directory (or load-file-name (buffer-file-name)
-                                       default-directory))
-              "utils.el") nil 'nomessage 'nosuffix)
 
+(when (require 'undercover nil t)
+  ;; Track coverage, but don't send to coverage serivice.  Save in parent
+  ;; directory as undercover saves paths relative to the repository root.
+  (undercover "*.el" "test/utils.el"
+              (:report-file "coverage-final.json")
+              (:send-report nil)))
+
+(let* ((current-dir (file-name-directory (or load-file-name (buffer-file-name)
+                                             default-directory))))
+  (load (concat current-dir "utils.el") nil 'nomessage 'nosuffix))
+
+
 ;;;; Tests
 
-(describe
- "Commentary indentation"
- (it "indents Java-like dockblocks"
-     (zephir-test-indent "
+(describe "Commentary indentation"
+  (it "indents Java-like dockblocks"
+    (zephir-test-indent "
       /**
        * This is the summary for a DocBlock.
        *
@@ -48,34 +56,34 @@
        * This text may contain multiple lines.
        */"))
 
- (it "indents C-style comments (1)"
-     (zephir-test-indent "
+  (it "indents C-style comments (1)"
+    (zephir-test-indent "
       /* C-style comments
        * can contain
        * multiple lines.
        */"))
 
- (it "indents C-style comments (2)"
-     (zephir-test-indent "
+  (it "indents C-style comments (2)"
+    (zephir-test-indent "
       /*
        * C-style comments
        * can contain
        * multiple lines. */"))
 
- (it "indents C-style comments (3)"
-     (zephir-test-indent "
+  (it "indents C-style comments (3)"
+    (zephir-test-indent "
       /*
         C-style comments
         can contain
         multiple lines.
        */"))
 
- (it "carefully indents offsets"
-     (expect (zephir-get-indented-code "/* test */   ")
-             :to-equal "/* test */   "))
+  (it "carefully indents offsets"
+    (expect (zephir-get-indented-code "/* test */   ")
+            :to-equal "/* test */   "))
 
- (it "unindents first line"
-     (expect (zephir-get-indented-code "   /* test */")
-             :to-equal "/* test */")))
+  (it "unindents first line"
+    (expect (zephir-get-indented-code "   /* test */")
+            :to-equal "/* test */")))
 
 ;;; test-zephir-mode-indent.el ends here
