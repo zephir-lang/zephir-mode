@@ -64,7 +64,7 @@
   :type  'hook
   :group 'zephir)
 
-(defvar bnf-mode-abbrev-table nil
+(defvar zephir-mode-abbrev-table nil
   "Abbreviation table used in `zephir-mode' buffers.")
 
 
@@ -281,7 +281,12 @@ the comment syntax tokens handle both line style \"//\" and block style
 
 ;;;###autoload
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
-  "A major mode for editing Zephir code."
+  "A major mode for editing Zephir code.
+
+\\{zephir-mode-map}
+
+Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
+`zephir-mode-hook', if they are non-nil."
   :abbrev-table zephir-mode-abbrev-table
   :group 'zephir
 
@@ -300,7 +305,11 @@ the comment syntax tokens handle both line style \"//\" and block style
           nil                         ; case-fold
           ))
 
-  ;; Navigation
+  ;; TODO(serghei): Paragaphs
+  ;; TODO(serghei): IMenu
+  ;; TODO(serghei): Navigation
+
+  ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line))
 
 
