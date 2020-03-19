@@ -80,7 +80,7 @@ change."
     (setq-default default-tab-width 4)
     (expect (zephir-get-indented-code content) :to-equal code)))
 
-(defun zephir-test-face-at (pos &optional content)
+(defun zephir-get-face-at (pos &optional content)
   "Get the face at POS in CONTENT.
 If CONTENT is not given, return the face at POS in the current
 buffer."

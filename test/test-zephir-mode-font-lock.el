@@ -51,59 +51,59 @@
     (with-zephir-buffer
      "class A {}"
      ;; class
-     (should (eq (zephir-test-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 5) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 6))))
+     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 5) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 6))))
 
   (it "fontify namespace"
     (with-zephir-buffer
      "namespace Foo;
       class Bar {}"
      ;; namespace
-     (should (eq (zephir-test-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 9) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 10))
+     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 9) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 10))
 
      ;; class
-     (should (eq (zephir-test-face-at 22) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 26) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 27))
+     (should (eq (zephir-get-face-at 22) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 26) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 27))
 
      ;; Bar
-     (should (eq (zephir-test-face-at 28) 'font-lock-type-face))
-     (should (eq (zephir-test-face-at 30) 'font-lock-type-face))
-     (should-not (zephir-test-face-at 31))))
+     (should (eq (zephir-get-face-at 28) 'font-lock-type-face))
+     (should (eq (zephir-get-face-at 30) 'font-lock-type-face))
+     (should-not (zephir-get-face-at 31))))
 
   (it "fontify interface"
     (with-zephir-buffer
      "namespace Phalcon\\Url;
       interface UrlInterface {}"
      ;; interface
-     (should (eq (zephir-test-face-at 31) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 38) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 39))))
+     (should (eq (zephir-get-face-at 31) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 38) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 39))))
 
   (it "fontify class modifiers"
     (with-zephir-buffer
      "abstract final class FooBar {}"
      ;; abstract
-     (should (eq (zephir-test-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 8) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 9))
+     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 8) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 9))
 
      ;; final
-     (should (eq (zephir-test-face-at 10) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 14) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 15))
+     (should (eq (zephir-get-face-at 10) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 14) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 15))
 
      ;; class
-     (should (eq (zephir-test-face-at 16) 'font-lock-keyword-face))
-     (should (eq (zephir-test-face-at 20) 'font-lock-keyword-face))
-     (should-not (zephir-test-face-at 21))
+     (should (eq (zephir-get-face-at 16) 'font-lock-keyword-face))
+     (should (eq (zephir-get-face-at 20) 'font-lock-keyword-face))
+     (should-not (zephir-get-face-at 21))
 
      ;; FooBar
-     (should (eq (zephir-test-face-at 22) 'font-lock-type-face))
-     (should (eq (zephir-test-face-at 27) 'font-lock-type-face))
-     (should-not (zephir-test-face-at 28)))))
+     (should (eq (zephir-get-face-at 22) 'font-lock-type-face))
+     (should (eq (zephir-get-face-at 27) 'font-lock-type-face))
+     (should-not (zephir-get-face-at 28)))))
 
 ;;; test-zephir-mode-font-lock.el ends here
