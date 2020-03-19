@@ -38,7 +38,7 @@
        ;; Don't load old byte-compiled versions
        (load-prefer-newer t))
   ;; Load the file under test
-  (load (expand-file-name "zephir-mode" source-directory)))
+  (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))
 
 (defmacro with-zephir-buffer (content &rest body)
   "Evaluate BODY in a temporary buffer with CONTENT."

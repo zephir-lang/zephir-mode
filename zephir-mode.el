@@ -133,6 +133,12 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
 (eval-when-compile
   (defconst zephir-rx-constituents
     `(
+      ;; Identifier.
+      (identifier . ,(rx symbol-start
+                         (optional ?$)
+                         (any "A-Z" "a-z" ?_)
+                         (0+ (any "A-Z" "a-z" "0-9" ?_))
+                         symbol-end))
       ;; Builtin declarations.
       (builtin-decl . ,(rx symbol-start
                            (or "class"
@@ -148,6 +154,10 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
 
 In addition to the standard forms of `rx', the following forms
 are available:
+
+`identifier'
+     Any valid identifier with optional dollar sign, e.g. function name,
+     variable name, etc.
 
 `builtin-dcl'
      Any valid builtin declaraion.
@@ -238,7 +248,18 @@ This uses CTX as a current parse state."
   `(
     ;; Builtin declaration.
     (,(zephir-rx (group builtin-decl))
-     1 font-lock-keyword-face))
+     1 font-lock-keyword-face)
+    ;; Class decclaration.
+    ;; Class has its own font lock because it may have "abstract" or "final".
+    (,(zephir-rx (optional symbol-start
+                           (or "abstract" "final")
+                           symbol-end
+                           (+ (syntax whitespace)))
+                 (group symbol-start "class" symbol-end)
+                 (+ (syntax whitespace))
+                 (group identifier))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face)))
   "Font lock keywords for Zephir Mode.")
 
 
