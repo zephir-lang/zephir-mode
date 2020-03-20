@@ -4,4 +4,73 @@
 [[https://github.com/zephir-lang/zephir-mode/actions][https://github.com/zephir-lang/zephir-mode/workflows/build/badge.svg]]
 [[https://codecov.io/gh/zephir-lang/zephir-mode][https://codecov.io/gh/zephir-lang/zephir-mode/branch/master/graph/badge.svg]]
 
-Work In Progress
+A [[https://www.gnu.org/software/emacs/][GNU Emacs]] major mode for editing [[https://zephir-lang.com/][Zephir]] code.
+
+Zephir is a high level programming language that eases the creation and
+maintainability of extensions for PHP. Zephir extensions are exported to C code
+that can be compiled and optimized by major C compilers such as
+gcc/clang/vc++. Functionality is exposed to the PHP language.
+
+** Features
+
+- Basic syntax definition
+- Indentation and alignment of expressions and statements
+- Syntax highlighting
+
+** Installation
+
+Known to work with GNU Emacs 24.3 and later.  Zephir Mode may work with older
+versions of Emacs, or with other flavors of Emacs (e.g. XEmacs) but this is
+/not/ guaranteed.  Bug reports for problems related to using Zephir Mode with
+older versions of Emacs will most like not be addressed.
+
+The master of all the material is the Git repository at
+https://github.com/zephir-lang/zephir-mode .
+
+NOTE: The ~master~ branch will always contain the latest unstable version.
+If you wish to check older versions or formal, tagged release, please switch
+to the relevant [[https://github.com/zephir-lang/zephir-mode/tags][tag]].
+
+The recommended way is to use, [[https://stable.melpa.org/][MELPA Stable]] or [[https://melpa.org/][MELPA]]. If either is in your
+=package-archives=, do:
+
+#+begin_src
+M-x package-install RET zephir-mode RET
+#+end_src
+
+To learn on how to use any other installation methods refer to relevant
+documentation.
+
+** Usage
+
+*** Interactive Commands
+
+| Command (For the ~M-x~ prompt.) | Description              |
+|---------------------------------+--------------------------|
+| ~zephir-mode~                   | Switches to Zephir Mode. |
+
+By default any file that matches the glob ~*.zep~ is automatically opened in
+~zep-mode~.
+
+** Customization
+
+To customize various options, use command as follows:
+
+#+begin_src
+M-x customize-group RET zephir RET
+#+end_src
+
+** Support
+
+Feel free to ask question or make suggestions in our [[https://github.com/zephir-lang/zephir-mode/issues][issue tracker]] .
+
+** Changes
+
+To see what has changed in recent versions of Zephir Mode see:
+https://github.com/zephir-lang/zephir-mode/blob/master/NEWS .
+
+
+** License
+
+Zephir Mode is open source software licensed under the [[https://github.com/zephir-lang/zephir-mode/blob/master/LICENSE][GNU General Public
+Licence version 3]]. Copyright © 2017, 2018, 2019, 2020 Serghei Iakovlev.
