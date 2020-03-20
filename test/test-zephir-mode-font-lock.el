@@ -46,122 +46,80 @@
 
 ;;;; Tests
 
-(describe "Classlike fontification"
+(describe "Fontification of classes"
   (it "fontify class"
-    (with-zephir-buffer
-     "use \\Foo\\Bar as Baz;
-      class A extends B implements C {}"
-     ;; “use”
-     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 3) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 4))
+    (expect "class A extends B implements C {}"
+            :to-be-fontified-as
+            '(("class" keyword "A" type "extends" keyword "B" type
+               "implements" keyword "C" type))))
 
-     ;; “\Foo\Bar”
-     (should (eq (zephir-get-face-at 5) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 12) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 13))
+  (it "fontify use"
+    (expect "use Phalcon\\Url;"
+            :to-be-fontified-as
+            '(("use" keyword "Phalcon\\Url" type))))
 
-     ;; “as”
-     (should (eq (zephir-get-face-at 14) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 15) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 16))
-
-     ;; “Baz”
-     (should (eq (zephir-get-face-at 17) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 19) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 20))
-
-     ;; “class”
-     (should (eq (zephir-get-face-at 28) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 32) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 33))
-
-     ;; “A”
-     (should (eq (zephir-get-face-at 34) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 35))
-
-     ;; “extends”
-     (should (eq (zephir-get-face-at 36) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 42) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 43))
-
-     ;; “B”
-     (should (eq (zephir-get-face-at 44) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 45))
-
-     ;; “implements”
-     (should (eq (zephir-get-face-at 46) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 55) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 56))
-
-     ;; “C”
-     (should (eq (zephir-get-face-at 57) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 58))))
+  (it "fontify use .. as"
+    (expect "use Phalcon\\Url as PhUrl;"
+            :to-be-fontified-as
+            '(("use" keyword "Phalcon\\Url" type "as" keyword "PhUrl" type))))
 
   (it "fontify namespace"
-    (with-zephir-buffer
-     "namespace Foo;
-      class Bar {}"
-     ;; “namespace”
-     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 9) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 10))
-
-     ;; “class”
-     (should (eq (zephir-get-face-at 22) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 26) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 27))
-
-     ;; “Bar”
-     (should (eq (zephir-get-face-at 28) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 30) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 31))))
+    (expect "namespace Phalcon\\Url;"
+            :to-be-fontified-as
+            '(("namespace" keyword "Phalcon\\Url" type))))
 
   (it "fontify interface"
-    (with-zephir-buffer
-     "namespace Phalcon\\Url;
-      interface UrlInterface {}"
-     ;; “namespace”
-     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 9) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 10))
-
-     ;; “Phalcon\Url”
-     (should (eq (zephir-get-face-at 11) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 21) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 22))
-
-     ;; “interface”
-     (should (eq (zephir-get-face-at 31) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 38) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 39))
-
-     ;; “UrlInterface”
-     (should (eq (zephir-get-face-at 40) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 51) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 52))))
+    (expect "interface UrlInterface {}"
+            :to-be-fontified-as
+            '(("interface" keyword "UrlInterface" type))))
 
   (it "fontify class modifiers"
-    (with-zephir-buffer
-     "abstract final class FooBar {}"
-     ;; “abstract”
-     (should (eq (zephir-get-face-at 1) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 8) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 9))
+    (expect "abstract final class Kernel {}"
+            :to-be-fontified-as
+            '(("abstract" keyword "final" keyword "class" keyword
+               "Kernel" type)))))
 
-     ;; “final”
-     (should (eq (zephir-get-face-at 10) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 14) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 15))
+(describe "Fontification of builtin constants"
+  (it "fontifies constants"
+    (expect "[ null, false, true ]"
+            :to-be-fontified-as
+            '(("null" constant "false" constant "true" constant)))))
 
-     ;; “class”
-     (should (eq (zephir-get-face-at 16) 'font-lock-keyword-face))
-     (should (eq (zephir-get-face-at 20) 'font-lock-keyword-face))
-     (should-not (zephir-get-face-at 21))
+(describe "Fontification of special keywords"
+  (it "fontifies “this” keyword"
+    (expect "this->foo = this;"
+            :to-be-fontified-as
+            '(("this" constant "this" constant)))))
 
-     ;; “FooBar”
-     (should (eq (zephir-get-face-at 22) 'font-lock-type-face))
-     (should (eq (zephir-get-face-at 27) 'font-lock-type-face))
-     (should-not (zephir-get-face-at 28)))))
+(describe "Fontification of visibility"
+  (it "fontifies internal method"
+    (expect "internal function foo"
+            :to-be-fontified-as
+            '(("internal" keyword))))
+
+  (it "fontifies scoped class"
+    (expect "scoped class B {}"
+            :to-be-fontified-as
+            '(("scoped" keyword "class" keyword "B" type))))
+
+  (it "fontifies inline function"
+    (expect "inline function foo () {}"
+            :to-be-fontified-as
+            '(("inline" keyword))))
+
+  (it "fontifies public property"
+    (expect "public bar;"
+            :to-be-fontified-as
+            '(("public" keyword))))
+
+  (it "fontifies protected property"
+    (expect "protected foo;"
+            :to-be-fontified-as
+            '(("protected" keyword))))
+
+  (it "fontifies private property"
+    (expect "private bar;"
+            :to-be-fontified-as
+            '(("private" keyword)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

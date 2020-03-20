@@ -151,6 +151,8 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                                "extends"
                                "implements")
                            symbol-end))
+      ;; Predefined boolean constants and “null”.
+      (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
       ;; Namespace, class or interface name.
       (classlike . ,(rx symbol-start
                         (optional ?$)
@@ -160,7 +162,14 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                          (and "\\"
                               (any "A-Z" "a-z" ?_)
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
-                        symbol-end)))
+                        symbol-end))
+      ;; Visibility modifier.
+      (visibility . ,(rx (or "public"
+                             "protected"
+                             "private"
+                             "internal"
+                             "scoped"
+                             "inline"))))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -176,8 +185,14 @@ are available:
 `builtin-dcl'
      Any valid builtin declaraion.
 
+`builtin-const'
+     Predefined boolean constants and “null”.
+
 `classlike'
-     A valid namespace, class or interface name without leading \.
+     A valid namespace, class or interface name without leading ‘\\’.
+
+`visibility'
+     Any valid visibility modifier.
 
 See `rx' documentation for more information about REGEXPS param."
     (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
@@ -303,7 +318,17 @@ This uses CTX as a current parse state."
                  (optional (+ (syntax whitespace)))
                  (or ?{ "implements"))
      (1 font-lock-keyword-face)
-     (2 font-lock-type-face)))
+     (2 font-lock-type-face))
+    ;; Booleans and null
+    (,(zephir-rx (group builtin-const))
+     1 font-lock-constant-face)
+    ;; Highlight special variables
+    (,(zephir-rx (group symbol-start "this" word-end)
+                 (0+ "->" identifier))
+     1 font-lock-constant-face)
+    ;; Visibility
+    (,(zephir-rx (group symbol-start visibility symbol-end))
+     (1 font-lock-keyword-face)))
   "Font lock keywords for Zephir Mode.")
 
 
