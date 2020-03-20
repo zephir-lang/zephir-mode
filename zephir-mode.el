@@ -31,27 +31,6 @@
 
 ;;   GNU Emacs major mode for editing Zephir code.
 ;;
-;; Usage: Put this file in your Emacs Lisp path (eg. site-lisp) and add to
-;; your .emacs file:
-;;
-;;   (require 'zephir-mode)
-;;
-;; To use abbrev-mode, add lines like this:
-;;
-;;   (add-hook 'bnf-mode-hook
-;;             '(lambda () (define-abbrev
-;;                           zephir-mode-abbrev-table
-;;                           "ex" "extends")))
-;;
-;; Many options available under the ‘Help->Customize’ submenu.
-;; Options specific to zephir-mode are in
-;;  Programming/Languages/Zephir
-;;
-;; Bugs: Bug tracking is currently handled using the GitHub issue tracker at
-;; `https://github.com/zephir-lang/zephir-mode/issues'
-;;
-;; History: History is tracked in the Git repository rather than in this file.
-;; See URL `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
 
 ;;; Code:
 
@@ -85,11 +64,8 @@
   :type  'hook
   :group 'zephir)
 
-(defcustom zephir-indent-level 4
-  "Amount by which Zephir subexpressions are indented."
-  :type 'integer
-  :group 'zephir
-  :safe #'integerp)
+(defvar zephir-mode-abbrev-table nil
+  "Abbreviation table used in `zephir-mode' buffers.")
 
 
 ;;; Version information
@@ -153,6 +129,62 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
 
 
 ;;; Specialized rx
+
+(eval-when-compile
+  (defconst zephir-rx-constituents
+    `(
+      ;; Identifier.
+      (identifier . ,(rx symbol-start
+                         (optional ?$)
+                         (any "A-Z" "a-z" ?_)
+                         (0+ (any "A-Z" "a-z" "0-9" ?_))
+                         symbol-end))
+      ;; Builtin declarations and reserved keywords.
+      ;; These words have special meaning in Zephir.
+      (builtin-decl . ,(rx symbol-start
+                           (or "class"
+                               "interface"
+                               "namespace"
+                               "abstract"
+                               "final"
+                               "use"
+                               "extends"
+                               "implements")
+                           symbol-end))
+      ;; Namespace, class or interface name.
+      (classlike . ,(rx symbol-start
+                        (optional ?$)
+                        (any "A-Z" "a-z" ?_)
+                        (0+ (any "A-Z" "a-z" "0-9" ?_))
+                        (0+
+                         (and "\\"
+                              (any "A-Z" "a-z" ?_)
+                              (+ (any "A-Z" "a-z" "0-9" ?_))))
+                        symbol-end)))
+    "Additional special sexps for `zephir-rx'.")
+
+  (defmacro zephir-rx (&rest sexps)
+    "Zephir-specific replacement for `rx'.
+
+In addition to the standard forms of `rx', the following forms
+are available:
+
+`identifier'
+     Any valid identifier with optional dollar sign, e.g. function name,
+     variable name, etc.
+
+`builtin-dcl'
+     Any valid builtin declaraion.
+
+`classlike'
+     A valid namespace, class or interface name without leading \.
+
+See `rx' documentation for more information about REGEXPS param."
+    (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
+      (rx-to-string (cond ((null sexps) (error "No regexp is provided"))
+                          ((cdr sexps)  `(and ,@sexps))
+                          (t            (car sexps)))
+                    t))))
 
 
 ;;; Navigation
@@ -229,6 +261,51 @@ This uses CTX as a current parse state."
 
 ;;; Font Locking
 
+(defvar zephir-font-lock-keywords
+  `(
+    ;; Builtin declaration.
+    (,(zephir-rx (group builtin-decl))
+     1 font-lock-keyword-face)
+    ;; Class decclaration.
+    ;; Class has its own font lock because it may have "abstract" or "final".
+    (,(zephir-rx (optional symbol-start
+                           (or "abstract" "final")
+                           symbol-end
+                           (+ (syntax whitespace)))
+                 (group symbol-start "class" symbol-end)
+                 (+ (syntax whitespace))
+                 (group identifier))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; "namespace Foo", "interface Foo", "use Foo", "implements Foo"
+    (,(zephir-rx (group symbol-start
+                        (or "namespace" "interface" "use" "implements")
+                        symbol-end)
+                 (+ (syntax whitespace))
+                 (group (optional "\\") classlike))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; Highlight class name after "use ... as"
+    (,(zephir-rx (optional "\\")
+                 classlike
+                 (+ (syntax whitespace))
+                 (group symbol-start "as" symbol-end)
+                 (+ (syntax whitespace))
+                 (group identifier))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; Highlight extends
+    (,(zephir-rx classlike
+                 (+ (syntax whitespace))
+                 (group symbol-start "extends" symbol-end)
+                 (+ (syntax whitespace))
+                 (group classlike)
+                 (optional (+ (syntax whitespace)))
+                 (or ?{ "implements"))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face)))
+  "Font lock keywords for Zephir Mode.")
+
 
 ;;; Alignment
 
@@ -269,25 +346,36 @@ the comment syntax tokens handle both line style \"//\" and block style
 
 ;;;###autoload
 (define-derived-mode zephir-mode prog-mode "Zephir" ()
-  "A major mode for editing Zephir code."
-  :group 'zephir-mode
+  "A major mode for editing Zephir code.
+
+\\{zephir-mode-map}
+
+Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
+`zephir-mode-hook', if they are non-nil."
+  :abbrev-table zephir-mode-abbrev-table
+  :group 'zephir
 
   ;; Comments setup
   (setq-local comment-use-syntax t)
   (setq-local comment-auto-fill-only-comments t)
   (setq-local comment-multi-line t)
   (setq-local comment-start "// ")
-  (setq-local comment-start-skip
-              (eval-when-compile
-                (rx (group (or (: "/" (+ "/"))
-                               (: "/*")))
-                    (* (syntax whitespace)))))
+  (setq-local comment-start-skip "\\(/[*/]+\\)\\s-*")
   (setq-local comment-end "")
 
+  ;; Font locking
+  (setq font-lock-defaults
+        '((zephir-font-lock-keywords) ; keywords
+          nil                         ; keywords-only
+          nil                         ; case-fold
+          ))
+
+  ;; TODO(serghei): Paragaphs
+  ;; TODO(serghei): IMenu
   ;; TODO(serghei): Navigation
-  (setq-local indent-line-function #'zephir-indent-line)
-  ;; TODO(serghei): Font locking
-  )
+
+  ;; Indentation
+  (setq-local indent-line-function #'zephir-indent-line))
 
 
 ;; Invoke zephir-mode when appropriate

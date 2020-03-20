@@ -38,7 +38,7 @@
        ;; Don't load old byte-compiled versions
        (load-prefer-newer t))
   ;; Load the file under test
-  (load (expand-file-name "zephir-mode" source-directory)))
+  (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))
 
 (defmacro with-zephir-buffer (content &rest body)
   "Evaluate BODY in a temporary buffer with CONTENT."
@@ -79,5 +79,14 @@ change."
     (setq-default indent-tabs-mode nil)
     (setq-default default-tab-width 4)
     (expect (zephir-get-indented-code content) :to-equal code)))
+
+(defun zephir-get-face-at (pos &optional content)
+  "Get the face at POS in CONTENT.
+If CONTENT is not given, return the face at POS in the current
+buffer."
+  (if content
+      (with-zephir-buffer content
+                          (get-text-property pos 'face))
+    (get-text-property pos 'face)))
 
 ;;; utils.el ends here
