@@ -139,14 +139,28 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
                          symbol-end))
-      ;; Builtin declarations.
+      ;; Builtin declarations and reserved keywords.
+      ;; These words have special meaning in Zephir.
       (builtin-decl . ,(rx symbol-start
                            (or "class"
                                "interface"
                                "namespace"
                                "abstract"
-                               "final")
-                           symbol-end)))
+                               "final"
+                               "use"
+                               "extends"
+                               "implements")
+                           symbol-end))
+      ;; Namespace, class or interface name.
+      (classlike . ,(rx symbol-start
+                        (optional ?$)
+                        (any "A-Z" "a-z" ?_)
+                        (0+ (any "A-Z" "a-z" "0-9" ?_))
+                        (0+
+                         (and "\\"
+                              (any "A-Z" "a-z" ?_)
+                              (+ (any "A-Z" "a-z" "0-9" ?_))))
+                        symbol-end)))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -161,6 +175,9 @@ are available:
 
 `builtin-dcl'
      Any valid builtin declaraion.
+
+`classlike'
+     A valid namespace, class or interface name without leading \.
 
 See `rx' documentation for more information about REGEXPS param."
     (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
@@ -258,6 +275,33 @@ This uses CTX as a current parse state."
                  (group symbol-start "class" symbol-end)
                  (+ (syntax whitespace))
                  (group identifier))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; "namespace Foo", "interface Foo", "use Foo", "implements Foo"
+    (,(zephir-rx (group symbol-start
+                        (or "namespace" "interface" "use" "implements")
+                        symbol-end)
+                 (+ (syntax whitespace))
+                 (group (optional "\\") classlike))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; Highlight class name after "use ... as"
+    (,(zephir-rx (optional "\\")
+                 classlike
+                 (+ (syntax whitespace))
+                 (group symbol-start "as" symbol-end)
+                 (+ (syntax whitespace))
+                 (group identifier))
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; Highlight extends
+    (,(zephir-rx classlike
+                 (+ (syntax whitespace))
+                 (group symbol-start "extends" symbol-end)
+                 (+ (syntax whitespace))
+                 (group classlike)
+                 (optional (+ (syntax whitespace)))
+                 (or ?{ "implements"))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face)))
   "Font lock keywords for Zephir Mode.")
