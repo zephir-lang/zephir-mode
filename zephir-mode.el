@@ -31,6 +31,8 @@
 
 ;;   GNU Emacs major mode for editing Zephir code.
 ;;
+;; See “M-x apropos-command ^zephir-” for a list of commands.
+;; See “M-x customize-group zephir” for a list of customizable variables.
 
 ;;; Code:
 
