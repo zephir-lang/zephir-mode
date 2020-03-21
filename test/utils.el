@@ -28,7 +28,6 @@
 ;;; Commentary:
 
 ;; Non-interactive test suite setup for `buttercup'.
-;; Some functions in this file (see below) was borrowed from lua-mode.
 
 ;;; Code:
 
@@ -82,7 +81,6 @@ change."
     (setq-default default-tab-width 4)
     (expect (zephir-get-indented-code content) :to-equal code)))
 
-;; This function was borrowed from lua-mode.
 (defun zephir-make-font-lock-faces (sym)
   "Decorate SYM with font-lock-%s-face.
 If SYM is a list, this function will be called recursively to
@@ -93,7 +91,6 @@ decorate each of symbol."
        ((listp sym) (mapcar 'zephir-make-font-lock-faces sym)))
       sym))
 
-;; This function was borrowed from lua-mode.
 (defun get-str-faces (str)
   "Find contiguous spans of non-default faces in STR.
 E.g. for properly fontified Lua string \"local x = 100\" it should return
@@ -123,7 +120,6 @@ E.g. for properly fontified Lua string \"local x = 100\" it should return
       (setq pos nextpos))
     (nreverse result)))
 
-;; This function was borrowed from lua-mode.
 (defun zephir-get-line-faces (str)
   "Find contiguous spans of non-default faces in each line of STR.
 The result is a list of lists."
@@ -133,7 +129,6 @@ The result is a list of lists."
     (with-zephir-buffer str (buffer-string))
     "\n" nil)))
 
-;; This function was borrowed from lua-mode.
 (defun to-be-fontified-as (text faces)
   "Check that TEXT is fontified using FACES.
 Custom matcher to test font locking using `buttercup'."

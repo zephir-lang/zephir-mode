@@ -135,14 +135,13 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
 (eval-when-compile
   (defconst zephir-rx-constituents
     `(
-      ;; Identifier.
+      ;; Identifier
       (identifier . ,(rx symbol-start
                          (optional ?$)
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
                          symbol-end))
-      ;; Builtin declarations and reserved keywords.
-      ;; These words have special meaning in Zephir.
+      ;; Builtin declarations and reserved keywords
       (builtin-decl . ,(rx symbol-start
                            (or "class"
                                "interface"
@@ -153,9 +152,11 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                                "extends"
                                "implements")
                            symbol-end))
-      ;; Predefined boolean constants and “null”.
+      ;; Predefined boolean constants and “null”
       (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
-      ;; Namespace, class or interface name.
+      ;; Function declaraion
+      (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
+      ;; Namespace, class or interface name
       (classlike . ,(rx symbol-start
                         (optional ?$)
                         (any "A-Z" "a-z" ?_)
@@ -165,7 +166,7 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                               (any "A-Z" "a-z" ?_)
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
-      ;; Visibility modifier.
+      ;; Visibility modifier
       (visibility . ,(rx (or "public"
                              "protected"
                              "private"
@@ -190,6 +191,9 @@ are available:
 `builtin-const'
      Predefined boolean constants and “null”.
 
+`fn-decl'
+     A function declaraion.
+
 `classlike'
      A valid namespace, class or interface name without leading ‘\\’.
 
@@ -206,6 +210,42 @@ See `rx' documentation for more information about REGEXPS param."
 
 ;;; Navigation
 
+(defconst zephir-beginning-of-defun-regexp
+  (zephir-rx line-start
+             (0+ (syntax whitespace))
+             (optional "deprecated" (+ (syntax whitespace)))
+             (optional symbol-start
+                       (or "abstract" "final")
+                       symbol-end
+                       (+ (syntax whitespace)))
+             (optional visibility (+ (syntax whitespace))
+                       (optional "static" (+ (syntax whitespace))))
+             (group fn-decl)
+             (+ (syntax whitespace))
+             (group identifier)
+             (0+ (syntax whitespace))
+             "(")
+  "Regular expression for a Zephir function.")
+
+(defun zephir-beginning-of-defun (&optional arg)
+  "Move the beginning of the ARGth Zephir function from point.
+Implements Zephir version of `beginning-of-defun-function'."
+  (interactive "p")
+  (let ((arg (or arg 1))
+        (case-fold-search t))
+    (while (> arg 0)
+      (re-search-backward zephir-beginning-of-defun-regexp nil 'noerror)
+      (setq arg (1- arg)))
+    (while (< arg 0)
+      (end-of-line 1)
+      (let ((opoint (point)))
+        (beginning-of-defun 1)
+        (forward-list 2)
+        (forward-line 1)
+        (if (eq opoint (point))
+            (re-search-forward zephir-beginning-of-defun-regexp nil 'noerror))
+        (setq arg (1+ arg))))))
+
 
 ;;; Indentation code
 
@@ -213,11 +253,11 @@ See `rx' documentation for more information about REGEXPS param."
   "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
   (save-excursion
-    ;; Move `point' to the first non-whitespace character in the current line.
+    ;; Move `point' to the first non-whitespace character in the current line
     (back-to-indentation)
 
     (cond
-     ;; Multiline commentary.
+     ;; Multiline commentary
      ((zephir-in-comment-p)
       ;; Make sure comment line is indentet proper way relative to
       ;; open-comment (“/*”) for all possible use-cases.
@@ -246,18 +286,18 @@ This uses CTX as a current parse state."
 
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; Otherwise return current indentation.
-     ;; TODO(serghei): Take a look at `prog-first-column'.
+     ;; Otherwise return current indentation
+     ;; TODO(serghei): Take a look at `prog-first-column'
      (t (current-indentation)))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
   (interactive)
   (if (bobp)
-      (indent-line-to 0) ; First line is always non-indented.
+      (indent-line-to 0) ; First line is always non-indented
     (let* (
-           ;; Save the current parse state.
-           ;; We will need it in `zephir--proper-indentation'.
+           ;; Save the current parse state (we will need it in
+           ;; `zephir--proper-indentation')
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
 
            ;; The first non-whitespace character (l)
@@ -272,7 +312,7 @@ This uses CTX as a current parse state."
 	   ;;
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (indent-line-to (zephir--proper-indentation ctx))
-      ;; Move point to the previous offset.
+      ;; Move point to the previous offset
       (when (> offset 0) (forward-char offset)))))
 
 
@@ -280,11 +320,11 @@ This uses CTX as a current parse state."
 
 (defvar zephir-font-lock-keywords
   `(
-    ;; Builtin declaration.
+    ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
-    ;; Class decclaration.
-    ;; Class has its own font lock because it may have "abstract" or "final".
+    ;; Class decclaration has its own rule because it may be “abstract” or
+    ;; “final”
     (,(zephir-rx (optional symbol-start
                            (or "abstract" "final")
                            symbol-end
@@ -399,7 +439,11 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 
   ;; TODO(serghei): Paragaphs
   ;; TODO(serghei): IMenu
-  ;; TODO(serghei): Navigation
+
+  ;; Navigation
+  (setq-local beginning-of-defun-function #'zephir-beginning-of-defun)
+  ;; TODO(serghei): Implement me
+  ;; (setq-local end-of-defun-function #'zephir-end-of-defun)
 
   ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line))
