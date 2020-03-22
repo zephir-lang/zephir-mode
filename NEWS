@@ -3,7 +3,67 @@ zephir-mode NEWS -- history of user-visible changes.
 Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
 See the end of the file for license conditions.
 
-This file is about changes in Zeohir Mode.
+This file is about changes in Zephir Mode.
+
+* Unreleased
+** Added zephir-indent-tabs-mode user variable to setup indentation.
+
+** Added zephir-open-zephir-github function.
+This function is designed to open Zephir Language home page.
+
+** Amended syntax table.
+Added parenthesis, braces and brackets to zephir-mode's syntax table.
+
+** Corrected font locking for builtin keywords.
+
+** Improved documentation.
+
+** Changed derived mode.
+Now Zephir Mode derived from `prog-mode' instead of `cc-mode'.
+
+** Renamed zephir-mode-open-github function to zephir-open-mode-github
+
+** Fixed movement to the beginning or end of the current block.
+
+** Romoved no longer used cusom zephir-faces
+
+** Removed dollar sign as an expression prefix for variables.
+
+* Zephir Mode 0.3.3
+** Used lexical binding for zephir-mode.
+
+** Raised minimum Emacs support to 24.3.
+
+* Zephir Mode 0.3.2
+** Removed no longer used version related defuns.
+`zephir-mode-version-number' and `zephir-mode-modified' were removed.
+
+** Cleaned up the syntax table.
+
+** Amended dependencies.
+`zephir-mode-version' function now requires `pkg-info'.
+
+* Zephir Mode 0.3.1
+** Fixed support of speedbar to observe Zephir files.
+
+** Updated the documentation.
+
+* Zephir Mode 0.3.0
+** Enabled Zephir Mode offset style.
+
+** Updated documentation.
+
+* Zephir Mode 0.2.0
+** Added command to open the Zephir Mode GitHub page.
+See `zephir-mode-open-github' for more.
+
+** Added command to open the Zephir web site.
+See `zephir-open-website-home' for more.
+
+** Removed unused heredoc functionality.
+
+* Zephir Mode 0.1.0
+** Initial stable release.
 
 
 
