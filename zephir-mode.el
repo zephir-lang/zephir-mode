@@ -29,15 +29,46 @@
 
 ;;; Commentary:
 
-;;   GNU Emacs major mode for editing Zephir code.
+;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
+;; indentation and navigation support.
 ;;
+;;   Zephir -- is a high level language that eases the creation and
+;; maintainability of extensions for PHP.  Zephir extensions are
+;; exported to C code that can be compiled and optimized by major C
+;; compilers such as gcc/clang/vc++.  Functionality is exposed to the
+;; PHP language.  For more information see URL `https://zephir-lang.com'.
+
+;;;; Subword Mode:
+
+;;   GNU Emacs comes with `subword-mode', a minor mode that allows you to
+;; navigate the parts of a “camelCase” as if they were separate words.  For
+;; example, Zephir Mode treats the variable “fooBarBaz” as a whole name by
+;; default.  But if you enable `subword-mode' then Emacs will treat the variable
+;; name as three separate words, and therefore word-related commands
+;; (e.g. “M-f”, “M-b”, “M-d”, etc.) will only affect the “camelCase” part of the
+;; name under the cursor.
+;;
+;; If you want to always use `subword-mode' for Zephir files then you can add
+;; this to your Emacs configuration:
+;;
+;;   (add-hook 'zephir-mode-hook (lambda () (subword-mode 1)))
+;;
+;; The key-binding “C-c C-w” will also toggle `subword-mode' on and off.
+
+;;;; Movement:
+
+;;   Move to the beginning or end of the current block with `beginning-of-defun'
+;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
+
+;;;; Getting Help
+
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
 ;; See “M-x customize-group zephir” for a list of customizable variables.
 
 ;;; Code:
 
 
-;;; Requirements
+;;;; Requirements
 
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
@@ -48,7 +79,7 @@
 (require 'pkg-info) ; `pkg-info-version-info'
 
 
-;;; Customization
+;;;; Customization
 
 ;;;###autoload
 (defgroup zephir nil
@@ -70,7 +101,7 @@
   "Abbreviation table used in `zephir-mode' buffers.")
 
 
-;;; Version information
+;;;; Version information
 
 (defun zephir-mode-version (&optional show-version)
   "Display string describing the version of Zephir Mode.
@@ -91,7 +122,7 @@ just return nil."
     version))
 
 
-;;; Utilities
+;;;; Utilities
 
 (defun zephir-syntax-context (&optional pos)
   "Determine the syntax context at POS, defaulting to point.
@@ -130,7 +161,7 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
 
 
-;;; Specialized rx
+;;;; Specialized rx
 
 (eval-when-compile
   (defconst zephir-rx-constituents
@@ -208,7 +239,7 @@ See `rx' documentation for more information about REGEXPS param."
                     t))))
 
 
-;;; Navigation
+;;;; Navigation
 
 (defconst zephir-beginning-of-defun-regexp
   (zephir-rx line-start
@@ -256,7 +287,7 @@ see `zephir-beginning-of-defun'."
   (zephir-beginning-of-defun (- (or arg 1))))
 
 
-;;; Indentation code
+;;;; Indentation code
 
 (defun zephir--proper-indentation (ctx)
   "Return the proper indentation for the current line.
@@ -325,7 +356,7 @@ This uses CTX as a current parse state."
       (when (> offset 0) (forward-char offset)))))
 
 
-;;; Font Locking
+;;;; Font Locking
 
 (defvar zephir-font-lock-keywords
   `(
@@ -384,13 +415,13 @@ This uses CTX as a current parse state."
   "Font lock keywords for Zephir Mode.")
 
 
-;;; Alignment
+;;;; Alignment
 
 
-;;; Imenu
+;;;; Imenu
 
 
-;;; Initialization
+;;;; Initialization
 
 (defvar zephir-mode-syntax-table
   (let ((table (make-syntax-table)))
