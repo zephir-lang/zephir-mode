@@ -235,6 +235,7 @@ Implements Zephir version of `beginning-of-defun-function'."
         (case-fold-search t))
     (while (> arg 0)
       (re-search-backward zephir-beginning-of-defun-regexp nil 'noerror)
+      (back-to-indentation)
       (setq arg (1- arg)))
     (while (< arg 0)
       (end-of-line 1)
@@ -242,9 +243,17 @@ Implements Zephir version of `beginning-of-defun-function'."
         (beginning-of-defun 1)
         (forward-list 2)
         (forward-line 1)
-        (if (eq opoint (point))
-            (re-search-forward zephir-beginning-of-defun-regexp nil 'noerror))
+        (when (eq opoint (point))
+          (re-search-forward zephir-beginning-of-defun-regexp nil 'noerror)
+          (back-to-indentation))
         (setq arg (1+ arg))))))
+
+(defun zephir-end-of-defun (&optional arg)
+  "Move the end of the ARG'th Zephir function from point.
+Implements Zephir version of `end-of-defun-function'.  For more
+see `zephir-beginning-of-defun'."
+  (interactive "p")
+  (zephir-beginning-of-defun (- (or arg 1))))
 
 
 ;;; Indentation code
@@ -334,7 +343,7 @@ This uses CTX as a current parse state."
                  (group identifier))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; "namespace Foo", "interface Foo", "use Foo", "implements Foo"
+    ;; “namespace “interface Foo”, “use Foo”, “implements Foo”
     (,(zephir-rx (group symbol-start
                         (or "namespace" "interface" "use" "implements")
                         symbol-end)
@@ -342,7 +351,7 @@ This uses CTX as a current parse state."
                  (group (optional "\\") classlike))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Highlight class name after "use ... as"
+    ;; Highlight class name after “use ... as”
     (,(zephir-rx (optional "\\")
                  classlike
                  (+ (syntax whitespace))
@@ -442,8 +451,7 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 
   ;; Navigation
   (setq-local beginning-of-defun-function #'zephir-beginning-of-defun)
-  ;; TODO(serghei): Implement me
-  ;; (setq-local end-of-defun-function #'zephir-end-of-defun)
+  (setq-local end-of-defun-function #'zephir-end-of-defun)
 
   ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line))
