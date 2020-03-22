@@ -305,8 +305,8 @@ This uses CTX as a current parse state."
   (if (bobp)
       (indent-line-to 0) ; First line is always non-indented
     (let* (
-           ;; Save the current parse state (we will need it in
-           ;; `zephir--proper-indentation')
+           ;; Save the current parse state.
+           ;; We will need it in `zephir--proper-indentation'.
            (ctx (save-excursion (syntax-ppss (point-at-bol))))
 
            ;; The first non-whitespace character (l)
@@ -332,8 +332,9 @@ This uses CTX as a current parse state."
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
+    ;; Class decclaration.
     ;; Class decclaration has its own rule because it may be “abstract” or
-    ;; “final”
+    ;; “final”.
     (,(zephir-rx (optional symbol-start
                            (or "abstract" "final")
                            symbol-end
@@ -343,7 +344,7 @@ This uses CTX as a current parse state."
                  (group identifier))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; “namespace “interface Foo”, “use Foo”, “implements Foo”
+    ;; “namespace Foo”, “interface Foo”, “use Foo”, “implements Foo”
     (,(zephir-rx (group symbol-start
                         (or "namespace" "interface" "use" "implements")
                         symbol-end)
