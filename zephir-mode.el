@@ -76,7 +76,7 @@
 ;;   History is tracked in the Git repository rather than in this file.  See URL
 ;; `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
 
-;;;; Getting Help
+;;;; Customize:
 
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
 ;; See “M-x customize-group zephir” for a list of customizable variables.
@@ -112,10 +112,6 @@
   :tag "Hook"
   :type 'hook
   :group 'zephir)
-
-(defvar zephir-mode-abbrev-table nil
-  "Abbreviation table used in `zephir-mode' buffers.")
-(define-abbrev-table 'zephir-mode-abbrev-table ())
 
 
 ;;;; Version information
@@ -477,7 +473,6 @@ the comment syntax tokens handle both line style \"//\" and block style
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 `zephir-mode-hook', if they are non-nil."
-  :abbrev-table zephir-mode-abbrev-table
   :group 'zephir
 
   ;; Comments setup

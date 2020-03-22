@@ -47,33 +47,33 @@
 ;;;; Tests
 
 (describe "Fontification of classes"
-  (it "fontify class"
+  (it "fontifies classes"
     (expect "class A extends B implements C {}"
             :to-be-fontified-as
             '(("class" keyword "A" type "extends" keyword "B" type
                "implements" keyword "C" type))))
 
-  (it "fontify use"
+  (it "fontifies ‘use’ keyword"
     (expect "use Phalcon\\Url;"
             :to-be-fontified-as
             '(("use" keyword "Phalcon\\Url" type))))
 
-  (it "fontify use .. as"
+  (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"
             :to-be-fontified-as
             '(("use" keyword "Phalcon\\Url" type "as" keyword "PhUrl" type))))
 
-  (it "fontify namespace"
+  (it "fontifies namespaces"
     (expect "namespace Phalcon\\Url;"
             :to-be-fontified-as
             '(("namespace" keyword "Phalcon\\Url" type))))
 
-  (it "fontify interface"
+  (it "fontifies interfaces"
     (expect "interface UrlInterface {}"
             :to-be-fontified-as
             '(("interface" keyword "UrlInterface" type))))
 
-  (it "fontify class modifiers"
+  (it "fontifies class modifiers"
     (expect "abstract final class Kernel {}"
             :to-be-fontified-as
             '(("abstract" keyword "final" keyword "class" keyword
@@ -86,7 +86,7 @@
             '(("null" constant "false" constant "true" constant)))))
 
 (describe "Fontification of special keywords"
-  (it "fontifies “this” keyword"
+  (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
             '(("this" constant "this" constant)))))

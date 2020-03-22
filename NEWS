@@ -11,9 +11,6 @@ This file is about changes in Zephir Mode.
 ** Added zephir-open-zephir-github function.
 This function is designed to open Zephir Language home page.
 
-** Added abbreviation table to use in zephir-mode buffers.
-To use abbreviation in Zephir buffers refers to `zephir-mode-abbrev-table'.
-
 ** Amended syntax table.
 Added parenthesis, braces and brackets to zephir-mode's syntax table.
 

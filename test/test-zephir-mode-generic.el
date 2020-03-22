@@ -28,6 +28,19 @@
 
 ;; Define test-suites to test common stuff of `zephir-mode' using `buttercup'.
 
+(require 'buttercup)
+
+(when (require 'undercover nil t)
+  ;; Track coverage, but don't send to coverage serivice.  Save in parent
+  ;; directory as undercover saves paths relative to the repository root.
+  (undercover "*.el" "test/utils.el"
+              (:report-file "coverage-final.json")
+              (:send-report nil)))
+
+(let* ((current-dir (file-name-directory (or load-file-name (buffer-file-name)
+                                             default-directory))))
+  (load (concat current-dir "utils.el") nil 'nomessage 'nosuffix))
+
 ;;; Code:
 
 (describe "zephir-mode"
