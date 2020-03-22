@@ -60,6 +60,22 @@
 ;;   Move to the beginning or end of the current block with `beginning-of-defun'
 ;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
 
+;;;; Customization:
+
+;;   To customize various options, use command as follows: “M-x customize-group
+;; RET zephir RET”.
+
+;;;; Support:
+
+;;   Bug tracking is currently handled using the GitHub issue tracker at
+;; `https://github.com/sergeyklay/zephir-mode/issues'.  Feel free to ask
+;; question or make suggestions in our issue tracker.
+
+;;;; History:
+
+;;   History is tracked in the Git repository rather than in this file.  See URL
+;; `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
+
 ;;;; Getting Help
 
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
@@ -94,11 +110,12 @@
 (defcustom zephir-mode-hook nil
   "List of functions to call when entering Zephir Mode."
   :tag "Hook"
-  :type  'hook
+  :type 'hook
   :group 'zephir)
 
 (defvar zephir-mode-abbrev-table nil
   "Abbreviation table used in `zephir-mode' buffers.")
+(define-abbrev-table 'zephir-mode-abbrev-table ())
 
 
 ;;;; Version information

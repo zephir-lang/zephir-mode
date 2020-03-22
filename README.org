@@ -47,9 +47,10 @@ documentation.
 
 *** Interactive Commands
 
-| Command (For the ~M-x~ prompt.) | Description              |
-|---------------------------------+--------------------------|
-| ~zephir-mode~                   | Switches to Zephir Mode. |
+| Command (For the ~M-x~ prompt.) | Description                                           |
+|---------------------------------+-------------------------------------------------------|
+| ~zephir-mode~                   | Switches to Zephir Mode.                              |
+| ~zephir-mode-version~           | Display string describing the version of Zephir Mode. |
 
 By default any file that matches the glob ~*.zep~ is automatically opened in
 ~zep-mode~.
