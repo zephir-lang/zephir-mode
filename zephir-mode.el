@@ -29,15 +29,46 @@
 
 ;;; Commentary:
 
-;;   GNU Emacs major mode for editing Zephir code.
+;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
+;; indentation and navigation support.
 ;;
+;;   Zephir -- is a high level language that eases the creation and
+;; maintainability of extensions for PHP.  Zephir extensions are
+;; exported to C code that can be compiled and optimized by major C
+;; compilers such as gcc/clang/vc++.  Functionality is exposed to the
+;; PHP language.  For more information see URL `https://zephir-lang.com'.
+
+;;;; Subword Mode:
+
+;;   GNU Emacs comes with `subword-mode', a minor mode that allows you to
+;; navigate the parts of a “camelCase” as if they were separate words.  For
+;; example, Zephir Mode treats the variable “fooBarBaz” as a whole name by
+;; default.  But if you enable `subword-mode' then Emacs will treat the variable
+;; name as three separate words, and therefore word-related commands
+;; (e.g. “M-f”, “M-b”, “M-d”, etc.) will only affect the “camelCase” part of the
+;; name under the cursor.
+;;
+;; If you want to always use `subword-mode' for Zephir files then you can add
+;; this to your Emacs configuration:
+;;
+;;   (add-hook 'zephir-mode-hook (lambda () (subword-mode 1)))
+;;
+;; The key-binding “C-c C-w” will also toggle `subword-mode' on and off.
+
+;;;; Movement:
+
+;;   Move to the beginning or end of the current block with `beginning-of-defun'
+;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
+
+;;;; Getting Help
+
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
 ;; See “M-x customize-group zephir” for a list of customizable variables.
 
 ;;; Code:
 
 
-;;; Requirements
+;;;; Requirements
 
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
@@ -48,7 +79,7 @@
 (require 'pkg-info) ; `pkg-info-version-info'
 
 
-;;; Customization
+;;;; Customization
 
 ;;;###autoload
 (defgroup zephir nil
@@ -70,7 +101,7 @@
   "Abbreviation table used in `zephir-mode' buffers.")
 
 
-;;; Version information
+;;;; Version information
 
 (defun zephir-mode-version (&optional show-version)
   "Display string describing the version of Zephir Mode.
@@ -91,7 +122,7 @@ just return nil."
     version))
 
 
-;;; Utilities
+;;;; Utilities
 
 (defun zephir-syntax-context (&optional pos)
   "Determine the syntax context at POS, defaulting to point.
@@ -130,19 +161,18 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
 
 
-;;; Specialized rx
+;;;; Specialized rx
 
 (eval-when-compile
   (defconst zephir-rx-constituents
     `(
-      ;; Identifier.
+      ;; Identifier
       (identifier . ,(rx symbol-start
                          (optional ?$)
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
                          symbol-end))
-      ;; Builtin declarations and reserved keywords.
-      ;; These words have special meaning in Zephir.
+      ;; Builtin declarations and reserved keywords
       (builtin-decl . ,(rx symbol-start
                            (or "class"
                                "interface"
@@ -153,9 +183,11 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                                "extends"
                                "implements")
                            symbol-end))
-      ;; Predefined boolean constants and “null”.
+      ;; Predefined boolean constants and “null”
       (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
-      ;; Namespace, class or interface name.
+      ;; Function declaraion
+      (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
+      ;; Namespace, class or interface name
       (classlike . ,(rx symbol-start
                         (optional ?$)
                         (any "A-Z" "a-z" ?_)
@@ -165,7 +197,7 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                               (any "A-Z" "a-z" ?_)
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
-      ;; Visibility modifier.
+      ;; Visibility modifier
       (visibility . ,(rx (or "public"
                              "protected"
                              "private"
@@ -190,6 +222,9 @@ are available:
 `builtin-const'
      Predefined boolean constants and “null”.
 
+`fn-decl'
+     A function declaraion.
+
 `classlike'
      A valid namespace, class or interface name without leading ‘\\’.
 
@@ -204,20 +239,65 @@ See `rx' documentation for more information about REGEXPS param."
                     t))))
 
 
-;;; Navigation
+;;;; Navigation
+
+(defconst zephir-beginning-of-defun-regexp
+  (zephir-rx line-start
+             (0+ (syntax whitespace))
+             (optional "deprecated" (+ (syntax whitespace)))
+             (optional symbol-start
+                       (or "abstract" "final")
+                       symbol-end
+                       (+ (syntax whitespace)))
+             (optional visibility (+ (syntax whitespace))
+                       (optional "static" (+ (syntax whitespace))))
+             (group fn-decl)
+             (+ (syntax whitespace))
+             (group identifier)
+             (0+ (syntax whitespace))
+             "(")
+  "Regular expression for a Zephir function.")
+
+(defun zephir-beginning-of-defun (&optional arg)
+  "Move the beginning of the ARGth Zephir function from point.
+Implements Zephir version of `beginning-of-defun-function'."
+  (interactive "p")
+  (let ((arg (or arg 1))
+        (case-fold-search t))
+    (while (> arg 0)
+      (re-search-backward zephir-beginning-of-defun-regexp nil 'noerror)
+      (back-to-indentation)
+      (setq arg (1- arg)))
+    (while (< arg 0)
+      (end-of-line 1)
+      (let ((opoint (point)))
+        (beginning-of-defun 1)
+        (forward-list 2)
+        (forward-line 1)
+        (when (eq opoint (point))
+          (re-search-forward zephir-beginning-of-defun-regexp nil 'noerror)
+          (back-to-indentation))
+        (setq arg (1+ arg))))))
+
+(defun zephir-end-of-defun (&optional arg)
+  "Move the end of the ARG'th Zephir function from point.
+Implements Zephir version of `end-of-defun-function'.  For more
+see `zephir-beginning-of-defun'."
+  (interactive "p")
+  (zephir-beginning-of-defun (- (or arg 1))))
 
 
-;;; Indentation code
+;;;; Indentation code
 
 (defun zephir--proper-indentation (ctx)
   "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
   (save-excursion
-    ;; Move `point' to the first non-whitespace character in the current line.
+    ;; Move `point' to the first non-whitespace character in the current line
     (back-to-indentation)
 
     (cond
-     ;; Multiline commentary.
+     ;; Multiline commentary
      ((zephir-in-comment-p)
       ;; Make sure comment line is indentet proper way relative to
       ;; open-comment (“/*”) for all possible use-cases.
@@ -246,15 +326,15 @@ This uses CTX as a current parse state."
 
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; Otherwise return current indentation.
-     ;; TODO(serghei): Take a look at `prog-first-column'.
+     ;; Otherwise return current indentation
+     ;; TODO(serghei): Take a look at `prog-first-column'
      (t (current-indentation)))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
   (interactive)
   (if (bobp)
-      (indent-line-to 0) ; First line is always non-indented.
+      (indent-line-to 0) ; First line is always non-indented
     (let* (
            ;; Save the current parse state.
            ;; We will need it in `zephir--proper-indentation'.
@@ -272,19 +352,20 @@ This uses CTX as a current parse state."
 	   ;;
 	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
       (indent-line-to (zephir--proper-indentation ctx))
-      ;; Move point to the previous offset.
+      ;; Move point to the previous offset
       (when (> offset 0) (forward-char offset)))))
 
 
-;;; Font Locking
+;;;; Font Locking
 
 (defvar zephir-font-lock-keywords
   `(
-    ;; Builtin declaration.
+    ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
     ;; Class decclaration.
-    ;; Class has its own font lock because it may have "abstract" or "final".
+    ;; Class decclaration has its own rule because it may be “abstract” or
+    ;; “final”.
     (,(zephir-rx (optional symbol-start
                            (or "abstract" "final")
                            symbol-end
@@ -294,7 +375,7 @@ This uses CTX as a current parse state."
                  (group identifier))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; "namespace Foo", "interface Foo", "use Foo", "implements Foo"
+    ;; “namespace Foo”, “interface Foo”, “use Foo”, “implements Foo”
     (,(zephir-rx (group symbol-start
                         (or "namespace" "interface" "use" "implements")
                         symbol-end)
@@ -302,7 +383,7 @@ This uses CTX as a current parse state."
                  (group (optional "\\") classlike))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Highlight class name after "use ... as"
+    ;; Highlight class name after “use ... as”
     (,(zephir-rx (optional "\\")
                  classlike
                  (+ (syntax whitespace))
@@ -334,13 +415,13 @@ This uses CTX as a current parse state."
   "Font lock keywords for Zephir Mode.")
 
 
-;;; Alignment
+;;;; Alignment
 
 
-;;; Imenu
+;;;; Imenu
 
 
-;;; Initialization
+;;;; Initialization
 
 (defvar zephir-mode-syntax-table
   (let ((table (make-syntax-table)))
@@ -399,7 +480,10 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 
   ;; TODO(serghei): Paragaphs
   ;; TODO(serghei): IMenu
-  ;; TODO(serghei): Navigation
+
+  ;; Navigation
+  (setq-local beginning-of-defun-function #'zephir-beginning-of-defun)
+  (setq-local end-of-defun-function #'zephir-end-of-defun)
 
   ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line))

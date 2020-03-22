@@ -4,7 +4,8 @@
 [[https://github.com/zephir-lang/zephir-mode/actions][https://github.com/zephir-lang/zephir-mode/workflows/build/badge.svg]]
 [[https://codecov.io/gh/zephir-lang/zephir-mode][https://codecov.io/gh/zephir-lang/zephir-mode/branch/master/graph/badge.svg]]
 
-A [[https://www.gnu.org/software/emacs/][GNU Emacs]] major mode for editing [[https://zephir-lang.com/][Zephir]] code.
+A [[https://www.gnu.org/software/emacs/][GNU Emacs]] major mode for editing [[https://zephir-lang.com/][Zephir]] code. Provides font-locking,
+indentation and navigation support.
 
 Zephir is a high level programming language that eases the creation and
 maintainability of extensions for PHP. Zephir extensions are exported to C code
@@ -14,8 +15,9 @@ gcc/clang/vc++. Functionality is exposed to the PHP language.
 ** Features
 
 - Basic syntax definition
-- Indentation and alignment of expressions and statements
+- Indentation of expressions and statements
 - Syntax highlighting
+- Movement
 
 ** Installation
 
