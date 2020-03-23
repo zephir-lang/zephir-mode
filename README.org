@@ -52,6 +52,11 @@ documentation.
 | ~zephir-mode~                   | Switches to Zephir Mode.                              |
 | ~zephir-mode-version~           | Display string describing the version of Zephir Mode. |
 
+To see full list of Zephir related commands use command as follows:
+#+begin_src
+M-x apropos-command ^zephir-
+#+end_src
+
 By default any file that matches the glob ~*.zep~ is automatically opened in
 ~zep-mode~.
 
@@ -72,11 +77,10 @@ Feel free to ask question or make suggestions in our [[https://github.com/zephir
 To see what has changed in recent versions of Zephir Mode see:
 https://github.com/zephir-lang/zephir-mode/blob/master/NEWS .
 
-
 ** License
 
 Zephir Mode is open source software licensed under the
-[[https://github.com/zephir-lang/zephir-mode/blob/master/LICENSE][GNU General Public Licence version 3]].
+[[https://github.com/zephir-lang/zephir-mode/blob/master/LICENSE][GNU General Public Licence version 3]] .
 Copyright © 2017-2020 Serghei Iakovlev.
 
 *** Note On Copyright Years
