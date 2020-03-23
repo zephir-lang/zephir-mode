@@ -6,28 +6,25 @@ See the end of the file for license conditions.
 This file is about changes in Zephir Mode.
 
 * Unreleased
-** Added zephir-indent-tabs-mode user variable to setup indentation.
-
-** Added zephir-open-zephir-github function.
-This function is designed to open Zephir Language home page.
-
-** Amended syntax table.
-Added parenthesis, braces and brackets to zephir-mode's syntax table.
-
-** Corrected font locking for builtin keywords.
+** Corrected font locking for built-in keywords.
 
 ** Improved documentation.
 
 ** Changed derived mode.
-Now Zephir Mode derived from `prog-mode' instead of `cc-mode'.
+Zephir Mode now is derived from `prog-mode' instead of `cc-mode'.
 
-** Renamed zephir-mode-open-github function to zephir-open-mode-github
+** Modified syntax table for dollar sign.
+The dollar sign (‘$’) now is a symbol constituent.  Propertize
+parenthesis, braces as well as brackets.
 
-** Fixed movement to the beginning or end of the current block.
+** Fixed movement to the beginning or end of a function.
 
-** Romoved no longer used cusom zephir-faces
+** Removed homepages opening functions.
+`zephir-open-website-home' as well as `zephir-mode-open-github' are
+essentially useless, so they were removed.
 
-** Removed dollar sign as an expression prefix for variables.
+** Removed no longer used custom zephir-faces.
+These features are essentially useless, so they were removed.
 
 * Zephir Mode 0.3.3
 ** Used lexical binding for zephir-mode.
@@ -35,8 +32,9 @@ Now Zephir Mode derived from `prog-mode' instead of `cc-mode'.
 ** Raised minimum Emacs support to 24.3.
 
 * Zephir Mode 0.3.2
-** Removed no longer used version related defuns.
-`zephir-mode-version-number' and `zephir-mode-modified' were removed.
+** Removed no longer used version related constants.
+Constants `zephir-mode-version-number' and `zephir-mode-modified'
+were removed.
 
 ** Cleaned up the syntax table.
 

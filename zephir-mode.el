@@ -441,16 +441,21 @@ This uses CTX as a current parse state."
     ;; Symbol constituents
     (modify-syntax-entry ?_   "_"      table)
     (modify-syntax-entry ?$   "_"      table)
+
     ;; Characters used to delimit string constants
     (modify-syntax-entry ?\"  "\""     table)
     (modify-syntax-entry ?\'  "\""     table)
+
     ;; Comment enders
     (modify-syntax-entry ?\n  "> b"    table)
+
     ;; Give CR the same syntax as newline
     (modify-syntax-entry ?\^m "> b"    table)
+
     ;; Set up block and line oriented comments
     (modify-syntax-entry ?/   ". 124b" table)
     (modify-syntax-entry ?*   ". 23"   table)
+
     ;; The parenthesis, braces and brackets
     (modify-syntax-entry ?\(  "()"     table)
     (modify-syntax-entry ?\)  ")("     table)
