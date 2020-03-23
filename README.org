@@ -47,9 +47,10 @@ documentation.
 
 *** Interactive Commands
 
-| Command (For the ~M-x~ prompt.) | Description              |
-|---------------------------------+--------------------------|
-| ~zephir-mode~                   | Switches to Zephir Mode. |
+| Command (For the ~M-x~ prompt.) | Description                                           |
+|---------------------------------+-------------------------------------------------------|
+| ~zephir-mode~                   | Switches to Zephir Mode.                              |
+| ~zephir-mode-version~           | Display string describing the version of Zephir Mode. |
 
 By default any file that matches the glob ~*.zep~ is automatically opened in
 ~zep-mode~.
@@ -74,5 +75,13 @@ https://github.com/zephir-lang/zephir-mode/blob/master/NEWS .
 
 ** License
 
-Zephir Mode is open source software licensed under the [[https://github.com/zephir-lang/zephir-mode/blob/master/LICENSE][GNU General Public
-Licence version 3]]. Copyright © 2017, 2018, 2019, 2020 Serghei Iakovlev.
+Zephir Mode is open source software licensed under the
+[[https://github.com/zephir-lang/zephir-mode/blob/master/LICENSE][GNU General Public Licence version 3]].
+Copyright © 2017-2020 Serghei Iakovlev.
+
+*** Note On Copyright Years
+
+In copyright notices where the copyright holder is the Serghei Iakovlev,
+then where a range of years appears, this is an inclusive range that applies to
+every year in the range.  For example: 2005-2008 represents the years 2005,
+2006, 2007, and 2008.

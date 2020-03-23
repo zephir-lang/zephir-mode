@@ -1,6 +1,6 @@
 ;;; zephir-mode.el --- Major mode for editing Zephir code -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
@@ -60,7 +60,23 @@
 ;;   Move to the beginning or end of the current block with `beginning-of-defun'
 ;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
 
-;;;; Getting Help
+;;;; Customization:
+
+;;   To customize various options, use command as follows: “M-x customize-group
+;; RET zephir RET”.
+
+;;;; Support:
+
+;;   Bug tracking is currently handled using the GitHub issue tracker at
+;; `https://github.com/sergeyklay/zephir-mode/issues'.  Feel free to ask
+;; question or make suggestions in our issue tracker.
+
+;;;; History:
+
+;;   History is tracked in the Git repository rather than in this file.  See URL
+;; `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
+
+;;;; Customize:
 
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
 ;; See “M-x customize-group zephir” for a list of customizable variables.
@@ -94,11 +110,8 @@
 (defcustom zephir-mode-hook nil
   "List of functions to call when entering Zephir Mode."
   :tag "Hook"
-  :type  'hook
+  :type 'hook
   :group 'zephir)
-
-(defvar zephir-mode-abbrev-table nil
-  "Abbreviation table used in `zephir-mode' buffers.")
 
 
 ;;;; Version information
@@ -428,16 +441,21 @@ This uses CTX as a current parse state."
     ;; Symbol constituents
     (modify-syntax-entry ?_   "_"      table)
     (modify-syntax-entry ?$   "_"      table)
+
     ;; Characters used to delimit string constants
     (modify-syntax-entry ?\"  "\""     table)
     (modify-syntax-entry ?\'  "\""     table)
+
     ;; Comment enders
     (modify-syntax-entry ?\n  "> b"    table)
+
     ;; Give CR the same syntax as newline
     (modify-syntax-entry ?\^m "> b"    table)
+
     ;; Set up block and line oriented comments
     (modify-syntax-entry ?/   ". 124b" table)
     (modify-syntax-entry ?*   ". 23"   table)
+
     ;; The parenthesis, braces and brackets
     (modify-syntax-entry ?\(  "()"     table)
     (modify-syntax-entry ?\)  ")("     table)
@@ -460,7 +478,6 @@ the comment syntax tokens handle both line style \"//\" and block style
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 `zephir-mode-hook', if they are non-nil."
-  :abbrev-table zephir-mode-abbrev-table
   :group 'zephir
 
   ;; Comments setup

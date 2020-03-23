@@ -1,6 +1,6 @@
 ;;; test-zephir-mode-navigatopn.el --- Zephir Mode: Navigation tests -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017, 2018, 2019, 2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Serghei Iakovlev
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
