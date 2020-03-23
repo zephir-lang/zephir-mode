@@ -52,8 +52,6 @@
 ;; this to your Emacs configuration:
 ;;
 ;;   (add-hook 'zephir-mode-hook (lambda () (subword-mode 1)))
-;;
-;; The key-binding “C-c C-w” will also toggle `subword-mode' on and off.
 
 ;;;; Movement:
 
@@ -62,8 +60,9 @@
 
 ;;;; Customization:
 
-;;   To customize various options, use command as follows: “M-x customize-group
-;; RET zephir RET”.
+;;   To customize various options, use command as follows:
+;;
+;;   M-x customize-group RET zephir RET
 
 ;;;; Support:
 
@@ -76,7 +75,7 @@
 ;;   History is tracked in the Git repository rather than in this file.  See URL
 ;; `https://github.com/zephir-lang/zephir-mode/blob/master/NEWS'.
 
-;;;; Customize:
+;;;; Customize && Help:
 
 ;; See “M-x apropos-command ^zephir-” for a list of commands.
 ;; See “M-x customize-group zephir” for a list of customizable variables.
@@ -377,8 +376,8 @@ This uses CTX as a current parse state."
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
     ;; Class decclaration.
-    ;; Class decclaration has its own rule because it may be “abstract” or
-    ;; “final”.
+    ;; Class decclaration has its own rule because it may be
+    ;; ‘abstract’ or ‘final’.
     (,(zephir-rx (optional symbol-start
                            (or "abstract" "final")
                            symbol-end
@@ -388,7 +387,7 @@ This uses CTX as a current parse state."
                  (group identifier))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; “namespace Foo”, “interface Foo”, “use Foo”, “implements Foo”
+    ;; ‘namespace Foo’, ‘interface Foo’, ‘use Foo’, ‘implements Foo’
     (,(zephir-rx (group symbol-start
                         (or "namespace" "interface" "use" "implements")
                         symbol-end)
@@ -396,7 +395,7 @@ This uses CTX as a current parse state."
                  (group (optional "\\") classlike))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Highlight class name after “use ... as”
+    ;; Highlight class name after ‘use ... as’
     (,(zephir-rx (optional "\\")
                  classlike
                  (+ (syntax whitespace))
@@ -405,7 +404,7 @@ This uses CTX as a current parse state."
                  (group identifier))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Highlight extends
+    ;; Highlight ‘extends’
     (,(zephir-rx classlike
                  (+ (syntax whitespace))
                  (group symbol-start "extends" symbol-end)
@@ -415,7 +414,7 @@ This uses CTX as a current parse state."
                  (or ?{ "implements"))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Booleans and null
+    ;; Booleans and ‘null’
     (,(zephir-rx (group builtin-const))
      1 font-lock-constant-face)
     ;; Highlight special variables
@@ -424,7 +423,15 @@ This uses CTX as a current parse state."
      1 font-lock-constant-face)
     ;; Visibility
     (,(zephir-rx (group symbol-start visibility symbol-end))
-     (1 font-lock-keyword-face)))
+     (1 font-lock-keyword-face))
+    ;; Function names, i.e. ‘function foo’
+    ;; TODO(serghei): deprecated <visibility> function <name>
+    ;; TODO(serghei): <visibility> static function <name>
+    ;; TODO(serghei): deprecated function <name>
+    ;; TODO(serghei): function <name>
+    (,zephir-beginning-of-defun-regexp
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face)))
   "Font lock keywords for Zephir Mode.")
 
 

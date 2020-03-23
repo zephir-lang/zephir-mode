@@ -92,34 +92,55 @@
             '(("this" constant "this" constant)))))
 
 (describe "Fontification of visibility"
-  (it "fontifies internal method"
-    (expect "internal function foo"
+  (it "fontifies property visibility"
+    (expect "internal foo;"
             :to-be-fontified-as
-            '(("internal" keyword))))
+            '(("internal" keyword)))
 
-  (it "fontifies scoped class"
-    (expect "scoped class B {}"
+    (expect "scoped bar;"
             :to-be-fontified-as
-            '(("scoped" keyword "class" keyword "B" type))))
+            '(("scoped" keyword)))
 
-  (it "fontifies inline function"
-    (expect "inline function foo () {}"
+    (expect "inline baz;"
             :to-be-fontified-as
-            '(("inline" keyword))))
+            '(("inline" keyword)))
 
-  (it "fontifies public property"
     (expect "public bar;"
             :to-be-fontified-as
-            '(("public" keyword))))
+            '(("public" keyword)))
 
-  (it "fontifies protected property"
     (expect "protected foo;"
             :to-be-fontified-as
-            '(("protected" keyword))))
+            '(("protected" keyword)))
 
-  (it "fontifies private property"
     (expect "private bar;"
             :to-be-fontified-as
             '(("private" keyword)))))
+
+(describe "Fontification of function headers"
+  (it "fontifies standard <visibility> function <name> () headers"
+    (expect "public function foo () {}"
+            :to-be-fontified-as
+            '(("public" keyword "function" keyword "foo" function-name)))
+
+    (expect "protected function bar () {}"
+            :to-be-fontified-as
+            '(("protected" keyword "function" keyword "bar" function-name)))
+
+    (expect "private function baz () {}"
+            :to-be-fontified-as
+            '(("private" keyword "function" keyword "baz" function-name)))
+
+    (expect "internal function foo () {}"
+            :to-be-fontified-as
+            '(("internal" keyword "function" keyword "foo" function-name)))
+
+    (expect "scoped function test () {}"
+            :to-be-fontified-as
+            '(("scoped" keyword "function" keyword "test" function-name)))
+
+    (expect "internal function fuz () {}"
+            :to-be-fontified-as
+            '(("internal" keyword "function" keyword "fuz" function-name)))))
 
 ;;; test-zephir-mode-font-lock.el ends here
