@@ -215,7 +215,20 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                              "private"
                              "internal"
                              "scoped"
-                             "inline"))))
+                             "inline")))
+      ;; data-type
+      (data-type . ,(rx (or (and (? "u") "int")
+                            (and "bool" (? "ean"))
+                            (and (? "u") "long")
+                            (and (? "u") "char")
+                            (and (? "i") "string")
+                            (and (or "dou" "calla") "ble")
+                            "float"
+                            "resource"
+                            "object"
+                            "var"
+                            "void"
+                            "array"))))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -242,6 +255,9 @@ are available:
 
 `visibility'
      Any valid visibility modifier.
+
+`data-type'
+     Any valid data type.
 
 See `rx' documentation for more information about REGEXPS param."
     (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
@@ -429,9 +445,13 @@ This uses CTX as a current parse state."
     ;; TODO(serghei): <visibility> static function <name>
     ;; TODO(serghei): deprecated function <name>
     ;; TODO(serghei): function <name>
+    ;; TODO(serghei): let foo = function () {}
     (,zephir-beginning-of-defun-regexp
      (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face)))
+     (2 font-lock-function-name-face))
+    ;; Type primitives
+    (,(zephir-rx symbol-start (group data-type) symbol-end)
+     1 font-lock-type-face))
   "Font lock keywords for Zephir Mode.")
 
 

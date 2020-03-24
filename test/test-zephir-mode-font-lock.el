@@ -85,11 +85,21 @@
             :to-be-fontified-as
             '(("null" constant "false" constant "true" constant)))))
 
-(describe "Fontification of special keywords"
+(describe "Fontification keywords"
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
-            '(("this" constant "this" constant)))))
+            '(("this" constant "this" constant))))
+
+  (it "fontifies data types"
+    (expect "int uint bool boolean float double long ulong
+     char uchar string istring resource object var void array callable"
+            :to-be-fontified-as
+            '(("int" type "uint" type "bool" type "boolean" type "float" type
+               "double" type "long" type "ulong" type)
+              ("char" type "uchar" type "string" type "istring" type
+               "resource" type "object" type "var" type "void" type
+               "array" type "callable" type)))))
 
 (describe "Fontification of visibility"
   (it "fontifies property visibility"
