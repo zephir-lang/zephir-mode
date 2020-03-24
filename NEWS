@@ -26,6 +26,11 @@ essentially useless, so they were removed.
 ** Removed no longer used custom zephir-faces.
 These features are essentially useless, so they were removed.
 
+** Removed support of the speedbar.
+To reduce efforts to maintain unpopular features, the speedbar
+support was removed. This never has been implemented proper
+way and will be reimplemented in the future with better usability.
+
 * Zephir Mode 0.3.3
 ** Used lexical binding for zephir-mode.
 
