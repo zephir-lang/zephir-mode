@@ -210,12 +210,29 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
       ;; Visibility modifier
-      (visibility . ,(rx (or "public"
+      (visibility . ,(rx symbol-start
+                         (or "public"
                              "protected"
                              "private"
                              "internal"
                              "scoped"
-                             "inline"))))
+                             "inline")
+                         symbol-end))
+      ;; data-type
+      (data-type . ,(rx symbol-start
+                        (or (and (? "u") "int")
+                            (and "bool" (? "ean"))
+                            (and (? "u") "long")
+                            (and (? "u") "char")
+                            (and (? "i") "string")
+                            (and (or "dou" "calla") "ble")
+                            "float"
+                            "resource"
+                            "object"
+                            "var"
+                            "void"
+                            "array")
+                        symbol-end)))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -242,6 +259,9 @@ are available:
 
 `visibility'
      Any valid visibility modifier.
+
+`data-type'
+     Any valid data type.
 
 See `rx' documentation for more information about REGEXPS param."
     (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
@@ -422,16 +442,20 @@ This uses CTX as a current parse state."
                  (0+ "->" identifier))
      1 font-lock-constant-face)
     ;; Visibility
-    (,(zephir-rx (group symbol-start visibility symbol-end))
+    (,(zephir-rx (group visibility))
      (1 font-lock-keyword-face))
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
     ;; TODO(serghei): <visibility> static function <name>
     ;; TODO(serghei): deprecated function <name>
     ;; TODO(serghei): function <name>
+    ;; TODO(serghei): let foo = function () {}
     (,zephir-beginning-of-defun-regexp
      (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face)))
+     (2 font-lock-function-name-face))
+    ;; Data types
+    (,(zephir-rx (group data-type))
+     1 font-lock-type-face))
   "Font lock keywords for Zephir Mode.")
 
 
