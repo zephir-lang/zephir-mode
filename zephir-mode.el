@@ -60,7 +60,9 @@
 
 ;;;; Customization:
 
-;;   To customize various options, use command as follows:
+;;   The variable `zephir-indent-line' can be changed to insert tabs for
+;; indentation in Zephir Mode.  To see and customize all Zephir related options,
+;; use command as follows:
 ;;
 ;;   M-x customize-group RET zephir RET
 
@@ -111,6 +113,12 @@
   :tag "Hook"
   :type 'hook
   :group 'zephir)
+
+(defcustom zephir-indent-tabs-mode nil
+  "Indentation can insert tabs in Zephir Mode if this is non-nil."
+  :type 'boolean
+  :group 'zephir
+  :safe 'booleanp)
 
 
 ;;;; Version information
@@ -522,6 +530,8 @@ the comment syntax tokens handle both line style \"//\" and block style
   "A major mode for editing Zephir code.
 
 \\{zephir-mode-map}
+The variable `zephir-indent-line' can be changed to insert tabs
+for indentation in Zephir Mode.
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 `zephir-mode-hook', if they are non-nil."
@@ -550,7 +560,8 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   (setq-local end-of-defun-function #'zephir-end-of-defun)
 
   ;; Indentation
-  (setq-local indent-line-function #'zephir-indent-line))
+  (setq-local indent-line-function #'zephir-indent-line)
+  (setq-local indent-tabs-mode zephir-indent-tabs-mode))
 
 
 ;; Invoke zephir-mode when appropriate
