@@ -60,9 +60,15 @@
 
 ;;;; Customization:
 
-;;   To customize various options, use command as follows:
+;;   The variable `zephir-indent-tabs-mode' can be changed to insert tabs for
+;; indentation in Zephir Mode.  To see and customize all Zephir related options,
+;; use command as follows:
 ;;
 ;;   M-x customize-group RET zephir RET
+
+;;;; Syntax checking:
+
+;; Presently flymake/flycheck support is not provided.
 
 ;;;; Support:
 
@@ -88,6 +94,7 @@
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
 
+;; Pacify the byte compiler
 (eval-when-compile
   (require 'rx))    ; `rx'
 
@@ -111,6 +118,12 @@
   :tag "Hook"
   :type 'hook
   :group 'zephir)
+
+(defcustom zephir-indent-tabs-mode nil
+  "Indentation can insert tabs in Zephir Mode if this is non-nil."
+  :type 'boolean
+  :group 'zephir
+  :safe 'booleanp)
 
 
 ;;;; Version information
@@ -197,6 +210,11 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                            symbol-end))
       ;; Predefined boolean constants and “null”
       (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
+      ;; Constants
+      (constant . ,(rx symbol-start
+                       (any "A-Z" ?_)
+                       (+ (any "A-Z" "0-9" ?_))
+                       symbol-end))
       ;; Function declaraion
       (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
       ;; Namespace, class or interface name
@@ -250,6 +268,10 @@ are available:
 
 `builtin-const'
      Predefined boolean constants and “null”.
+
+`constant'
+     A regular constant form.
+     By convention, constant identifiers are always uppercase.
 
 `fn-decl'
      A function declaraion.
@@ -455,7 +477,14 @@ This uses CTX as a current parse state."
      (2 font-lock-function-name-face))
     ;; Data types
     (,(zephir-rx (group data-type))
-     1 font-lock-type-face))
+     1 font-lock-type-face)
+    ;; Constants
+    (,(zephir-rx (or (group constant)
+                     (group symbol-start
+                            (or "__LINE__" "__FILE__" "__FUNCTION__" "__CLASS__"
+                                "__METHOD__" "__NAMESPACE__")
+                            symbol-end)))
+     1 font-lock-constant-face))
   "Font lock keywords for Zephir Mode.")
 
 
@@ -506,6 +535,8 @@ the comment syntax tokens handle both line style \"//\" and block style
   "A major mode for editing Zephir code.
 
 \\{zephir-mode-map}
+The variable `zephir-indent-tabs-mode' can be changed to insert tabs
+for indentation in Zephir Mode.
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 `zephir-mode-hook', if they are non-nil."
@@ -534,7 +565,8 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   (setq-local end-of-defun-function #'zephir-end-of-defun)
 
   ;; Indentation
-  (setq-local indent-line-function #'zephir-indent-line))
+  (setq-local indent-line-function #'zephir-indent-line)
+  (setq-local indent-tabs-mode zephir-indent-tabs-mode))
 
 
 ;; Invoke zephir-mode when appropriate

@@ -54,15 +54,15 @@ documentation.
 
 To see full list of Zephir related commands use command as follows:
 #+begin_src
-M-x apropos-command ^zephir-
+M-x apropos-command RET ^zephir- RET
 #+end_src
 
 By default any file that matches the glob ~*.zep~ is automatically opened in
-~zep-mode~.
+~zephir-mode~.
 
 ** Customization
 
-To customize various options, use command as follows:
+To see and customize all Zephir related options, use command as follows:
 
 #+begin_src
 M-x customize-group RET zephir RET
