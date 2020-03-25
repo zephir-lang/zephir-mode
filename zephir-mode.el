@@ -66,6 +66,10 @@
 ;;
 ;;   M-x customize-group RET zephir RET
 
+;;;; Syntax checking:
+
+;; Presently flymake/flycheck support is not provided.
+
 ;;;; Support:
 
 ;;   Bug tracking is currently handled using the GitHub issue tracker at
