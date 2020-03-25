@@ -197,6 +197,11 @@ If point is not inside a comment, return nil.  Uses CTX as a syntax context."
                            symbol-end))
       ;; Predefined boolean constants and “null”
       (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
+      ;; Constants
+      (constant . ,(rx symbol-start
+                       (any "A-Z" ?_)
+                       (+ (any "A-Z" "0-9" ?_))
+                       symbol-end))
       ;; Function declaraion
       (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
       ;; Namespace, class or interface name
@@ -250,6 +255,10 @@ are available:
 
 `builtin-const'
      Predefined boolean constants and “null”.
+
+`constant'
+     A regular constant form.
+     By convention, constant identifiers are always uppercase.
 
 `fn-decl'
      A function declaraion.
@@ -455,7 +464,14 @@ This uses CTX as a current parse state."
      (2 font-lock-function-name-face))
     ;; Data types
     (,(zephir-rx (group data-type))
-     1 font-lock-type-face))
+     1 font-lock-type-face)
+    ;; Constants
+    (,(zephir-rx (or (group constant)
+                     (group symbol-start
+                            (or "__LINE__" "__FILE__" "__FUNCTION__" "__CLASS__"
+                                "__METHOD__" "__NAMESPACE__")
+                            symbol-end)))
+     1 font-lock-constant-face))
   "Font lock keywords for Zephir Mode.")
 
 

@@ -79,17 +79,33 @@
             '(("abstract" keyword "final" keyword "class" keyword
                "Kernel" type)))))
 
-(describe "Fontification of builtin constants"
-  (it "fontifies constants"
-    (expect "[ null, false, true ]"
+(describe "Fontification constants"
+  (it "fontifies built-in constants"
+    (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
-            '(("null" constant "false" constant "true" constant)))))
+            '(("__LINE__" constant "__FILE__" constant
+               "__FUNCTION__" constant)))
+
+    (expect "__CLASS__ __METHOD__ __NAMESPACE__"
+            :to-be-fontified-as
+            '(("__CLASS__" constant "__METHOD__" constant
+               "__NAMESPACE__" constant))))
+
+  (it "fontifies regular form of constants"
+    (expect "self::HTML5; Logger::ALERT; const FOO = 5;"
+            :to-be-fontified-as
+            '(("HTML5" constant "ALERT" constant "FOO" constant)))))
 
 (describe "Fontification keywords"
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
             '(("this" constant "this" constant))))
+
+  (it "fontifies booleans and null"
+    (expect "[ null, false, true ]"
+            :to-be-fontified-as
+            '(("null" constant "false" constant "true" constant))))
 
   (it "fontifies data types"
     (expect "int uint bool boolean float double long ulong
