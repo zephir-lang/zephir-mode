@@ -60,7 +60,7 @@
 
 ;;;; Customization:
 
-;;   The variable `zephir-indent-line' can be changed to insert tabs for
+;;   The variable `zephir-indent-tabs-mode' can be changed to insert tabs for
 ;; indentation in Zephir Mode.  To see and customize all Zephir related options,
 ;; use command as follows:
 ;;
@@ -90,6 +90,7 @@
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
 
+;; Pacify the byte compiler
 (eval-when-compile
   (require 'rx))    ; `rx'
 
@@ -530,7 +531,7 @@ the comment syntax tokens handle both line style \"//\" and block style
   "A major mode for editing Zephir code.
 
 \\{zephir-mode-map}
-The variable `zephir-indent-line' can be changed to insert tabs
+The variable `zephir-indent-tabs-mode' can be changed to insert tabs
 for indentation in Zephir Mode.
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
