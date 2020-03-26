@@ -52,7 +52,7 @@ then put point in its place."
   `(with-temp-buffer
      ;; If CONTENT is a list, join list to a single sequence using “\n”
      (insert (if (listp ,content)
-                 (mapconcat (lambda (x) (concat x "\n")) ,content "")
+                 (mapconcat 'identity ,content "\n")
                ,content))
 
      (zephir-mode)
@@ -86,15 +86,13 @@ Return the whole buffer, without the text properties."
 
 (defun zephir-test-indent (code)
   "Test indentation of Zephir code.
-The CODE argument is a string that should contain correctly
-indented Zephir code.  The CODE is indented using
-`zephir-get-indented-code' and the test succeeds if the result did not
-change."
-  (let ((content code))
-    ;; The test fixtures assume an indentation width of 4,
-    ;; so we need to set that up for the tests.
-    (setq-default indent-tabs-mode nil)
-    (setq-default default-tab-width 4)
+
+The CODE argument is a list of strings that should contain
+correctly indented Zephir code.  The CODE is indented using
+`zephir-get-indented-code' and the test succeeds if the result
+did not change."
+  (let* ((content (mapconcat 'identity code "\n"))
+         (code content))
     (expect (zephir-get-indented-code content) :to-equal code)))
 
 (defun zephir-make-font-lock-faces (sym)
