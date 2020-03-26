@@ -1,11 +1,11 @@
 ;;; utils.el --- Zephir Mode: Non-interactive unit-test setup -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;;         immerrr <immerrr+lua@gmail.com>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.4.0
+;; Version: 0.5.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -42,19 +42,35 @@
   (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))
 
 (defmacro with-zephir-buffer (content &rest body)
-  "Evaluate BODY in a temporary buffer with CONTENT."
+  "Evaluate BODY in a temporary buffer with CONTENT.
+
+If CONTENT is a list, join list to a single sequence using “\n”
+as a line separator.  If CONTENS contains a point marker “<*>”,
+then put point in its place."
   (declare (debug t)
            (indent 1))
   `(with-temp-buffer
-     (insert ,content)
+     ;; If CONTENT is a list, join list to a single sequence using “\n”
+     (insert (if (listp ,content)
+                 (mapconcat 'identity ,content "\n")
+               ,content))
+
      (zephir-mode)
 
+     ;; Inserted text may contain multiline constructs which
+     ;; will only be recognized after fontification.
      ,(if (fboundp 'font-lock-ensure)
           '(font-lock-ensure)
         '(with-no-warnings (font-lock-fontify-buffer)))
 
      (pop-to-buffer (current-buffer))
-     (goto-char (point-min))
+
+     ;; If content was a list, put point in place of “<>”
+     (cond
+      ((re-search-backward "<*>" nil t 1)
+       (replace-match ""))
+      (t (goto-char (point-min))))
+
      (unwind-protect
          (progn ,@body))))
 
@@ -70,15 +86,13 @@ Return the whole buffer, without the text properties."
 
 (defun zephir-test-indent (code)
   "Test indentation of Zephir code.
-The CODE argument is a string that should contain correctly
-indented Zephir code.  The CODE is indented using
-`zephir-get-indented-code' and the test succeeds if the result did not
-change."
-  (let ((content code))
-    ;; The test fixtures assume an indentation width of 4,
-    ;; so we need to set that up for the tests.
-    (setq-default indent-tabs-mode nil)
-    (setq-default default-tab-width 4)
+
+The CODE argument is a list of strings that should contain
+correctly indented Zephir code.  The CODE is indented using
+`zephir-get-indented-code' and the test succeeds if the result
+did not change."
+  (let* ((content (mapconcat 'identity code "\n"))
+         (code content))
     (expect (zephir-get-indented-code content) :to-equal code)))
 
 (defun zephir-make-font-lock-faces (sym)
@@ -156,6 +170,6 @@ Fontification check failed on line %d for:
     (cons t "Fontification check passed")))
 
 (buttercup-define-matcher :to-be-fontified-as (text faces)
- (to-be-fontified-as (funcall text) (funcall faces)))
+  (to-be-fontified-as (funcall text) (funcall faces)))
 
 ;;; utils.el ends here

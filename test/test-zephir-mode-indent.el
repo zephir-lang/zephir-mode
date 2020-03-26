@@ -1,10 +1,10 @@
 ;;; zephir-mode-indent-test.el --- Zephir Mode: Indentation tests -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.4.0
+;; Version: 0.5.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -45,38 +45,56 @@
 
 
 ;;;; Tests
+(describe "String indentation"
+  (it "un-indents miltiline strings"
+    (zephir-test-indent
+     '("\"" "Hello World" "\""))))
+
+(describe "Array indentation"
+  (it "indents regular arrays"
+    (zephir-test-indent
+     '("let logger = ["
+      "    Logger::ALERT    : LOG_ALERT,"
+      "    Logger::CRITICAL : LOG_CRIT,"
+      "    [ 1 ],"
+      "    ["
+      "        foo,"
+      "        bar"
+      "    ]"
+      "];"))))
 
 (describe "Commentary indentation"
   (it "indents Java-like dockblocks"
-    (zephir-test-indent "
-      /**
-       * This is the summary for a DocBlock.
-       *
-       * This is the description for a DocBlock.
-       * This text may contain multiple lines.
-       */"))
+    (zephir-test-indent
+    '("/**"
+      " * This is the summary for a DocBlock."
+      " *"
+      " * This is the description for a DocBlock."
+      " * This text may contain multiple lines."
+      " */")))
 
   (it "indents C-style comments (1)"
-    (zephir-test-indent "
-      /* C-style comments
-       * can contain
-       * multiple lines.
-       */"))
+    (zephir-test-indent
+    '("/* C-style comments"
+      " * can contain"
+      " * multiple lines."
+      " */")))
 
   (it "indents C-style comments (2)"
-    (zephir-test-indent "
-      /*
-       * C-style comments
-       * can contain
-       * multiple lines. */"))
+    (zephir-test-indent
+    '("/*"
+      " * C-style comments"
+      " * can contain"
+      " * multiple lines. */")))
 
   (it "indents C-style comments (3)"
-    (zephir-test-indent "
-      /*
-        C-style comments
-        can contain
-        multiple lines.
-       */"))
+
+    (zephir-test-indent
+     '("/*"
+      "  C-style comments"
+      "  can contain"
+      "  multiple lines."
+      " */")))
 
   (it "carefully indents offsets"
     (expect (zephir-get-indented-code "/* test */   ")

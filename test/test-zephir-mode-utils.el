@@ -1,4 +1,4 @@
-;;; test-zephir-mode-generic.el --- Zephir Mode: Generic tests -*- lexical-binding: t; -*-
+;;; test-zephir-mode-utils.el --- Zephir Mode: Utils tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
@@ -26,7 +26,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test common stuff of `zephir-mode' using `buttercup'.
+;; Define test-suites to test `zephir-mode' utils using `buttercup'.
 
 (require 'buttercup)
 
@@ -43,10 +43,27 @@
 
 ;;; Code:
 
-(describe "zephir-mode"
-  (it "is derived from prog-mode"
-    (with-zephir-buffer
-     ""
-     (expect (derived-mode-p 'prog-mode)))))
+(describe "Positioning"
+  (describe "zephir-in-array"
+    (it "determines the position of the openning ‘[’"
+      (with-zephir-buffer
+       '("let myArray = [" "<*>" "]")
+       (expect (zephir-in-array) :to-be 15)))
 
-;;; test-zephir-mode-generic.el ends here
+    (it "operates with multi-dimensional arrays"
+      (with-zephir-buffer
+       '("let config = ["
+         "    \"foo\" : bar,"
+         "    \"baz\" : [ 1 ],"
+         "    ["
+         "       1 : 2"
+         "    ]"
+         "<*>];")
+       (expect (zephir-in-array) :to-be 14)))
+
+    (it "returns nil, if point is not in an array"
+      (with-zephir-buffer
+       "public function <*>foo() {}"
+       (expect (zephir-in-array) :to-be nil)))))
+
+;;; test-zephir-mode-utils.el ends here

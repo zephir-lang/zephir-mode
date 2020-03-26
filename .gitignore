@@ -14,5 +14,8 @@
 # Code coverage report.
 coverage-final.json
 
+# Flycheck.
+flycheck_*.el
+
 # Use this as your own wish list or a temporary buffer.
 LATER
