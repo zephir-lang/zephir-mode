@@ -315,7 +315,31 @@ See `rx' documentation for more information about REGEXPS param."
       (rx-to-string (cond ((null sexps) (error "No regexp is provided"))
                           ((cdr sexps)  `(and ,@sexps))
                           (t            (car sexps)))
-                    t))))
+                    t)))
+
+  (defun zephir-create-regexp-for-classlike (&optional type)
+    "Create a regular expression for for a class.
+
+Optional TYPE may be used to specify the type of a object, such
+as “interface” or “namespace”.  Return a regexp as a string."
+    (let ((type (or type "class")))
+      (concat
+       ;; First see if 'abstract' or 'final' appear, although really these
+       ;; are not valid for all values of `type' that the function
+       ;; accepts.
+       (zephir-rx
+        line-start
+        (* (syntax whitespace))
+        (? (? (or "abstract" "final"))
+           (+ (syntax whitespace))))
+
+       ;; Object type.
+       "\\(" type "\\)"
+
+       ;; Its name, which is the second captured group in the regexp.
+       (zephir-rx
+        (+ (syntax whitespace))
+        (group (? "\\") classlike))))))
 
 
 ;;;; Navigation
@@ -547,6 +571,36 @@ This uses CTX as a current parse state."
 
 ;;;; Imenu
 
+(defvar zephir-imenu-generic-expression
+  `(
+    ("Namespaces"
+     ,(zephir-create-regexp-for-classlike "namespace") 2)
+    ("Classes"
+     ,(zephir-create-regexp-for-classlike "class") 2)
+    ("Interfaces"
+     ,(zephir-create-regexp-for-classlike "interface") 2)
+    ("All Methods"
+     ,zephir-beginning-of-defun-regexp 2)
+    ("Properties"
+     ,(zephir-rx line-start
+                 (* (syntax whitespace))
+                 visibility
+                 (+ (syntax whitespace))
+                 (group identifier)
+                 (* (syntax whitespace))
+                 (any "=" ";" "{"))
+     1)
+    ("Constants" ,(zephir-rx line-start
+                             (* (syntax whitespace))
+                             "const"
+                             (+ (syntax whitespace))
+                             (group identifier)
+                             (* (syntax whitespace))
+                             "=")
+     1))
+  "Imenu generic expression for lua-mode.
+For more see `imenu-generic-expression'.")
+
 
 ;;;; Initialization
 
@@ -610,7 +664,9 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
           ))
 
   ;; TODO(serghei): Paragaphs
-  ;; TODO(serghei): IMenu
+
+  ;; IMenu
+  (setq-local imenu-generic-expression zephir-imenu-generic-expression)
 
   ;; Navigation
   (setq-local beginning-of-defun-function #'zephir-beginning-of-defun)
