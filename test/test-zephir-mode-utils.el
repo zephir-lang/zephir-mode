@@ -1,4 +1,4 @@
-;;; zephir-mode-indent-test.el --- Zephir Mode: Indentation tests -*- lexical-binding: t; -*-
+;;; test-zephir-mode-utils.el --- Zephir Mode: Utils tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Serghei Iakovlev
 
@@ -26,9 +26,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test `zephir-mode' indentation using `buttercup'.
-
-;;; Code:
+;; Define test-suites to test `zephir-mode' utils using `buttercup'.
 
 (require 'buttercup)
 
@@ -43,54 +41,12 @@
                                              default-directory))))
   (load (concat current-dir "utils.el") nil 'nomessage 'nosuffix))
 
-
-;;;; Tests
-(describe "String indentation"
-  (it "un-indents miltiline strings"
-    (zephir-test-indent "
-\"
-Hello world
-\"
-")))
+;;; Code:
 
-(describe "Commentary indentation"
-  (it "indents Java-like dockblocks"
-    (zephir-test-indent "
-/**
- * This is the summary for a DocBlock.
- *
- * This is the description for a DocBlock.
- * This text may contain multiple lines.
- */"))
+(describe "Positioning"
+  (it "determines point in array"
+    (with-zephir-buffer
+     '("let levels = [" "<*>" "]")
+     (expect (zephir-in-array) :to-be 14))))
 
-  (it "indents C-style comments (1)"
-    (zephir-test-indent "
-/* C-style comments
- * can contain
- * multiple lines.
- */"))
-
-  (it "indents C-style comments (2)"
-    (zephir-test-indent "
-/*
- * C-style comments
- * can contain
- * multiple lines. */"))
-
-  (it "indents C-style comments (3)"
-    (zephir-test-indent "
-/*
-  C-style comments
-  can contain
-  multiple lines.
- */"))
-
-  (it "carefully indents offsets"
-    (expect (zephir-get-indented-code "/* test */   ")
-            :to-equal "/* test */   "))
-
-  (it "unindents first line"
-    (expect (zephir-get-indented-code "   /* test */")
-            :to-equal "/* test */")))
-
-;;; test-zephir-mode-indent.el ends here
+;;; test-zephir-mode-utils.el ends here

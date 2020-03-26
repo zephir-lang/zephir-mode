@@ -6,6 +6,8 @@ See the end of the file for license conditions.
 This file is about changes in Zephir Mode.
 
 * Zephir Mode 0.5.0
+** Indentation improvements and addiotions.
+- Implemented indentation for arrays
 
 * Zephir Mode 0.4.0
 ** Corrected font locking for built-in keywords.

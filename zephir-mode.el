@@ -4,7 +4,7 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.4.0
+;; Version: 0.5.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
 ;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "24.3"))
@@ -58,13 +58,11 @@
 ;;   Move to the beginning or end of the current block with `beginning-of-defun'
 ;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
 
-;;;; Customization:
+;;;; Indentation:
 
-;;   The variable `zephir-indent-tabs-mode' can be changed to insert tabs for
-;; indentation in Zephir Mode.  To see and customize all Zephir related options,
-;; use command as follows:
-;;
-;;   M-x customize-group RET zephir RET
+;;   `zephir-indent-tabs-mode' can be changed to insert tabs for indentation in
+;; Zephir Mode.  `zephir-indent-level' can be used to contol indentation level
+;; of Zephir statements.
 
 ;;;; Syntax checking:
 
@@ -125,6 +123,12 @@
   :group 'zephir
   :safe 'booleanp)
 
+(defcustom zephir-indent-level 4
+  "Indentation of Zephir statements."
+  :type 'integer
+  :group 'zephir
+  :safe 'integerp)
+
 
 ;;;; Version information
 
@@ -166,24 +170,42 @@ Return nil, if there is no special context at POS, or one of
         (`?\" 'double-quoted)))))
 
 (defun zephir-in-string-or-comment-p (&optional pos)
-  "Determine whether POS is inside a string or comment."
+  "Determine whether POS is inside a string or a comment."
   (not (null (zephir-syntax-context pos))))
 
 (defun zephir-in-string-p (&optional pos)
-  "Determine whether POS is inside either a single-quoted or double-quoted string."
+  "Determine whether POS is inside a string.
+This function determines single-quoted as well as double-quoted strings."
   (let ((ctx (zephir-syntax-context pos)))
     (or (eq ctx 'single-quoted)
         (eq ctx 'double-quoted))))
 
 (defun zephir-in-comment-p (&optional pos)
-  "Determine whether POS is inside comment."
+  "Determine whether POS is inside a comment."
   (and (zephir-in-string-or-comment-p pos)
        (not (zephir-in-string-p pos))))
 
 (defun zephir-comment-start-pos (ctx)
-  "Return position of comment containing current point.
+  "Return the position of comment containing current point.
 If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
+
+(defun zephir-in-array ()
+  "Return the position of the openning ‘[’.
+Return nil, if point is not in an array."
+  (save-match-data
+    (save-excursion
+      (let ((point-init (point))
+            (array-start (search-backward "[" nil t)))
+        (when array-start
+          (let ((close-brackets (count-matches "]" array-start point-init))
+                (open-brackets 0))
+            (while (and array-start (> close-brackets open-brackets))
+              (setq array-start (search-backward "[" nil t))
+              (when array-start
+                (setq close-brackets (count-matches "]" array-start point-init))
+                (setq open-brackets (1+ open-brackets)))))
+          array-start)))))
 
 
 ;;;; Specialized rx
@@ -351,6 +373,9 @@ This uses CTX as a current parse state."
     (back-to-indentation)
 
     (cond
+     ;; Inside multiline string
+     ((zephir-in-string-p) 0)
+
      ;; Multiline commentary
      ((zephir-in-comment-p)
       ;; Make sure comment line is indentet proper way relative to
@@ -378,11 +403,31 @@ This uses CTX as a current parse state."
              (if asteriks-marker-p 0 1)
              1))))
 
+     ;; Inside an innermost parenthetical grouping (IPG).
+     ((let ((ipg-pos (nth 1 ctx)))
+        (when ipg-pos
+          ;; // Arrays
+          ;; let foo = [
+          ;;     "bar": "baz",   // This line is in IPG
+          ;;     "buz": "bar"    // as well as this line
+          ;; ];
+          (let ((in-array (zephir-in-array))
+                (indent 0))
+            (when in-array
+              (back-to-indentation)
+              (setq indent (current-column))
+              (when (looking-at-p "\\]")
+                (setq indent (+ zephir-indent-level indent))
+                (goto-char in-array)
+                   (back-to-indentation)
+                   (+ indent (current-column))))))))
+
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; Otherwise return current indentation
-     ;; TODO(serghei): Take a look at `prog-first-column'
-     (t (current-indentation)))))
+     ;; Otherwise indent to the first column
+     (t (if (version< emacs-version "26.1")
+            0
+          (prog-first-column))))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
@@ -535,8 +580,6 @@ the comment syntax tokens handle both line style \"//\" and block style
   "A major mode for editing Zephir code.
 
 \\{zephir-mode-map}
-The variable `zephir-indent-tabs-mode' can be changed to insert tabs
-for indentation in Zephir Mode.
 
 Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 `zephir-mode-hook', if they are non-nil."

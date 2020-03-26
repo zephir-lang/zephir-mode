@@ -42,19 +42,35 @@
   (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))
 
 (defmacro with-zephir-buffer (content &rest body)
-  "Evaluate BODY in a temporary buffer with CONTENT."
+  "Evaluate BODY in a temporary buffer with CONTENT.
+
+If CONTENT is a list, join list to a single sequence using “\n”
+as a line separator.  If CONTENS contains a point marker “<*>”,
+then put point in its place."
   (declare (debug t)
            (indent 1))
   `(with-temp-buffer
-     (insert ,content)
+     ;; If CONTENT is a list, join list to a single sequence using “\n”
+     (insert (if (listp ,content)
+                 (mapconcat (lambda (x) (concat x "\n")) contents "")
+               ,content))
+
      (zephir-mode)
 
+     ;; Inserted text may contain multiline constructs which
+     ;; will only be recognized after fontification.
      ,(if (fboundp 'font-lock-ensure)
           '(font-lock-ensure)
         '(with-no-warnings (font-lock-fontify-buffer)))
 
      (pop-to-buffer (current-buffer))
-     (goto-char (point-min))
+
+     ;; If content was a list, put point in place of “<>”
+     (cond
+      ((re-search-backward "<*>" nil t 1)
+       (replace-match ""))
+      (t (goto-char (point-min))))
+
      (unwind-protect
          (progn ,@body))))
 
@@ -156,6 +172,6 @@ Fontification check failed on line %d for:
     (cons t "Fontification check passed")))
 
 (buttercup-define-matcher :to-be-fontified-as (text faces)
- (to-be-fontified-as (funcall text) (funcall faces)))
+  (to-be-fontified-as (funcall text) (funcall faces)))
 
 ;;; utils.el ends here
