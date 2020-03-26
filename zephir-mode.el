@@ -94,7 +94,10 @@
 
 ;; Pacify the byte compiler
 (eval-when-compile
-  (require 'rx))    ; `rx'
+  (require 'rx)     ; `rx'
+  ;; 24.x, 25.x compat
+  (unless (fboundp 'prog-first-column)
+    (defun prog-first-column () 0)))
 
 (require 'pkg-info) ; `pkg-info-version-info'
 
@@ -425,9 +428,7 @@ This uses CTX as a current parse state."
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
      ;; Otherwise indent to the first column
-     (t (if (version< emacs-version "26.1")
-            0
-          (prog-first-column))))))
+     (t (prog-first-column)))))
 
 (defun zephir-indent-line ()
   "Indent current line as Zephir code."
