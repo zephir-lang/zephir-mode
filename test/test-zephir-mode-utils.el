@@ -47,7 +47,18 @@
   (describe "zephir-in-array"
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
-       '("let levels = [" "<*>" "]")
+       '("let myArray = [" "<*>" "]")
+       (expect (zephir-in-array) :to-be 15)))
+
+    (it "operates with multi-dimensional arrays"
+      (with-zephir-buffer
+       '("let config = ["
+         "    \"foo\" : bar,"
+         "    \"baz\" : [ 1 ],"
+         "    ["
+         "       1 : 2"
+         "    ]"
+         "<*>];")
        (expect (zephir-in-array) :to-be 14)))
 
     (it "returns nil, if point is not in an array"
