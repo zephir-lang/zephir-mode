@@ -44,9 +44,15 @@
 ;;; Code:
 
 (describe "Positioning"
-  (it "determines point in array"
-    (with-zephir-buffer
-     '("let levels = [" "<*>" "]")
-     (expect (zephir-in-array) :to-be 14))))
+  (describe "zephir-in-array"
+    (it "determines the position of the openning ‘[’"
+      (with-zephir-buffer
+       '("let levels = [" "<*>" "]")
+       (expect (zephir-in-array) :to-be 14)))
+
+    (it "returns nil, if point is not in an array"
+      (with-zephir-buffer
+       "public function <*>foo() {}"
+       (expect (zephir-in-array) :to-be nil)))))
 
 ;;; test-zephir-mode-utils.el ends here
