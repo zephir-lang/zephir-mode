@@ -54,47 +54,47 @@
   (it "indents regular arrays"
     (zephir-test-indent
      '("let logger = ["
-      "    Logger::ALERT    : LOG_ALERT,"
-      "    Logger::CRITICAL : LOG_CRIT,"
-      "    [ 1 ],"
-      "    ["
-      "        foo,"
-      "        bar"
-      "    ]"
-      "];"))))
+       "    Logger::ALERT    : LOG_ALERT,"
+       "    Logger::CRITICAL : LOG_CRIT,"
+       "    [ 1 ],"
+       "    ["
+       "        foo,"
+       "        bar"
+       "    ]"
+       "];"))))
 
 (describe "Commentary indentation"
   (it "indents Java-like dockblocks"
     (zephir-test-indent
-    '("/**"
-      " * This is the summary for a DocBlock."
-      " *"
-      " * This is the description for a DocBlock."
-      " * This text may contain multiple lines."
-      " */")))
+     '("/**"
+       " * This is the summary for a DocBlock."
+       " *"
+       " * This is the description for a DocBlock."
+       " * This text may contain multiple lines."
+       " */")))
 
   (it "indents C-style comments (1)"
     (zephir-test-indent
-    '("/* C-style comments"
-      " * can contain"
-      " * multiple lines."
-      " */")))
+     '("/* C-style comments"
+       " * can contain"
+       " * multiple lines."
+       " */")))
 
   (it "indents C-style comments (2)"
     (zephir-test-indent
-    '("/*"
-      " * C-style comments"
-      " * can contain"
-      " * multiple lines. */")))
+     '("/*"
+       " * C-style comments"
+       " * can contain"
+       " * multiple lines. */")))
 
   (it "indents C-style comments (3)"
 
     (zephir-test-indent
      '("/*"
-      "  C-style comments"
-      "  can contain"
-      "  multiple lines."
-      " */")))
+       "  C-style comments"
+       "  can contain"
+       "  multiple lines."
+       " */")))
 
   (it "carefully indents offsets"
     (expect (zephir-get-indented-code "/* test */   ")
