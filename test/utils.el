@@ -52,7 +52,7 @@ then put point in its place."
   `(with-temp-buffer
      ;; If CONTENT is a list, join list to a single sequence using “\n”
      (insert (if (listp ,content)
-                 (mapconcat (lambda (x) (concat x "\n")) contents "")
+                 (mapconcat (lambda (x) (concat x "\n")) ,content "")
                ,content))
 
      (zephir-mode)
