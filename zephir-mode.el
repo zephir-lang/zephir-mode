@@ -411,7 +411,8 @@ This uses CTX as a current parse state."
      ;; Inside an innermost parenthetical grouping
      ((let ((ipg-pos (nth 1 ctx)))
         (when ipg-pos
-          (let ((array-start (zephir-in-array)))
+          (let ((array-start (zephir-in-array))
+                (indent 0))
             (when array-start
               ;; Regular arrays
               ;;
@@ -424,16 +425,14 @@ This uses CTX as a current parse state."
               ;;         bar
               ;;     ]
               ;; ];
+              (unless (looking-at-p "]")
+                ;; Use normal indentation unless current symbol a closing
+                ;; bracket on a line by itself.  Otherwise align it with opening
+                ;; bracket.
+                (setq indent (+ indent zephir-indent-level)))
               (save-excursion
-                (if (looking-at-p "]")
-                    ;; Closing bracket on a line by itself.
-                    ;; Align with opening bracket.
-                    (progn
-                      (goto-char array-start)
-                      (current-indentation))
-                  ;; Otherwise, using normal indentation
-                  (goto-char array-start)
-                  (+ (current-indentation) zephir-indent-level))))))))
+                (goto-char array-start)
+                (+ (current-indentation) indent)))))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
