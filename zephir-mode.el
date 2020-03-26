@@ -317,14 +317,14 @@ See `rx' documentation for more information about REGEXPS param."
                           (t            (car sexps)))
                     t)))
 
-  (defun zephir-create-regexp-for-classlike (&optional type)
+  (defun zephir-create-regexp-for-classlike (type)
     "Create a regular expression for for a class.
 
-Optional TYPE may be used to specify the type of a object, such
-as “interface” or “namespace”.  Return a regexp as a string."
+TYPE should be used to specify the type of a object, such as
+“interface” or “namespace”.  Return a regexp as a string."
     (let ((type (or type "class")))
       (concat
-       ;; First see if 'abstract' or 'final' appear, although really these
+       ;; First see if “abstract” or “final” appear, although really these
        ;; are not valid for all values of `type' that the function
        ;; accepts.
        (zephir-rx
