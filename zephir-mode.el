@@ -406,26 +406,34 @@ This uses CTX as a current parse state."
              (if asteriks-marker-p 0 1)
              1))))
 
-     ;; Inside an innermost parenthetical grouping (IPG).
+     ;; TODO(serghei): Cover use-case for single-line comments (“//”)
+
+     ;; Inside an innermost parenthetical grouping
      ((let ((ipg-pos (nth 1 ctx)))
         (when ipg-pos
-          ;; // Arrays
-          ;; let foo = [
-          ;;     "bar": "baz",   // This line is in IPG
-          ;;     "buz": "bar"    // as well as this line
-          ;; ];
-          (let ((in-array (zephir-in-array))
-                (indent 0))
-            (when in-array
-              (back-to-indentation)
-              (setq indent (current-column))
-              (when (looking-at-p "\\]")
-                (setq indent (+ zephir-indent-level indent))
-                (goto-char in-array)
-                   (back-to-indentation)
-                   (+ indent (current-column))))))))
-
-     ;; TODO(serghei): Cover use-case for single-line comments (“//”)
+          (let ((array-start (zephir-in-array)))
+            (when array-start
+              ;; Regular arrays
+              ;;
+              ;; let logger = [
+              ;;     Logger::ALERT    : LOG_ALERT,
+              ;;     Logger::CRITICAL : LOG_CRIT,
+              ;;     [ 1 ],
+              ;;     [
+              ;;         foo,
+              ;;         bar
+              ;;     ]
+              ;; ];
+              (save-excursion
+                (if (looking-at-p "]")
+                    ;; Closing bracket on a line by itself.
+                    ;; Align with opening bracket.
+                    (progn
+                      (goto-char array-start)
+                      (current-indentation))
+                  ;; Otherwise, using normal indentation
+                  (goto-char array-start)
+                  (+ (current-indentation) zephir-indent-level))))))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
@@ -434,7 +442,8 @@ This uses CTX as a current parse state."
   "Indent current line as Zephir code."
   (interactive)
   (if (bobp)
-      (indent-line-to 0) ; First line is always non-indented
+      ;; First line is always non-indented
+      (indent-line-to 0)
     (let* (
            ;; Save the current parse state.
            ;; We will need it in `zephir--proper-indentation'.

@@ -53,6 +53,20 @@ Hello world
 \"
 ")))
 
+(describe "Array indentation"
+  (it "indents regular arrays"
+    (zephir-test-indent "
+let logger = [
+    Logger::ALERT     : LOG_ALERT,
+    Logger::CRITICAL  : LOG_CRIT,
+    [ 1 ],
+    [
+        foo,
+        bar
+    ]
+];
+")))
+
 (describe "Commentary indentation"
   (it "indents Java-like dockblocks"
     (zephir-test-indent "
