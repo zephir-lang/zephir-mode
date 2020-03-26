@@ -1,6 +1,6 @@
 ;;; utils.el --- Zephir Mode: Non-interactive unit-test setup -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;;         immerrr <immerrr+lua@gmail.com>

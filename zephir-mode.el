@@ -1,6 +1,6 @@
 ;;; zephir-mode.el --- Major mode for editing Zephir code -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2020 Serghei Iakovlev
+;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
