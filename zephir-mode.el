@@ -215,6 +215,10 @@ Return nil, if point is not in an array."
 ;;;; Specialized rx
 
 (eval-when-compile
+  (defconst zephir-possible-visiblities
+    '("public" "protected" "private" "internal" "inline" "scoped")
+    "Possible values for visibility declaration in Zephir code.")
+
   (defconst zephir-rx-constituents
     `(
       ;; Identifier
@@ -261,15 +265,10 @@ Return nil, if point is not in an array."
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
       ;; Visibility modifier
-      (visibility . ,(rx symbol-start
-                         (or "public"
-                             "protected"
-                             "private"
-                             "internal"
-                             "scoped"
-                             "inline")
-                         symbol-end))
-      ;; data-type
+      (visibility . ,(rx-to-string `(: symbol-start
+                                       (or ,@zephir-possible-visiblities)
+                                       symbol-end)))
+      ;; Data types
       (data-type . ,(rx symbol-start
                         (or (and (? "u") "int")
                             (and "bool" (? "ean"))
@@ -382,28 +381,23 @@ keywords that can appear in method signatures, e.g. ‘final’ or
 ‘deprecated’.  The regular expression will have two capture
 groups which will be the word ‘function’ (or ‘fn’) and the name
 of a function respectively."
-  (when (stringp visibility)
-    (setq visibility (list visibility)))
-  (rx-to-string `(: line-start
-                    (* (syntax whitespace))
-                    ,@(if visibility
-                          `((* (or "abstract" "final" "static")
-                               (+ (syntax whitespace)))
-                            (? "deprecated" (+ (syntax whitespace)))
-                            (or,@visibility)
-                            (+ (syntax whitespace))
-                            (* (or "abstract" "final" "static")
-                               (+ (syntax whitespace))))
-                        '((* (* (? "deprecated" (+ (syntax whitespace)))
-                                (or "abstract" "final" "static"
-                                    "private" "protected" "public"
-                                    "internal" "inline" "scoped")
-                                (+ (syntax whitespace))))))
-                    (group (or "fn" "function"))
-                    (+ (syntax whitespace))
-                    (group (+ (or (syntax word) (syntax symbol))))
-                    (* (syntax whitespace))
-		    "(")))
+  (let ((visibility (or visibility zephir-possible-visiblities)))
+    (when (stringp visibility)
+      (setq visibility (list visibility)))
+    (rx-to-string `(: line-start
+                      (* (syntax whitespace))
+                      (? "deprecated" (+ (syntax whitespace)))
+                      (* (or "abstract" "final")
+                         (+ (syntax whitespace)))
+                      (or ,@visibility)
+                      (+ (syntax whitespace))
+                      (? "static" (+ (syntax whitespace)))
+                      (group (or "fn" "function"))
+                      (+ (syntax whitespace))
+                      (group (+ (or (syntax word) (syntax symbol))))
+                      (* (syntax whitespace))
+		      "("))))
+
 
 
 ;;;; Navigation
