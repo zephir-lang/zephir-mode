@@ -44,6 +44,39 @@
 ;;; Code:
 
 (describe "Positioning"
+  (describe "create regexp for function"
+    (it "finds functions w/o ‘visibility’"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public function __construct(string! name, array! definition)"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘public’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public function $fetch()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "public"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘protected’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "protected fn test()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "protected"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘private’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "private function __toString()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "private"))
+       (expect (point) :to-be 20))))
+
   (describe "create regexp for classlike"
     (it "finds ‘namespace’"
       (with-zephir-buffer
