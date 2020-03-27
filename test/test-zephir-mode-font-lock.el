@@ -86,13 +86,11 @@
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
-            '(("__LINE__" constant "__FILE__" constant
-               "__FUNCTION__" constant)))
+            '(("__LINE__" builtin "__FILE__" builtin "__FUNCTION__" builtin)))
 
     (expect "__CLASS__ __METHOD__ __NAMESPACE__"
             :to-be-fontified-as
-            '(("__CLASS__" constant "__METHOD__" constant
-               "__NAMESPACE__" constant))))
+            '(("__CLASS__" builtin "__METHOD__" builtin "__NAMESPACE__" builtin))))
 
   (it "fontifies regular form of constants"
     (expect "self::HTML5; Logger::ALERT; const FOO = 5;"

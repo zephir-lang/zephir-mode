@@ -233,9 +233,16 @@ Return nil, if point is not in an array."
                                "extends"
                                "implements")
                            symbol-end))
-      ;; Predefined boolean constants and “null”
-      (builtin-const . ,(rx symbol-start (or "null" "true" "false") symbol-end))
-      ;; Constants
+      ;; Magic constants
+      (magic-const . ,(rx symbol-start
+                          (or "__LINE__" "__FILE__" "__FUNCTION__"
+                              "__CLASS__" "__METHOD__" "__NAMESPACE__")
+                          symbol-end))
+      ;; Predefined language constants
+      (builtin-const . ,(rx symbol-start
+                            (or "null" "true" "false")
+                            symbol-end))
+      ;; User-defined constants
       (constant . ,(rx symbol-start
                        (any "A-Z" ?_)
                        (+ (any "A-Z" "0-9" ?_))
@@ -291,11 +298,14 @@ are available:
 `builtin-dcl'
      Any valid builtin declaraion.
 
+`magic-const'
+     Magical keyword that is expanded at compile time.
+
 `builtin-const'
-     Predefined boolean constants and “null”.
+     Predefined language constants.
 
 `constant'
-     A regular constant form.
+     User-defined constants.
      By convention, constant identifiers are always uppercase.
 
 `fn-decl'
@@ -547,8 +557,11 @@ This uses CTX as a current parse state."
                  (or ?{ "implements"))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Booleans and ‘null’
-    (,(zephir-rx (group builtin-const))
+    ;; Magic constants
+    (,(zephir-rx (group magic-const))
+     1 font-lock-builtin-face)
+    ;; User-defined constants
+    (,(zephir-rx (group (or constant builtin-const)))
      1 font-lock-constant-face)
     ;; Highlight special variables
     (,(zephir-rx (group symbol-start "this" word-end)
@@ -568,14 +581,7 @@ This uses CTX as a current parse state."
      (2 font-lock-function-name-face))
     ;; Data types
     (,(zephir-rx (group data-type))
-     1 font-lock-type-face)
-    ;; Constants
-    (,(zephir-rx (or (group constant)
-                     (group symbol-start
-                            (or "__LINE__" "__FILE__" "__FUNCTION__" "__CLASS__"
-                                "__METHOD__" "__NAMESPACE__")
-                            symbol-end)))
-     1 font-lock-constant-face))
+     1 font-lock-type-face))
   "Font lock keywords for Zephir Mode.")
 
 
