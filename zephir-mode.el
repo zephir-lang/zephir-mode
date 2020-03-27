@@ -223,7 +223,7 @@ Return nil, if point is not in an array."
     `(
       ;; Identifier
       (identifier . ,(rx symbol-start
-                         (optional ?$)
+                         (? ?$)
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
                          symbol-end))
@@ -560,7 +560,7 @@ This uses CTX as a current parse state."
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
     ;; Highlight class name after ‘use ... as’
-    (,(zephir-rx (optional "\\")
+    (,(zephir-rx (? "\\")
                  classlike
                  (+ (syntax whitespace))
                  (group symbol-start "as" symbol-end)
@@ -574,7 +574,7 @@ This uses CTX as a current parse state."
                  (group symbol-start "extends" symbol-end)
                  (+ (syntax whitespace))
                  (group classlike)
-                 (optional (+ (syntax whitespace)))
+                 (? (+ (syntax whitespace)))
                  (or ?{ "implements"))
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
@@ -621,6 +621,12 @@ This uses CTX as a current parse state."
      ,(zephir-create-regexp-for-classlike "interface") 2)
     ("All Methods"
      ,(zephir-create-regexp-for-function) 2)
+    ("Public Methods"
+     ,(zephir-create-regexp-for-function '("public")) 2)
+    ("Protected Methods"
+     ,(zephir-create-regexp-for-function '("protected")) 2)
+    ("Private Methods"
+     ,(zephir-create-regexp-for-function '("private")) 2)
     ("Properties"
      ,(zephir-rx line-start
                  (* (syntax whitespace))
