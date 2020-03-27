@@ -99,6 +99,7 @@
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
 
+(require 'imenu)    ; `imenu-generic-expression'
 (require 'pkg-info) ; `pkg-info-version-info'
 
 
@@ -328,10 +329,15 @@ See `rx' documentation for more information about REGEXPS param."
                     t))))
 
 (defun zephir-create-regexp-for-classlike (&optional type)
-  "Create a regular expression for for a class.
+  "Make a regular expression for a classlike with the given TYPE.
 
-Optional TYPE may be used to specify the type of a object, such
-as “interface” or “namespace”.  Return a regexp as a string."
+Optional TYPE must be a string that specifies the type of a
+object, such as ‘interface’ or ‘namespace’.
+
+The regular expression this function returns will check for other
+keywords that can appear in classlike signatures, e.g. ‘abstract’
+or ‘final’.  The regular expression will have two capture groups
+which will be TYPE and the name of an object respectively."
   (let ((type (or type "class"))
         (line-start "")
         (modifier "")
@@ -363,6 +369,41 @@ as “interface” or “namespace”.  Return a regexp as a string."
 
      ;; Object name, group #2.
      "\\(" root-ns (zephir-rx classlike) "\\)")))
+
+(defun zephir-create-regexp-for-function (&optional visibility)
+  "Make a regular expression for a function with the given VISIBILITY.
+
+Optional VISIBILITY, when passed, must be a string that specifies
+the visibility for a Zephir function, e.g. ‘scoped’ or ‘public’.
+The parameter VISIBILITY can itself also be a regular expression.
+
+The regular expression this function returns will check for other
+keywords that can appear in method signatures, e.g. ‘final’ or
+‘deprecated’.  The regular expression will have two capture
+groups which will be the word ‘function’ (or ‘fn’) and the name
+of a function respectively."
+  (when (stringp visibility)
+    (setq visibility (list visibility)))
+  (rx-to-string `(: line-start
+                    (* (syntax whitespace))
+                    ,@(if visibility
+                          `((* (or "abstract" "final" "static")
+                               (+ (syntax whitespace)))
+                            (? "deprecated" (+ (syntax whitespace)))
+                            (or,@visibility)
+                            (+ (syntax whitespace))
+                            (* (or "abstract" "final" "static")
+                               (+ (syntax whitespace))))
+                        '((* (* (? "deprecated" (+ (syntax whitespace)))
+                                (or "abstract" "final" "static"
+                                    "private" "protected" "public"
+                                    "internal" "inline" "scoped")
+                                (+ (syntax whitespace))))))
+                    (group (or "fn" "function"))
+                    (+ (syntax whitespace))
+                    (group (+ (or (syntax word) (syntax symbol))))
+                    (* (syntax whitespace))
+		    "(")))
 
 
 ;;;; Navigation
