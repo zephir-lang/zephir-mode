@@ -74,10 +74,13 @@
             '(("interface" keyword "UrlInterface" type))))
 
   (it "fontifies class modifiers"
-    (expect "abstract final class Kernel {}"
+    (expect "final class Kernel {}"
             :to-be-fontified-as
-            '(("abstract" keyword "final" keyword "class" keyword
-               "Kernel" type)))))
+            '(("final" keyword "class" keyword "Kernel" type)))
+
+    (expect "abstract class Kernel {}"
+            :to-be-fontified-as
+            '(("abstract" keyword "class" keyword "Kernel" type)))))
 
 (describe "Fontification constants"
   (it "fontifies built-in constants"

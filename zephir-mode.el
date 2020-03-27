@@ -315,33 +315,44 @@ See `rx' documentation for more information about REGEXPS param."
       (rx-to-string (cond ((null sexps) (error "No regexp is provided"))
                           ((cdr sexps)  `(and ,@sexps))
                           (t            (car sexps)))
-                    t)))
+                    t))))
 
-  )
-
-(defun zephir-create-regexp-for-classlike (type)
+(defun zephir-create-regexp-for-classlike (&optional type)
   "Create a regular expression for for a class.
 
-TYPE should be used to specify the type of a object, such as
-“interface” or “namespace”.  Return a regexp as a string."
-  (let ((type (or type "class")))
-    (concat
-     ;; First see if “abstract” or “final” appear, although really these
-     ;; are not valid for all values of `type' that the function
-     ;; accepts.
-     (zephir-rx
-      line-start
-      (* (syntax whitespace))
-      (? (? (or "abstract" "final"))
-         (+ (syntax whitespace))))
+Optional TYPE may be used to specify the type of a object, such
+as “interface” or “namespace”.  Return a regexp as a string."
+  (let ((type (or type "class"))
+        (line-start "")
+        (modifier "")
+        (root-ns ""))
+    (cond
+     ((string= type "class")
+      (setq line-start "^"
+            ;; Class modifier, e.g. if “abstract” or “final”
+            modifier "\\(?:\\(?:abstract\\|final\\)?\\s-+\\)?"))
+     ((string= type "interface")
+      (setq line-start "^"))
+     ((string= type "namespace")
+      (setq line-start "^"))
+     ((or (string= type "extends")
+          (string= type "implements")
+          (string= type "use"))
+      (setq root-ns "\\\\?")))
 
-     ;; Object type.
+    ;; Concatenate regexp parts
+    (concat
+     line-start
+     "\\s-*"
+     modifier
+
+     ;; Object type, group #1
      "\\(" type "\\)"
 
-     ;; Its name, which is the second captured group in the regexp.
-     (zephir-rx
-      (+ (syntax whitespace))
-      (group (? "\\") classlike)))))
+     "\\s-+"
+
+     ;; Object name, group #2.
+     "\\(" root-ns (zephir-rx classlike) "\\)")))
 
 
 ;;;; Navigation
@@ -497,24 +508,24 @@ This uses CTX as a current parse state."
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
-    ;; Class decclaration.
-    ;; Class decclaration has its own rule because it may be
-    ;; ‘abstract’ or ‘final’.
-    (,(zephir-rx (optional symbol-start
-                           (or "abstract" "final")
-                           symbol-end
-                           (+ (syntax whitespace)))
-                 (group symbol-start "class" symbol-end)
-                 (+ (syntax whitespace))
-                 (group identifier))
+    ;; ‘class Foo’
+    (,(zephir-create-regexp-for-classlike)
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; ‘namespace Foo’, ‘interface Foo’, ‘use Foo’, ‘implements Foo’
-    (,(zephir-rx (group symbol-start
-                        (or "namespace" "interface" "use" "implements")
-                        symbol-end)
-                 (+ (syntax whitespace))
-                 (group (optional "\\") classlike))
+    ;; ‘namespace Foo’
+    (,(zephir-create-regexp-for-classlike "namespace")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; ‘interface Foo’
+    (,(zephir-create-regexp-for-classlike "interface")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; ‘use Foo’
+    (,(zephir-create-regexp-for-classlike "use")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; ‘implements Foo’
+    (,(zephir-create-regexp-for-classlike "implements")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
     ;; Highlight class name after ‘use ... as’
