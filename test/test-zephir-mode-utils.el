@@ -53,6 +53,14 @@
        (re-search-backward (zephir-create-regexp-for-function))
        (expect (point) :to-be 20)))
 
+    (it "finds functions ‘public static’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public static fn $fetch()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "public"))
+       (expect (point) :to-be 20)))
+
     (it "finds functions ‘public’ methods"
       (with-zephir-buffer
        '("/** Doc comment */"
@@ -75,7 +83,23 @@
          "private function __toString()"
          "{<*>}")
        (re-search-backward (zephir-create-regexp-for-function "private"))
-       (expect (point) :to-be 20))))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘deprecated private’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "deprecated private function __toString()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "private"))
+       (expect (point) :to-be 20)))
+
+    (it "does not find abnormally formed functions"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "private function toString"
+         "{}")
+       (re-search-forward (zephir-create-regexp-for-function) nil t)
+       (expect (point) :to-be 1))))
 
   (describe "create regexp for classlike"
     (it "finds ‘namespace’"
