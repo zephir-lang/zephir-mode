@@ -9,7 +9,7 @@ This file is about changes in Zephir Mode.
 ** Indentation improvements and additions.
 - Implemented indentation for arrays
 
-** Added IMenu support.
+** Added Imenu support.
 The following sections were added:
 - “Namespaces”
 - “Classes”

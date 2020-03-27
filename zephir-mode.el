@@ -627,7 +627,7 @@ This uses CTX as a current parse state."
                  (* (syntax whitespace))
                  "=")
      1))
-  "Imenu generic expression for lua-mode.
+  "Imenu generic expression for `zephir-mode'.
 For more see `imenu-generic-expression'.")
 
 
@@ -694,7 +694,7 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 
   ;; TODO(serghei): Paragaphs
 
-  ;; IMenu
+  ;; Imenu
   (setq-local imenu-generic-expression zephir-imenu-generic-expression)
 
   ;; Navigation
