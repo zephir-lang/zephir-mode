@@ -405,23 +405,6 @@ of a function respectively."
 
 ;;;; Navigation
 
-(defconst zephir-beginning-of-defun-regexp
-  (zephir-rx line-start
-             (0+ (syntax whitespace))
-             (optional "deprecated" (+ (syntax whitespace)))
-             (optional symbol-start
-                       (or "abstract" "final")
-                       symbol-end
-                       (+ (syntax whitespace)))
-             (optional visibility (+ (syntax whitespace))
-                       (optional "static" (+ (syntax whitespace))))
-             (group fn-decl)
-             (+ (syntax whitespace))
-             (group identifier)
-             (0+ (syntax whitespace))
-             "(")
-  "Regular expression for a Zephir function.")
-
 (defun zephir-beginning-of-defun (&optional arg)
   "Move the beginning of the ARGth Zephir function from point.
 Implements Zephir version of `beginning-of-defun-function'."
@@ -429,7 +412,7 @@ Implements Zephir version of `beginning-of-defun-function'."
   (let ((arg (or arg 1))
         (case-fold-search t))
     (while (> arg 0)
-      (re-search-backward zephir-beginning-of-defun-regexp nil 'noerror)
+      (re-search-backward (zephir-create-regexp-for-function) nil 'noerror)
       (back-to-indentation)
       (setq arg (1- arg)))
     (while (< arg 0)
@@ -439,7 +422,7 @@ Implements Zephir version of `beginning-of-defun-function'."
         (forward-list 2)
         (forward-line 1)
         (when (eq opoint (point))
-          (re-search-forward zephir-beginning-of-defun-regexp nil 'noerror)
+          (re-search-forward (zephir-create-regexp-for-function) nil 'noerror)
           (back-to-indentation))
         (setq arg (1+ arg))))))
 
@@ -614,7 +597,7 @@ This uses CTX as a current parse state."
     ;; TODO(serghei): deprecated function <name>
     ;; TODO(serghei): function <name>
     ;; TODO(serghei): let foo = function () {}
-    (,zephir-beginning-of-defun-regexp
+    (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face))
     ;; Data types
@@ -633,11 +616,11 @@ This uses CTX as a current parse state."
     ("Namespaces"
      ,(zephir-create-regexp-for-classlike "namespace") 2)
     ("Classes"
-     ,(zephir-create-regexp-for-classlike "class") 2)
+     ,(zephir-create-regexp-for-classlike) 2)
     ("Interfaces"
      ,(zephir-create-regexp-for-classlike "interface") 2)
     ("All Methods"
-     ,zephir-beginning-of-defun-regexp 2)
+     ,(zephir-create-regexp-for-function) 2)
     ("Properties"
      ,(zephir-rx line-start
                  (* (syntax whitespace))
