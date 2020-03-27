@@ -18,6 +18,7 @@ gcc/clang/vc++. Functionality is exposed to the PHP language.
 - Indentation of expressions and statements
 - Syntax highlighting
 - Movement
+- Imenu
 
 ** Installation
 

@@ -6,8 +6,26 @@ See the end of the file for license conditions.
 This file is about changes in Zephir Mode.
 
 * Zephir Mode 0.5.0
-** Indentation improvements and addiotions.
+** Indentation improvements and additions.
 - Implemented indentation for arrays
+
+** Added Imenu support.
+The following sections were added:
+- “Namespaces”
+- “Classes”
+- “Interfaces”
+- “All Methods”
+- “Public Methods”
+- “Protected Methods”
+- “Private Methods”
+- “Properties”
+- “Constants”
+
+** Updated Zephir-specific forms for rx.
+- ‘visibility’ has been removed
+- ‘magic-const’ was added
+
+** Many additions and improvements font locking.
 
 * Zephir Mode 0.4.0
 ** Corrected font locking for built-in keywords.

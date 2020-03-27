@@ -44,6 +44,109 @@
 ;;; Code:
 
 (describe "Positioning"
+  (describe "create regexp for function"
+    (it "finds functions w/o ‘visibility’"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public function __construct(string! name, array! definition)"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘public static’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public static fn $fetch()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "public"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘public’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "public function $fetch()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "public"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘protected’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "protected fn test()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "protected"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘private’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "private function __toString()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "private"))
+       (expect (point) :to-be 20)))
+
+    (it "finds functions ‘deprecated private’ methods"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "deprecated private function __toString()"
+         "{<*>}")
+       (re-search-backward (zephir-create-regexp-for-function "private"))
+       (expect (point) :to-be 20)))
+
+    (it "does not find abnormally formed functions"
+      (with-zephir-buffer
+       '("/** Doc comment */"
+         "private function toString"
+         "{}")
+       (re-search-forward (zephir-create-regexp-for-function) nil t)
+       (expect (point) :to-be 1))))
+
+  (describe "create regexp for classlike"
+    (it "finds ‘namespace’"
+      (with-zephir-buffer
+       '("// some comment here"
+         "namespace Acme;"
+         "class DI {}<*>")
+       (re-search-backward (zephir-create-regexp-for-classlike "namespace"))
+       (expect (point) :to-be 22)))
+
+    (it "finds ‘class’ usind regexp w/o type"
+      (with-zephir-buffer
+       '("// some comment here"
+         "class Service {<*>}")
+       (re-search-backward (zephir-create-regexp-for-classlike))
+       (expect (point) :to-be 22)))
+
+    (it "finds ‘interface’"
+      (with-zephir-buffer
+       '("interface CommonInterface extends BaseInterface"
+         "{"
+         "}")
+       (re-search-forward (zephir-create-regexp-for-classlike "interface"))
+       (expect (point) :to-be 26)))
+
+    (it "finds import aliases"
+      (with-zephir-buffer
+       "use Foo as Bar;"
+       (re-search-forward (zephir-create-regexp-for-classlike "as"))
+       (expect (point) :to-be 15)))
+
+    (it "finds ‘implements’"
+      (with-zephir-buffer
+       "class A implements B {}"
+       (re-search-forward (zephir-create-regexp-for-classlike "implements"))
+       (expect (point) :to-be 21)))
+
+    (it "finds ‘extends’"
+      (with-zephir-buffer
+       '("namespace Acme;"
+         "class Service extends \\Acme\\Services\\Base"
+         "{"
+         "    public function __construct() {}"
+         "}")
+       (re-search-forward (zephir-create-regexp-for-classlike "extends"))
+       (expect (point) :to-be 58))))
+
   (describe "zephir-in-array"
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
