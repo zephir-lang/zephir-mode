@@ -317,29 +317,31 @@ See `rx' documentation for more information about REGEXPS param."
                           (t            (car sexps)))
                     t)))
 
-  (defun zephir-create-regexp-for-classlike (type)
-    "Create a regular expression for for a class.
+  )
+
+(defun zephir-create-regexp-for-classlike (type)
+  "Create a regular expression for for a class.
 
 TYPE should be used to specify the type of a object, such as
 “interface” or “namespace”.  Return a regexp as a string."
-    (let ((type (or type "class")))
-      (concat
-       ;; First see if “abstract” or “final” appear, although really these
-       ;; are not valid for all values of `type' that the function
-       ;; accepts.
-       (zephir-rx
-        line-start
-        (* (syntax whitespace))
-        (? (? (or "abstract" "final"))
-           (+ (syntax whitespace))))
+  (let ((type (or type "class")))
+    (concat
+     ;; First see if “abstract” or “final” appear, although really these
+     ;; are not valid for all values of `type' that the function
+     ;; accepts.
+     (zephir-rx
+      line-start
+      (* (syntax whitespace))
+      (? (? (or "abstract" "final"))
+         (+ (syntax whitespace))))
 
-       ;; Object type.
-       "\\(" type "\\)"
+     ;; Object type.
+     "\\(" type "\\)"
 
-       ;; Its name, which is the second captured group in the regexp.
-       (zephir-rx
-        (+ (syntax whitespace))
-        (group (? "\\") classlike))))))
+     ;; Its name, which is the second captured group in the regexp.
+     (zephir-rx
+      (+ (syntax whitespace))
+      (group (? "\\") classlike)))))
 
 
 ;;;; Navigation
