@@ -555,27 +555,16 @@ This uses CTX as a current parse state."
     (,(zephir-create-regexp-for-classlike "use")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; ‘implements Foo’
+    ;; ‘... as Foo’
+    (,(zephir-create-regexp-for-classlike "as")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; ‘... implements Foo’
     (,(zephir-create-regexp-for-classlike "implements")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-    ;; Highlight class name after ‘use ... as’
-    (,(zephir-rx (? "\\")
-                 classlike
-                 (+ (syntax whitespace))
-                 (group symbol-start "as" symbol-end)
-                 (+ (syntax whitespace))
-                 (group identifier))
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; Highlight ‘extends’
-    (,(zephir-rx classlike
-                 (+ (syntax whitespace))
-                 (group symbol-start "extends" symbol-end)
-                 (+ (syntax whitespace))
-                 (group classlike)
-                 (? (+ (syntax whitespace)))
-                 (or ?{ "implements"))
+    ;; ‘... extends Foo’
+    (,(zephir-create-regexp-for-classlike "extends")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
     ;; Magic constants
