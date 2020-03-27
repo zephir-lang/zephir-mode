@@ -214,11 +214,11 @@ Return nil, if point is not in an array."
 
 ;;;; Specialized rx
 
-(eval-when-compile
-  (defconst zephir-possible-visiblities
-    '("public" "protected" "private" "internal" "inline" "scoped")
-    "Possible values for visibility declaration in Zephir code.")
+(defconst zephir-possible-visiblities
+  '("public" "protected" "private" "internal" "inline" "scoped")
+  "Possible values for visibility declaration in Zephir code.")
 
+(eval-when-compile
   (defconst zephir-rx-constituents
     `(
       ;; Identifier
@@ -264,10 +264,6 @@ Return nil, if point is not in an array."
                               (any "A-Z" "a-z" ?_)
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
-      ;; Visibility modifier
-      (visibility . ,(rx-to-string `(: symbol-start
-                                       (or ,@zephir-possible-visiblities)
-                                       symbol-end)))
       ;; Data types
       (data-type . ,(rx symbol-start
                         (or (and (? "u") "int")
@@ -313,9 +309,6 @@ are available:
 
 `classlike'
      A valid namespace, class or interface name without leading ‘\\’.
-
-`visibility'
-     Any valid visibility modifier.
 
 `data-type'
      Any valid data type.
@@ -578,7 +571,7 @@ This uses CTX as a current parse state."
                  (0+ "->" identifier))
      1 font-lock-constant-face)
     ;; Visibility
-    (,(zephir-rx (group visibility))
+    (,(rx-to-string `(group (or ,@zephir-possible-visiblities)))
      (1 font-lock-keyword-face))
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
@@ -619,19 +612,20 @@ This uses CTX as a current parse state."
     ("Properties"
      ,(zephir-rx line-start
                  (* (syntax whitespace))
-                 visibility
+                 (or "public" "protected" "private")
                  (+ (syntax whitespace))
                  (group identifier)
                  (* (syntax whitespace))
                  (any "=" ";" "{"))
      1)
-    ("Constants" ,(zephir-rx line-start
-                             (* (syntax whitespace))
-                             "const"
-                             (+ (syntax whitespace))
-                             (group identifier)
-                             (* (syntax whitespace))
-                             "=")
+    ("Constants"
+     ,(zephir-rx line-start
+                 (* (syntax whitespace))
+                 "const"
+                 (+ (syntax whitespace))
+                 (group identifier)
+                 (* (syntax whitespace))
+                 "=")
      1))
   "Imenu generic expression for lua-mode.
 For more see `imenu-generic-expression'.")
