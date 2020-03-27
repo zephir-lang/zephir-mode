@@ -394,10 +394,13 @@ of a function respectively."
                       (? "static" (+ (syntax whitespace)))
                       (group (or "fn" "function"))
                       (+ (syntax whitespace))
-                      (group (+ (or (syntax word) (syntax symbol))))
+                      (group symbol-start
+                             (? ?$)
+                             (any "A-Z" "a-z" ?_)
+                             (0+ (any "A-Z" "a-z" "0-9" ?_))
+                             symbol-end)
                       (* (syntax whitespace))
 		      "("))))
-
 
 
 ;;;; Navigation
