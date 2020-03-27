@@ -44,6 +44,33 @@
 ;;; Code:
 
 (describe "Positioning"
+  (describe "create regexp for classlike"
+    (it "finds ‘class’ usind regexp w/o type"
+      (with-zephir-buffer
+       '("// some comment here"
+         "class Service {<*>}")
+       (re-search-backward (zephir-create-regexp-for-classlike))
+       (expect (point) :to-be 22)))
+
+    (it "finds ‘namespace’"
+      (with-zephir-buffer
+       '("// some comment here"
+         "namespace Acme;"
+         "class DI {}<*>")
+       (re-search-backward (zephir-create-regexp-for-classlike "namespace"))
+       (expect (point) :to-be 22)))
+
+    (it "finds ‘extends’"
+      (with-zephir-buffer
+       '("<*>"
+         "namespace Acme;"
+         "class Service extends \\Acme\\Services\\Base"
+         "{"
+         "    public function __construct() {}"
+         "}")
+       (re-search-forward (zephir-create-regexp-for-classlike "extends"))
+       (expect (point) :to-be 61))))
+
   (describe "zephir-in-array"
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
