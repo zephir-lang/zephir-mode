@@ -61,7 +61,13 @@
        "        foo,"
        "        bar"
        "    ]"
-       "];"))))
+       "];")))
+
+  (it "indents column like arrays"
+    (zephir-test-indent
+     '("let attributes = [ type : text,"
+       "                   href : url,"
+       "                   rel  : stylesheet ];"))))
 
 (describe "Commentary indentation"
   (it "indents Java-like dockblocks"

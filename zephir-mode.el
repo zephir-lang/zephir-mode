@@ -492,31 +492,68 @@ This uses CTX as a current parse state."
 
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; Inside an innermost parenthetical grouping
+     ;; The `point' is inside an innermost parenthetical grouping
      ((let ((ipg-pos (nth 1 ctx)))
         (when ipg-pos
-          (let ((array-start (zephir-in-array))
-                (indent 0))
+          (let ((array-start (zephir-in-array)))
             (when array-start
-              ;; Regular arrays
-              ;;
-              ;; let logger = [
-              ;;     Logger::ALERT    : LOG_ALERT,
-              ;;     Logger::CRITICAL : LOG_CRIT,
-              ;;     [ 1 ],
-              ;;     [
-              ;;         foo,
-              ;;         bar
-              ;;     ]
-              ;; ];
-              (unless (looking-at-p "]")
-                ;; Use normal indentation unless current symbol a closing
-                ;; bracket on a line by itself.  Otherwise align it with opening
-                ;; bracket.
-                (setq indent (+ indent zephir-indent-level)))
               (save-excursion
-                (goto-char array-start)
-                (+ (current-indentation) indent)))))))
+                ;; Check if the `point' is at the end of a listlike
+                (if (looking-at-p "]")
+                    ;; array-start
+                    ;;           |
+                    ;;           |
+                    ;; let map = [
+                    ;;     "none" : \Redis:SERIALIZER_NONE,
+                    ;;     "php"  : \Redis:SERIALIZER_PHP
+                    ;;          ];
+                    ;;         |
+                    ;;         |________ The `point' was here
+                    (progn
+                      (goto-char array-start)
+                      ;; The code below will also check for the following list
+                      ;; styles:
+                      ;;
+                      ;; // array
+                      ;; let attributes = [ "type" : "text/css",
+                      ;;                    "href" : "main.css",
+                      ;;                    "rel"  : "stylesheet" ];
+                      ;;
+                      ;; // arguments list
+                      ;; create_instance_params( definition,
+                      ;;                         options );
+                      (if (or (save-excursion (forward-char) (eolp))
+                              nil ;; TODO(serghei): arguments list
+                              )
+                          (current-indentation)
+                        (current-column)))
+                  ;; otherwise, use normal indentation if the `point' is at the
+                  ;; end of the line:
+                  ;;
+                  ;; // array
+                  ;; let logger = [
+                  ;;     Logger::ALERT    : LOG_ALERT,
+                  ;;     Logger::CRITICAL : LOG_CRIT,
+                  ;;     [ 1 ],
+                  ;;     [
+                  ;;         foo,
+                  ;;         bar
+                  ;;     ]
+                  ;; ];
+                  ;;
+                  ;; // argument list
+                  ;; this->interpolate(
+                  ;;     item->getMessage(),
+                  ;;     item->getContext()
+                  ;; );
+                  (goto-char array-start)
+                  (forward-char 1)
+                  (if (eolp)
+                      (+ (current-indentation) zephir-indent-level)
+                    ;; Othewise, align as described above
+                    (re-search-forward "\\S-")
+                    (forward-char -1)
+                    (current-column)))))))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
