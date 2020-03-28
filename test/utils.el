@@ -5,7 +5,7 @@
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;;         immerrr <immerrr+lua@gmail.com>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.5.0
+;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -65,9 +65,9 @@ then put point in its place."
 
      (pop-to-buffer (current-buffer))
 
-     ;; If content was a list, put point in place of “<>”
+     ;; If content was a list, put point in place of “<*>”
      (cond
-      ((re-search-backward "<*>" nil t 1)
+      ((re-search-backward "<[*]>" nil t 1)
        (replace-match ""))
       (t (goto-char (point-min))))
 

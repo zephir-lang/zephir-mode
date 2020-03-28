@@ -4,7 +4,7 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.5.0
+;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -50,6 +50,33 @@
     (zephir-test-indent
      '("\"" "Hello World" "\""))))
 
+(describe "Argguments list indentation"
+  (it "indents regular function calls"
+    (zephir-test-indent
+     '("this->interpolate("
+       "    item->getMessage(),"
+       "    item->getContext()"
+       ");")))
+
+  (it "indents function calls in column like style"
+    (zephir-test-indent
+     '("new AssetJs( path,"
+       "             collectionLocal,"
+       "             filter,"
+       "             collectionAttributes,"
+       "             version,"
+       "             autoVersion );")))
+
+    (it "indents function declaration"
+    (zephir-test-indent
+     '("public function aVeryLongMethodName("
+       "    ClassTypeHint $arg1,"
+       "    $arg2,"
+       "    array $arg3 = []"
+       ") {"
+       "// method body" ;; TODO(serghei): implement me
+       "}"))))
+
 (describe "Array indentation"
   (it "indents regular arrays"
     (zephir-test-indent
@@ -61,7 +88,13 @@
        "        foo,"
        "        bar"
        "    ]"
-       "];"))))
+       "];")))
+
+  (it "indents column like arrays"
+    (zephir-test-indent
+     '("let attributes = [ type : text,"
+       "                   href : url,"
+       "                   rel  : stylesheet ];"))))
 
 (describe "Commentary indentation"
   (it "indents Java-like dockblocks"

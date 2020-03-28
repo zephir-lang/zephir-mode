@@ -4,10 +4,10 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.5.0
+;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
-;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "24.3"))
+;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "25.1"))
 ;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
@@ -118,7 +118,7 @@
 ;; Pacify the byte compiler
 (eval-when-compile
   (require 'rx)     ; `rx'
-  ;; 24.x, 25.x compat
+  ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
 
@@ -217,22 +217,17 @@ This function determines single-quoted as well as double-quoted strings."
 If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
 
-(defun zephir-in-array ()
-  "Return the position of the openning ‘[’.
-Return nil, if point is not in an array."
-  (save-match-data
-    (save-excursion
-      (let ((point-init (point))
-            (array-start (search-backward "[" nil t)))
-        (when array-start
-          (let ((close-brackets (count-matches "]" array-start point-init))
-                (open-brackets 0))
-            (while (and array-start (> close-brackets open-brackets))
-              (setq array-start (search-backward "[" nil t))
-              (when array-start
-                (setq close-brackets (count-matches "]" array-start point-init))
-                (setq open-brackets (1+ open-brackets)))))
-          array-start)))))
+(defun zephir-in-listlike (re-open)
+  "Return the position of RE-OPEN when `point' is in a ‘listlike’.
+
+This function is intended to use when `point' is inside a
+parenthetical group (‘listlike’) eg. in an array, argument list,
+etc.  Return nil, if point is not in a ‘listlike’."
+  (save-excursion
+    (let ((opoint (nth 1 (syntax-ppss))))
+      (when (and opoint
+                 (progn (goto-char opoint) (looking-at-p re-open)))
+        opoint))))
 
 
 ;;;; Specialized rx
@@ -344,15 +339,16 @@ See `rx' documentation for more information about REGEXPS param."
                     t))))
 
 (defun zephir-create-regexp-for-classlike (&optional type)
-  "Make a regular expression for a classlike with the given TYPE.
+  "Make a regular expression for a ‘classlike’ with the given TYPE.
 
 Optional TYPE must be a string that specifies the type of a
 object, such as ‘interface’ or ‘namespace’.
 
 The regular expression this function returns will check for other
-keywords that can appear in classlike signatures, e.g. ‘abstract’
-or ‘final’.  The regular expression will have two capture groups
-which will be TYPE and the name of an object respectively."
+keywords that can appear in ‘classlike’ signatures,
+e.g. ‘abstract’ or ‘final’.  The regular expression will have two
+capture groups which will be TYPE and the name of an object
+respectively."
   (let ((type (or type "class"))
         (line-start "")
         (modifier "")
@@ -452,6 +448,70 @@ see `zephir-beginning-of-defun'."
 
 ;;;; Indentation code
 
+(defun zephir-indent-listlike (pt-start re-close)
+  "Return the proper indentation for the ‘listlike’.
+
+PT-START must contain open bracket position of the ‘listlike’.
+RE-CLOSE must contain the regular expression that uniquely
+identifies the close bracket of the ‘listlike’."
+  ;; The diagram below explains the purpose of the variables:
+  ;;
+  ;;    `pt-start'
+  ;;            |
+  ;;            |
+  ;;  let map = [
+  ;;      "none" : \Redis:SERIALIZER_NONE,
+  ;;      "php"  : \Redis:SERIALIZER_PHP
+  ;;          #];------------------------ `re-close'
+  ;;          |
+  ;;          |________ Suppose `point' is here (#)
+  ;;
+  (save-excursion
+    (if (looking-at-p re-close)
+        ;; Closing bracket on a line by itself
+        (progn
+          (goto-char pt-start)
+          ;; The code below will check for the following list styles:
+          ;;
+          ;; // array
+          ;; let attributes = [ "type" : "text/css",
+          ;;                    "href" : "main.css",
+          ;;                    "rel"  : "stylesheet" ];
+          ;;
+          ;; // arguments list
+          ;; create_instance_params( definition,
+          ;;                         options );
+          (if (save-excursion (forward-char) (eolp))
+              (current-indentation)
+            (current-column)))
+      ;; Otherwise, use normal indentation if the `point' is at the
+      ;; end of the line:
+      ;;
+      ;; // array
+      ;; let logger = [
+      ;;     Logger::ALERT    : LOG_ALERT,
+      ;;     Logger::CRITICAL : LOG_CRIT,
+      ;;     [ 1 ],
+      ;;     [
+      ;;         foo,
+      ;;         bar
+      ;;     ]
+      ;; ];
+      ;;
+      ;; // argument list
+      ;; this->interpolate(
+      ;;     item->getMessage(),
+      ;;     item->getContext()
+      ;; );
+      (goto-char pt-start)
+      (forward-char 1)
+      (if (eolp)
+          (+ (current-indentation) zephir-indent-level)
+        ;; Othewise, align as described above
+        (re-search-forward "\\S-")
+        (forward-char -1)
+        (current-column)))))
+
 (defun zephir--proper-indentation (ctx)
   "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
@@ -492,31 +552,12 @@ This uses CTX as a current parse state."
 
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; Inside an innermost parenthetical grouping
-     ((let ((ipg-pos (nth 1 ctx)))
-        (when ipg-pos
-          (let ((array-start (zephir-in-array))
-                (indent 0))
-            (when array-start
-              ;; Regular arrays
-              ;;
-              ;; let logger = [
-              ;;     Logger::ALERT    : LOG_ALERT,
-              ;;     Logger::CRITICAL : LOG_CRIT,
-              ;;     [ 1 ],
-              ;;     [
-              ;;         foo,
-              ;;         bar
-              ;;     ]
-              ;; ];
-              (unless (looking-at-p "]")
-                ;; Use normal indentation unless current symbol a closing
-                ;; bracket on a line by itself.  Otherwise align it with opening
-                ;; bracket.
-                (setq indent (+ indent zephir-indent-level)))
-              (save-excursion
-                (goto-char array-start)
-                (+ (current-indentation) indent)))))))
+     ;; When `point' is inside an innermost parenthetical grouping
+     ((let ((array-start (zephir-in-listlike "\\["))
+            (arglist-start (zephir-in-listlike "(")))
+        (cond
+         (array-start (zephir-indent-listlike array-start "]"))
+         (arglist-start (zephir-indent-listlike arglist-start ")")))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
