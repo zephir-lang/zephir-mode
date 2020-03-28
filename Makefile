@@ -50,7 +50,7 @@ test:
 clean:
 	$(info Remove all byte compiled Elisp files...)
 	@$(CASK) clean-elc
-	$(info Remove build artefacts...)
+	$(info Remove build artifacts...)
 	@$(RM) README ChangeLog coverage-final.json
 	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar
 
