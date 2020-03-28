@@ -462,28 +462,28 @@ identifies the close bracket of the ‘listlike’."
   ;;  let map = [
   ;;      "none" : \Redis:SERIALIZER_NONE,
   ;;      "php"  : \Redis:SERIALIZER_PHP
-  ;;           ];------------------------ `re-close'
+  ;;          #];------------------------ `re-close'
   ;;          |
-  ;;          |________ Suppose we're here (before ‘]’)
+  ;;          |________ Suppose `point' is here (#)
   ;;
   (save-excursion
-    ;; Closing bracket on a line by itself
     (if (looking-at-p re-close)
-        ;; The code below will check for the following list styles:
-        ;;
-        ;; // array
-        ;; let attributes = [ "type" : "text/css",
-        ;;                    "href" : "main.css",
-        ;;                    "rel"  : "stylesheet" ];
-        ;;
-        ;; // arguments list
-        ;; create_instance_params( definition,
-        ;;                         options );
-        (if (save-excursion (goto-char pt-start)
-                            (forward-char)
-                            (eolp))
-            (current-indentation)
-          (current-column))
+        ;; Closing bracket on a line by itself
+        (progn
+          (goto-char pt-start)
+          ;; The code below will check for the following list styles:
+          ;;
+          ;; // array
+          ;; let attributes = [ "type" : "text/css",
+          ;;                    "href" : "main.css",
+          ;;                    "rel"  : "stylesheet" ];
+          ;;
+          ;; // arguments list
+          ;; create_instance_params( definition,
+          ;;                         options );
+          (if (save-excursion (forward-char) (eolp))
+              (current-indentation)
+            (current-column)))
       ;; Otherwise, use normal indentation if the `point' is at the
       ;; end of the line:
       ;;

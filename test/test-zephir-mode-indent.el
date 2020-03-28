@@ -50,6 +50,23 @@
     (zephir-test-indent
      '("\"" "Hello World" "\""))))
 
+(describe "Argguments list indentation"
+  (it "indent regular function calls"
+    (zephir-test-indent
+     '("this->interpolate("
+       "    item->getMessage(),"
+       "    item->getContext()"
+       ");")))
+
+  (it "indent function calls in column like style"
+    (zephir-test-indent
+     '("new AssetJs( path,"
+       "             collectionLocal,"
+       "             filter,"
+       "             collectionAttributes,"
+       "             version,"
+       "             autoVersion );"))))
+
 (describe "Array indentation"
   (it "indents regular arrays"
     (zephir-test-indent
