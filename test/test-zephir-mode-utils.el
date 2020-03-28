@@ -101,7 +101,7 @@
        (re-search-forward (zephir-create-regexp-for-function) nil t)
        (expect (point) :to-be 1))))
 
-  (describe "create regexp for classlike"
+  (describe "create regexp for ‘classlike’"
     (it "finds ‘namespace’"
       (with-zephir-buffer
        '("// some comment here"

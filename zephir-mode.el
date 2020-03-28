@@ -344,15 +344,16 @@ See `rx' documentation for more information about REGEXPS param."
                     t))))
 
 (defun zephir-create-regexp-for-classlike (&optional type)
-  "Make a regular expression for a classlike with the given TYPE.
+  "Make a regular expression for a ‘classlike’ with the given TYPE.
 
 Optional TYPE must be a string that specifies the type of a
 object, such as ‘interface’ or ‘namespace’.
 
 The regular expression this function returns will check for other
-keywords that can appear in classlike signatures, e.g. ‘abstract’
-or ‘final’.  The regular expression will have two capture groups
-which will be TYPE and the name of an object respectively."
+keywords that can appear in ‘classlike’ signatures,
+e.g. ‘abstract’ or ‘final’.  The regular expression will have two
+capture groups which will be TYPE and the name of an object
+respectively."
   (let ((type (or type "class"))
         (line-start "")
         (modifier "")
@@ -452,6 +453,70 @@ see `zephir-beginning-of-defun'."
 
 ;;;; Indentation code
 
+(defun zephir-indent-listlike (pt-start re-close)
+  "Return the proper indentation for the ‘listlike’.
+
+PT-START must contain open bracket position of the ‘listlike’.
+RE-CLOSE must contain the regular expression that uniquely
+identifies the close bracket of the ‘listlike’."
+  ;; The diagram below explains the purpose of the variables:
+  ;;
+  ;;    `pt-start'
+  ;;            |
+  ;;            |
+  ;;  let map = [
+  ;;      "none" : \Redis:SERIALIZER_NONE,
+  ;;      "php"  : \Redis:SERIALIZER_PHP
+  ;;           ];------------------------ `re-close'
+  ;;          |
+  ;;          |________ Suppose we're here (before ‘]’)
+  ;;
+  (save-excursion
+    ;; Closing bracket on a line by itself
+    (if (looking-at-p re-close)
+        ;; The code below will check for the following list styles:
+        ;;
+        ;; // array
+        ;; let attributes = [ "type" : "text/css",
+        ;;                    "href" : "main.css",
+        ;;                    "rel"  : "stylesheet" ];
+        ;;
+        ;; // arguments list
+        ;; create_instance_params( definition,
+        ;;                         options );
+        (if (save-excursion (goto-char pt-start)
+                            (forward-char)
+                            (eolp))
+            (current-indentation)
+          (current-column))
+      ;; Otherwise, use normal indentation if the `point' is at the
+      ;; end of the line:
+      ;;
+      ;; // array
+      ;; let logger = [
+      ;;     Logger::ALERT    : LOG_ALERT,
+      ;;     Logger::CRITICAL : LOG_CRIT,
+      ;;     [ 1 ],
+      ;;     [
+      ;;         foo,
+      ;;         bar
+      ;;     ]
+      ;; ];
+      ;;
+      ;; // argument list
+      ;; this->interpolate(
+      ;;     item->getMessage(),
+      ;;     item->getContext()
+      ;; );
+      (goto-char pt-start)
+      (forward-char 1)
+      (if (eolp)
+          (+ (current-indentation) zephir-indent-level)
+        ;; Othewise, align as described above
+        (re-search-forward "\\S-")
+        (forward-char -1)
+        (current-column)))))
+
 (defun zephir--proper-indentation (ctx)
   "Return the proper indentation for the current line.
 This uses CTX as a current parse state."
@@ -493,67 +558,10 @@ This uses CTX as a current parse state."
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
      ;; The `point' is inside an innermost parenthetical grouping
-     ((let ((ipg-pos (nth 1 ctx)))
-        (when ipg-pos
-          (let ((array-start (zephir-in-array)))
-            (when array-start
-              (save-excursion
-                ;; Check if the `point' is at the end of a listlike
-                (if (looking-at-p "]")
-                    ;; array-start
-                    ;;           |
-                    ;;           |
-                    ;; let map = [
-                    ;;     "none" : \Redis:SERIALIZER_NONE,
-                    ;;     "php"  : \Redis:SERIALIZER_PHP
-                    ;;          ];
-                    ;;         |
-                    ;;         |________ The `point' was here
-                    (progn
-                      (goto-char array-start)
-                      ;; The code below will also check for the following list
-                      ;; styles:
-                      ;;
-                      ;; // array
-                      ;; let attributes = [ "type" : "text/css",
-                      ;;                    "href" : "main.css",
-                      ;;                    "rel"  : "stylesheet" ];
-                      ;;
-                      ;; // arguments list
-                      ;; create_instance_params( definition,
-                      ;;                         options );
-                      (if (or (save-excursion (forward-char) (eolp))
-                              nil ;; TODO(serghei): arguments list
-                              )
-                          (current-indentation)
-                        (current-column)))
-                  ;; otherwise, use normal indentation if the `point' is at the
-                  ;; end of the line:
-                  ;;
-                  ;; // array
-                  ;; let logger = [
-                  ;;     Logger::ALERT    : LOG_ALERT,
-                  ;;     Logger::CRITICAL : LOG_CRIT,
-                  ;;     [ 1 ],
-                  ;;     [
-                  ;;         foo,
-                  ;;         bar
-                  ;;     ]
-                  ;; ];
-                  ;;
-                  ;; // argument list
-                  ;; this->interpolate(
-                  ;;     item->getMessage(),
-                  ;;     item->getContext()
-                  ;; );
-                  (goto-char array-start)
-                  (forward-char 1)
-                  (if (eolp)
-                      (+ (current-indentation) zephir-indent-level)
-                    ;; Othewise, align as described above
-                    (re-search-forward "\\S-")
-                    (forward-char -1)
-                    (current-column)))))))))
+     ((when-let ((ipg-pos (nth 1 ctx)))
+        ipg-pos
+        (let ((array-start (zephir-in-array)))
+          (when array-start (zephir-indent-listlike array-start "]")))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
