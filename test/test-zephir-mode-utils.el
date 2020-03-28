@@ -147,11 +147,11 @@
        (re-search-forward (zephir-create-regexp-for-classlike "extends"))
        (expect (point) :to-be 58))))
 
-  (describe "zephir-in-array"
+  (describe "zephir-in-listlike"
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
        '("let myArray = [" "<*>" "]")
-       (expect (zephir-in-array) :to-be 15)))
+       (expect (zephir-in-listlike "\\[") :to-be 15)))
 
     (it "operates with multi-dimensional arrays"
       (with-zephir-buffer
@@ -162,11 +162,11 @@
          "       1 : 2"
          "    ]"
          "<*>];")
-       (expect (zephir-in-array) :to-be 14)))
+       (expect (zephir-in-listlike "\\[") :to-be 14)))
 
     (it "returns nil, if point is not in an array"
       (with-zephir-buffer
        "public function <*>foo() {}"
-       (expect (zephir-in-array) :to-be nil)))))
+       (expect (zephir-in-listlike "\\[") :to-be nil)))))
 
 ;;; test-zephir-mode-utils.el ends here

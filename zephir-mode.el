@@ -217,22 +217,17 @@ This function determines single-quoted as well as double-quoted strings."
 If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
 
-(defun zephir-in-array ()
-  "Return the position of the openning ‘[’.
-Return nil, if point is not in an array."
-  (save-match-data
-    (save-excursion
-      (let ((point-init (point))
-            (array-start (search-backward "[" nil t)))
-        (when array-start
-          (let ((close-brackets (count-matches "]" array-start point-init))
-                (open-brackets 0))
-            (while (and array-start (> close-brackets open-brackets))
-              (setq array-start (search-backward "[" nil t))
-              (when array-start
-                (setq close-brackets (count-matches "]" array-start point-init))
-                (setq open-brackets (1+ open-brackets)))))
-          array-start)))))
+(defun zephir-in-listlike (re-open)
+  "Return the position of RE-OPEN when `point' is in a ‘listlike’.
+
+This function is intended to use when `point' is inside a
+parenthetical group (‘listlike’) eg. in an array, argument list,
+etc.  Return nil, if point is not in a ‘listlike’."
+  (save-excursion
+    (let ((opoint (nth 1 (syntax-ppss))))
+      (when (and opoint
+                 (progn (goto-char opoint) (looking-at-p re-open)))
+        opoint))))
 
 
 ;;;; Specialized rx
@@ -557,10 +552,9 @@ This uses CTX as a current parse state."
 
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
-     ;; The `point' is inside an innermost parenthetical grouping
-     ((nth 1 ctx)
-      (let ((array-start (zephir-in-array)))
-          (when array-start (zephir-indent-listlike array-start "]"))))
+     ;; When `point' is inside an innermost parenthetical grouping
+     ((let ((array-start (zephir-in-listlike "\\[")))
+        (when array-start (zephir-indent-listlike array-start "]"))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
