@@ -558,10 +558,9 @@ This uses CTX as a current parse state."
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
      ;; The `point' is inside an innermost parenthetical grouping
-     ((when-let ((ipg-pos (nth 1 ctx)))
-        ipg-pos
-        (let ((array-start (zephir-in-array)))
-          (when array-start (zephir-indent-listlike array-start "]")))))
+     ((nth 1 ctx)
+      (let ((array-start (zephir-in-array)))
+          (when array-start (zephir-indent-listlike array-start "]"))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
