@@ -51,21 +51,31 @@
      '("\"" "Hello World" "\""))))
 
 (describe "Argguments list indentation"
-  (it "indent regular function calls"
+  (it "indents regular function calls"
     (zephir-test-indent
      '("this->interpolate("
        "    item->getMessage(),"
        "    item->getContext()"
        ");")))
 
-  (it "indent function calls in column like style"
+  (it "indents function calls in column like style"
     (zephir-test-indent
      '("new AssetJs( path,"
        "             collectionLocal,"
        "             filter,"
        "             collectionAttributes,"
        "             version,"
-       "             autoVersion );"))))
+       "             autoVersion );")))
+
+    (it "indents function declaration"
+    (zephir-test-indent
+     '("public function aVeryLongMethodName("
+       "    ClassTypeHint $arg1,"
+       "    $arg2,"
+       "    array $arg3 = []"
+       ") {"
+       "// method body" ;; TODO(serghei): implement me
+       "}"))))
 
 (describe "Array indentation"
   (it "indents regular arrays"
