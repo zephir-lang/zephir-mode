@@ -65,9 +65,9 @@ then put point in its place."
 
      (pop-to-buffer (current-buffer))
 
-     ;; If content was a list, put point in place of “<>”
+     ;; If content was a list, put point in place of “<*>”
      (cond
-      ((re-search-backward "<*>" nil t 1)
+      ((re-search-backward "<[*]>" nil t 1)
        (replace-match ""))
       (t (goto-char (point-min))))
 
