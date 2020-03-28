@@ -7,7 +7,7 @@
 ;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
-;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "24.3"))
+;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "25.1"))
 ;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
@@ -118,7 +118,7 @@
 ;; Pacify the byte compiler
 (eval-when-compile
   (require 'rx)     ; `rx'
-  ;; 24.x, 25.x compat
+  ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
 

@@ -6,6 +6,7 @@ See the end of the file for license conditions.
 This file is about changes in Zephir Mode.
 
 * Zephir Mode 0.6.0
+** Minimum required version of Emacs is 25.1.
 
 * Zephir Mode 0.5.0
 ** Indentation improvements and additions.
@@ -58,7 +59,7 @@ way and will be reimplemented in the future with better usability.
 * Zephir Mode 0.3.3
 ** Used lexical binding for zephir-mode.
 
-** Raised minimum Emacs support to 24.3.
+** Minimum required version of Emacs is 24.3.
 
 * Zephir Mode 0.3.2
 ** Removed no longer used version related constants.

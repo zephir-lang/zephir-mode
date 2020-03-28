@@ -24,10 +24,11 @@ gcc/clang/vc++. Functionality is exposed to the PHP language.
 
 ** Installation
 
-Known to work with GNU Emacs 24.3 and later.  Zephir Mode may work with older
-versions of Emacs, or with other flavors of Emacs (e.g. XEmacs) but this is
+Known to work with GNU Emacs 25.1 and later.  Zephir Mode may work with older
+versions of Emacs, or with other flavours of Emacs (e.g. XEmacs) but this is
 /not/ guaranteed.  Bug reports for problems related to using Zephir Mode with
-older versions of Emacs will most like not be addressed.
+older versions of Emacs will most like not be addressed.  To get this mode with
+support for GNU Emacs less than 25.1 use [[https://github.com/zephir-lang/zephir-mode/tags][previous releases]].
 
 The master of all the material is the Git repository at
 https://github.com/zephir-lang/zephir-mode.
