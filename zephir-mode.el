@@ -29,8 +29,8 @@
 
 ;;; Commentary:
 
-;;   GNU Emacs major mode for editing Zephir code.  Provides font-locking,
-;; indentation and navigation support.
+;;   GNU Emacs major mode for editing Zephir code.  Provides syntax
+;;   highlighting, indentation, movement, Imenu and navigation support.
 ;;
 ;;   Zephir -- is a high level language that eases the creation and
 ;; maintainability of extensions for PHP.  Zephir extensions are
@@ -48,10 +48,16 @@
 ;; (e.g. “M-f”, “M-b”, “M-d”, etc.) will only affect the “camelCase” part of the
 ;; name under the cursor.
 ;;
-;; If you want to always use `subword-mode' for Zephir files then you can add
+;;   If you want to always use `subword-mode' for Zephir files then you can add
 ;; this to your Emacs configuration:
 ;;
-;;   (add-hook 'zephir-mode-hook (lambda () (subword-mode 1)))
+;;    (add-hook 'zephir-mode-hook
+;;      #(lambda () (subword-mode 1)))
+
+;;;; Imenu:
+
+;;   There is a support to jump to namespaces, classes, functions, properties
+;; and constant declarations.
 
 ;;;; Movement:
 
@@ -60,13 +66,30 @@
 
 ;;;; Indentation:
 
+;;   Automatic indentation with indentation cycling is provided, it allows you
+;; to navigate different available levels of indentation by hitting “TAB”
+;; several times.  There are two options to use auto-indentation when inserting
+;; newlines:
+;;
+;; 1) Enable the minor-mode `electric-indent-mode' (enabled by default) and use
+;;    “RET”.  If this mode is disabled use `newline-and-indent', bound to “C-j”.
+;;
+;; 2) Add the following hook in your init file:
+;;
+;;    (add-hook 'zephir-mode-hook
+;;      #'(lambda ()
+;;          (define-key zephir-mode-map "\C-m" 'newline-and-indent)))
+;;
+;;   The first option is prefered since you'll get the same behavior for all
+;; modes out-of-the-box.
+;;
 ;;   `zephir-indent-tabs-mode' can be changed to insert tabs for indentation in
 ;; Zephir Mode.  `zephir-indent-level' can be used to contol indentation level
 ;; of Zephir statements.
 
 ;;;; Syntax checking:
 
-;; Presently flymake/flycheck support is not provided.
+;;   Presently flymake/flycheck support is NOT provided.
 
 ;;;; Support:
 
@@ -81,8 +104,8 @@
 
 ;;;; Customize && Help:
 
-;; See “M-x apropos-command ^zephir-” for a list of commands.
-;; See “M-x customize-group zephir” for a list of customizable variables.
+;;   See “M-x apropos-command RET ^zephir- RET” for a list of all commands and
+;; “M-x customize-group RET zephir RET” for a list of customizable variables.
 
 ;;; Code:
 
@@ -594,8 +617,7 @@ This uses CTX as a current parse state."
 ;;;; Imenu
 
 (defvar zephir-imenu-generic-expression
-  `(
-    ("Namespaces"
+  `(("Namespaces"
      ,(zephir-create-regexp-for-classlike "namespace") 2)
     ("Classes"
      ,(zephir-create-regexp-for-classlike) 2)
@@ -689,8 +711,7 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   (setq font-lock-defaults
         '((zephir-font-lock-keywords) ; keywords
           nil                         ; keywords-only
-          nil                         ; case-fold
-          ))
+          nil))                       ; case-fold
 
   ;; TODO(serghei): Paragaphs
 
