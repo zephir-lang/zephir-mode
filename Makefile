@@ -67,7 +67,7 @@ help: .title
 	@echo '  build:      Byte compile Zephir Mode package'
 	@echo '  test:       Run the non-interactive unit test suite'
 	@echo '  clean:      Remove all byte compiled Elisp files, documentation,'
-	@echo '              build artefacts and tarball'
+	@echo '              build artifacts and tarball'
 	@echo ''
 	@echo 'Available programs:'
 	@echo '  $(CASK): $(if $(HAVE_CASK),yes,no)'
