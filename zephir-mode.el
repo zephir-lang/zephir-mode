@@ -553,8 +553,11 @@ This uses CTX as a current parse state."
      ;; TODO(serghei): Cover use-case for single-line comments (“//”)
 
      ;; When `point' is inside an innermost parenthetical grouping
-     ((let ((array-start (zephir-in-listlike "\\[")))
-        (when array-start (zephir-indent-listlike array-start "]"))))
+     ((let ((array-start (zephir-in-listlike "\\["))
+            (arglist-start (zephir-in-listlike "(")))
+        (cond
+         (array-start (zephir-indent-listlike array-start "]"))
+         (arglist-start (zephir-indent-listlike arglist-start ")")))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
