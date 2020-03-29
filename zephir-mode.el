@@ -635,7 +635,10 @@ This uses CTX as a current parse state."
                  (0+ "->" identifier))
      1 font-lock-constant-face)
     ;; Visibility
-    (,(rx-to-string `(group (or ,@zephir-possible-visiblities)))
+    (,(rx-to-string `(group
+                      symbol-start
+                      (or ,@zephir-possible-visiblities)
+                      symbol-end))
      (1 font-lock-keyword-face))
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
