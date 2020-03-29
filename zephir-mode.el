@@ -217,7 +217,7 @@ This function determines single-quoted as well as double-quoted strings."
 If point is not inside a comment, return nil.  Uses CTX as a syntax context."
   (and ctx (nth 4 ctx) (nth 8 ctx)))
 
-(defun zephir-in-IPG (re-open)
+(defun zephir-in-ipg (re-open)
   "Return the position of RE-OPEN when `point' is inside an “IPG”.
 
 This function is intended to use when `point' is inside a
@@ -448,6 +448,12 @@ see `zephir-beginning-of-defun'."
 
 ;;;; Indentation code
 
+(defun zephir-indent-block (block-start)
+  "Return the proper indentation for the block.
+BLOCK-START must contain open bracket position of the block."
+  ;; TODO(serghei): Implement me
+  (and block-start nil))
+
 (defun zephir-indent-listlike (pt-start re-close)
   "Return the proper indentation for the ‘listlike’.
 
@@ -556,10 +562,12 @@ This uses CTX as a current parse state."
 
      ;; When `point' is inside an innermost parenthetical grouping
      ((let ((array-start (zephir-in-ipg "\\["))
-            (arglist-start (zephir-in-ipg "(")))
+            (arglist-start (zephir-in-ipg "("))
+            (block-start (zephir-in-ipg "{")))
         (cond
          (array-start (zephir-indent-listlike array-start "]"))
-         (arglist-start (zephir-indent-listlike arglist-start ")")))))
+         (arglist-start (zephir-indent-listlike arglist-start ")"))
+         (block-start (zephir-indent-block block-start)))))
 
      ;; Otherwise indent to the first column
      (t (prog-first-column)))))
