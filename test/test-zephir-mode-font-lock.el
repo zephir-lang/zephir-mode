@@ -142,6 +142,10 @@
 
     (expect "private bar;"
             :to-be-fontified-as
+            '(("private" keyword)))
+
+    (expect "private privateProperty;"
+            :to-be-fontified-as
             '(("private" keyword)))))
 
 (describe "Fontification of function headers"
