@@ -151,7 +151,7 @@
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
        '("let myArray = [" "<*>" "]")
-       (expect (zephir-in-listlike "\\[") :to-be 15)))
+       (expect (zephir-in-ipg "\\[") :to-be 15)))
 
     (it "operates with multi-dimensional arrays"
       (with-zephir-buffer
@@ -162,11 +162,11 @@
          "       1 : 2"
          "    ]"
          "<*>];")
-       (expect (zephir-in-listlike "\\[") :to-be 14)))
+       (expect (zephir-in-ipg "\\[") :to-be 14)))
 
     (it "returns nil, if point is not in an array"
       (with-zephir-buffer
        "public function <*>foo() {}"
-       (expect (zephir-in-listlike "\\[") :to-be nil)))))
+       (expect (zephir-in-ipg "\\[") :to-be nil)))))
 
 ;;; test-zephir-mode-utils.el ends here
