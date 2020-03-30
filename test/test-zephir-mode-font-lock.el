@@ -101,12 +101,17 @@
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
-            '(("this" constant "this" constant))))
+            '(("this" constant "foo" variable-name "this" constant))))
 
   (it "fontifies booleans and null"
-    (expect "[ null, false, true ]"
+    (expect "null, false, true"
             :to-be-fontified-as
             '(("null" constant "false" constant "true" constant))))
+
+  (it "fontifies variables"
+    (expect "$compilationContext->classDefinition->classEntry"
+            :to-be-fontified-as
+            '(("classDefinition" variable-name "classEntry" variable-name))))
 
   (it "fontifies data types"
     (expect "int uint bool boolean float double long ulong

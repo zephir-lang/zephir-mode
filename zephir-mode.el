@@ -240,11 +240,11 @@ etc.  Return nil, if point is not in an IPG."
   (defconst zephir-rx-constituents
     `(
       ;; Identifier
-      (identifier . ,(rx symbol-start
-                         (? ?$)
+      (identifier . ,(rx (? ?$)
+                         word-start
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
-                         symbol-end))
+                         word-end))
       ;; Builtin declarations and reserved keywords
       (builtin-decl . ,(rx symbol-start
                            (or "class"
@@ -648,6 +648,11 @@ This uses CTX as a current parse state."
     (,(zephir-rx (group symbol-start "this" word-end)
                  (0+ "->" identifier))
      1 font-lock-constant-face)
+    ;; object->poperty
+    (,(zephir-rx "->"
+                 (group identifier)
+                 (* (syntax whitespace)))
+     1 font-lock-variable-name-face)
     ;; Visibility
     (,(rx-to-string `(group
                       symbol-start
