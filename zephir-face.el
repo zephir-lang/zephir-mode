@@ -84,9 +84,9 @@
 
 (defface zephir-object-operator-face
   '((t (:inherit zephir-operator-face)))
-  "Zephir Mode face used to object operators (->)."
+  "Zephir Mode face used to object operators (‘->’)."
   :group 'zephir-faces
-  :tag "Zephir Object Operaor")
+  :tag "Zephir Object Operator")
 
 (defface zephir-constant-face
   '((t (:inherit font-lock-constant-face)))
@@ -96,15 +96,15 @@
 
 (defface zephir-constant-assign-face
   '((t (:inherit font-lock-type-face)))
-  "Zephir Mode face used to highlight constant assigning (\"const\" statement)."
+  "Zephir Mode face used to highlight constant assigning (‘const’ statement)."
   :group 'zephir-faces
   :tag "Zephir Constant Assign")
 
 (defface zephir-this-face
   '((t (:inherit zephir-constant-face)))
-  "Zephir Mode face used to highlight this variables."
+  "Zephir Mode face used to highlight ‘this’ variables."
   :group 'zephir-faces
-  :tag "Zephir $this")
+  :tag "Zephir this")
 
 (provide 'zephir-face)
 ;;; zephir-face.el ends here
