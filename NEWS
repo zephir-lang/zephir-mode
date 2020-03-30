@@ -15,7 +15,9 @@ This file is about changes in Zephir Mode.
 
 ** Minimum required version of Emacs is 25.1.
 
-** Added ability to customize Zephir-related font-lock.
+** Improved font lock support for various constructs.
+
+** Added ability to customize Zephir-related font lock.
 
 ** Fixed font locking for visiblity.
 Properties like ‘private privateProperty’ now are properly decorated.
