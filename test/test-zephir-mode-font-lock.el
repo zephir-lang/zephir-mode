@@ -197,13 +197,11 @@
   (it "fontifies standard ‘function <name> ()’ headers"
     (expect "function foo () {}"
             :to-be-fontified-as
-            ;; TODO(serghei): "function" keyword
-            '(("foo" zephir-function-name)))
+            '(("function" keyword "foo" zephir-function-name)))
 
     (expect "function $foo() {}"
             :to-be-fontified-as
-            ;; TODO(serghei): "function" keyword
-            '(("$foo" zephir-function-name))))
+            '(("function" keyword "$foo" zephir-function-name))))
 
   (it "fontifies standard ‘<visibility> function <name> ()’ headers"
     (expect "public function foo () {}"

@@ -652,12 +652,13 @@ Uses STATE as a syntax context."
      (1 'zephir-object-operator-face)
      (2 'zephir-property-name-face))
 
-    ;; Highlight function/method names
-    (,(zephir-rx word-start "function"
+    ;; Highlight function/method name i.e. ‘function foo ()’
+    (,(zephir-rx word-start (group fn-decl)
                  (+ (syntax whitespace))
                  (group identifier)
                  (* (syntax whitespace)) "(")
-     1 'zephir-function-name-face)
+     (1 font-lock-keyword-face)
+     (2 'zephir-function-name-face))
 
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
@@ -717,7 +718,6 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): deprecated <visibility> function <name>
     ;; TODO(serghei): <visibility> static function <name>
     ;; TODO(serghei): deprecated function <name>
-    ;; TODO(serghei): function <name>
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
