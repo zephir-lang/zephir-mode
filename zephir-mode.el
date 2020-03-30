@@ -451,8 +451,12 @@ see `zephir-beginning-of-defun'."
 (defun zephir-indent-block (block-start)
   "Return the proper indentation for the block.
 BLOCK-START must contain open bracket position of the block."
-  ;; TODO(serghei): Implement me
-  (and block-start nil))
+  (save-excursion
+    (let ((offset 0))
+      (unless (looking-at-p "}")
+        (setq offset zephir-indent-level))
+      (when (and block-start (progn (goto-char block-start) (looking-at-p "{")))
+        (+ (current-indentation) offset)))))
 
 (defun zephir-indent-listlike (pt-start re-close)
   "Return the proper indentation for the ‘listlike’.
