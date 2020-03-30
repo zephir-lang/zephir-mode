@@ -112,18 +112,22 @@
 
 ;;;; Requirements
 
+(require 'zephir-face)
+
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
 
 ;; Pacify the byte compiler
 (eval-when-compile
-  (require 'rx)     ; `rx'
+  (require 'rx)
+
   ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
 
-(require 'imenu)    ; `imenu-generic-expression'
-(require 'pkg-info) ; `pkg-info-version-info'
+(require 'font-lock)
+(require 'imenu)
+(require 'pkg-info)
 
 
 ;;;; Customization
@@ -618,14 +622,18 @@ Uses STATE as a syntax context."
       font-lock-comment-face))))
 
 (defvar zephir-font-lock-keywords
-  `(;; Highlight special variables
+  `(;; Fontify methods call like ‘object->poperty()’
+    (,(zephir-rx "->" (group identifier)
+                 (* (syntax whitespace))"(")
+     1 'zephir-method-call-face)
+
+     ;; Highlight occurrences of the word ‘this’
     (,(zephir-rx (0+ ?$) word-start (group "this") word-end
                  (0+ "->" identifier))
      1 font-lock-constant-face)
 
     ;; Highlight properties like ‘object->poperty’
-    (,(zephir-rx "->"
-                 (group identifier)
+    (,(zephir-rx "->" (group identifier)
                  (* (syntax whitespace)))
      1 font-lock-variable-name-face)
 

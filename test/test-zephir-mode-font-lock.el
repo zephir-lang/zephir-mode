@@ -113,6 +113,21 @@
             :to-be-fontified-as
             '(("HTML5" constant "ALERT" constant "FOO" constant)))))
 
+(describe "Fontification variables"
+  (it "fontifies variables"
+    (expect "$compilationContext->classDefinition->classEntry"
+            :to-be-fontified-as
+            '(("classDefinition" variable-name "classEntry" variable-name))))
+
+  (it "fontifies methods call"
+    (expect "$compilationContext->classDefinition->get()"
+            :to-be-fontified-as
+            '(("classDefinition" variable-name "get" zephir-method-call)))
+
+    (expect "foo->var->bar()"
+            :to-be-fontified-as
+            '(("var" variable-name "bar" zephir-method-call)))))
+
 (describe "Fontification keywords"
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
@@ -127,11 +142,6 @@
     (expect "null, false, true"
             :to-be-fontified-as
             '(("null" constant "false" constant "true" constant))))
-
-  (it "fontifies variables"
-    (expect "$compilationContext->classDefinition->classEntry"
-            :to-be-fontified-as
-            '(("classDefinition" variable-name "classEntry" variable-name))))
 
   (it "fontifies data types"
     (expect "int uint bool boolean float double long ulong

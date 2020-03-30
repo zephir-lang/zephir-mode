@@ -39,6 +39,7 @@
        ;; Don't load old byte-compiled versions
        (load-prefer-newer t))
   ;; Load the file under test
+  (load (expand-file-name "zephir-face" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))
 
 (defmacro with-zephir-buffer (content &rest body)
@@ -101,7 +102,9 @@ If SYM is a list, this function will be called recursively to
 decorate each of symbol."
   (or (cond
        ((symbolp sym)
-        (intern-soft (format "font-lock-%s-face" (symbol-name sym))))
+        (if (null (string-match-p "^zephir" (symbol-name sym)))
+            (intern-soft (format "font-lock-%s-face" (symbol-name sym)))
+          (intern-soft (format "%s-face" (symbol-name sym)))))
        ((listp sym) (mapcar 'zephir-make-font-lock-faces sym)))
       sym))
 
