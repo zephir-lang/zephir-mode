@@ -102,7 +102,11 @@
   (it "fontifies constant definition"
     (expect "const FOO = 42;"
             :to-be-fontified-as
-            '(("const" zephir-keyword "FOO" zephir-constant-assign))))
+            '(("const" zephir-keyword "FOO" zephir-constant-assign)))
+
+    (expect "const &a = 13;"
+            :to-be-fontified-as
+            '(("const" zephir-keyword "a" zephir-constant-assign))))
 
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
