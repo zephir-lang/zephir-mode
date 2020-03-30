@@ -46,6 +46,12 @@
   :group 'zephir-faces
   :tag "Zephir Keyword")
 
+(defface zephir-function-name-face
+  '((t (:inherit font-lock-function-name-face)))
+  "Zephir Mode face used to highlight function names."
+  :group 'zephir-faces
+  :tag "Zephir Function Name")
+
 (defface zephir-function-call-face
   '((t ()))
   "Zephir Mode face used to highlight function names in calles."
@@ -82,11 +88,23 @@
   :group 'zephir-faces
   :tag "Zephir Object Operaor")
 
+(defface zephir-constant-face
+  '((t (:inherit font-lock-constant-face)))
+  "Zephir Mode face used to highlight constants."
+  :group 'zephir-faces
+  :tag "Zephir Constant")
+
 (defface zephir-constant-assign-face
   '((t (:inherit font-lock-type-face)))
   "Zephir Mode face used to highlight constant assigning (\"const\" statement)."
   :group 'zephir-faces
   :tag "Zephir Constant Assign")
+
+(defface zephir-this-face
+  '((t (:inherit zephir-constant-face)))
+  "Zephir Mode face used to highlight this variables."
+  :group 'zephir-faces
+  :tag "Zephir $this")
 
 (provide 'zephir-face)
 ;;; zephir-face.el ends here

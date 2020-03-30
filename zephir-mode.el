@@ -643,14 +643,21 @@ Uses STATE as a syntax context."
      (2 'zephir-constant-assign-face))
 
     ;; Highlight occurrences of the word ‘this’
-    (,(zephir-rx (0+ ?$) word-start (group "this") word-end)
-     1 font-lock-constant-face)
+    (,(zephir-rx word-start (group "this") word-end)
+     1 'zephir-this-face)
 
     ;; Highlight properties like ‘object->property’
     (,(zephir-rx (group "->") (group identifier)
                  (* (syntax whitespace)))
      (1 'zephir-object-operator-face)
      (2 'zephir-property-name-face))
+
+    ;; Highlight function/method names
+    (,(zephir-rx word-start "function"
+                 (+ (syntax whitespace))
+                 (group identifier)
+                 (* (syntax whitespace)) "(")
+     1 'zephir-function-name-face)
 
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
@@ -714,7 +721,7 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
+     (2 'zephir-function-name-face))
 
     ;; Data types
     (,(zephir-rx (group data-type))
