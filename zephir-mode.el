@@ -605,6 +605,18 @@ This uses CTX as a current parse state."
 
 ;;;; Font Locking
 
+(defun zephir-font-lock-syntactic-face (state)
+  "Specify font lock faces based on syntax table entries.
+Uses STATE as a syntax context."
+  (cond
+   ;; Multiline commentary
+   ((nth 4 state)
+    (if (save-excursion
+          (goto-char (zephir-comment-start-pos state))
+          (looking-at-p "/\\*\\*"))
+        font-lock-doc-face
+      font-lock-comment-face))))
+
 (defvar zephir-font-lock-keywords
   `(
     ;; Builtin declaration
@@ -771,12 +783,14 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   (setq-local comment-end "")
 
   ;; Font locking
-  (setq font-lock-defaults
-        '((zephir-font-lock-keywords) ; keywords
-          nil                         ; keywords-only
-          nil))                       ; case-fold
+  (setq-local font-lock-syntactic-face-function
+              #'zephir-font-lock-syntactic-face)
+  (setq-local font-lock-defaults
+              '((zephir-font-lock-keywords) ; keywords
+                nil                         ; keywords-only
+                nil))                       ; case-fold
 
-  ;; TODO(serghei): Paragaphs
+  ;; TODO(serghei): Paragraphs
 
   ;; Imenu
   (setq-local imenu-generic-expression zephir-imenu-generic-expression)
@@ -796,5 +810,4 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 (add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
 
 (provide 'zephir-mode)
-
 ;;; zephir-mode.el ends here

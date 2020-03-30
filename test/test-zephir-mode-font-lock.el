@@ -46,6 +46,22 @@
 
 ;;;; Tests
 
+(describe "Fontification of comments"
+  (it "fontifies C-style comments"
+    (expect "// Some text"
+            :to-be-fontified-as
+            '(("// " comment-delimiter "Some text" comment))))
+
+  (it "fontifies C++-style comments"
+    (expect "/* Some text */"
+            :to-be-fontified-as
+            '(("/* " comment-delimiter "Some text */" comment))))
+
+  (it "fontifies docblocks"
+    (expect "/** Some text */"
+            :to-be-fontified-as
+            '(("/** Some text */" doc)))))
+
 (describe "Fontification of classes"
   (it "fontifies classes"
     (expect "class A extends B implements C {}"
@@ -154,7 +170,7 @@
             '(("private" keyword)))))
 
 (describe "Fontification of function headers"
-  (it "fontifies standard <visibility> function <name> () headers"
+  (it "fontifies standard ‘<visibility> function <name> ()’ headers"
     (expect "public function foo () {}"
             :to-be-fontified-as
             '(("public" keyword "function" keyword "foo" function-name)))
