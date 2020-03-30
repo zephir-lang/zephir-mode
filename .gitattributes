@@ -3,3 +3,4 @@
 .elpaignore     export-ignore
 
 zephir-mode.el  export-subst
+zephir-face.el  export-subst
