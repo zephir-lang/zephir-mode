@@ -385,6 +385,15 @@ respectively."
      ;; Object name, group #2.
      "\\(" root-ns (zephir-rx classlike) "\\)")))
 
+(defun zephir-create-regexp-for-constant ()
+  "Make a regular expression for a constant definition.
+
+The regular expression will have two capture groups which will be
+the word ‘const’ and the name of a constant respectively."
+  (zephir-rx word-start (group "const")
+             (+ (syntax whitespace)) (? "&")
+             (group identifier)))
+
 (defun zephir-create-regexp-for-function (&optional visibility)
   "Make a regular expression for a function with the given VISIBILITY.
 
@@ -622,20 +631,26 @@ Uses STATE as a syntax context."
       font-lock-comment-face))))
 
 (defvar zephir-font-lock-keywords
-  `(;; Fontify methods call like ‘object->poperty()’
-    (,(zephir-rx "->" (group identifier)
+  `(;; Fontify methods call like ‘object->method()’
+    (,(zephir-rx (group "->") (group identifier)
                  (* (syntax whitespace))"(")
-     1 'zephir-method-call-face)
+     (1 'zephir-object-operator-face)
+     (2 'zephir-method-call-face))
 
-     ;; Highlight occurrences of the word ‘this’
-    (,(zephir-rx (0+ ?$) word-start (group "this") word-end
-                 (0+ "->" identifier))
+    ;; Highlight occurrences of user defined constants
+    (,(zephir-create-regexp-for-constant)
+     (1 'zephir-keyword-face)
+     (2 'zephir-constant-assign-face))
+
+    ;; Highlight occurrences of the word ‘this’
+    (,(zephir-rx (0+ ?$) word-start (group "this") word-end)
      1 font-lock-constant-face)
 
-    ;; Highlight properties like ‘object->poperty’
-    (,(zephir-rx "->" (group identifier)
+    ;; Highlight properties like ‘object->property’
+    (,(zephir-rx (group "->") (group identifier)
                  (* (syntax whitespace)))
-     1 font-lock-variable-name-face)
+     (1 'zephir-object-operator-face)
+     (2 'zephir-property-name-face))
 
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
@@ -737,14 +752,7 @@ Uses STATE as a syntax context."
                  (any "=" ";" "{"))
      1)
     ("Constants"
-     ,(zephir-rx line-start
-                 (* (syntax whitespace))
-                 "const"
-                 (+ (syntax whitespace))
-                 (group identifier)
-                 (* (syntax whitespace))
-                 "=")
-     1))
+     ,(zephir-create-regexp-for-constant) 2))
   "Imenu generic expression for `zephir-mode'.
 For more see `imenu-generic-expression'.")
 

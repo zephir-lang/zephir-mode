@@ -40,15 +40,53 @@
   :group 'zephir
   :group 'faces)
 
-(defface zephir-function-call-face '((t ()))
+(defface zephir-keyword-face
+  '((t (:inherit font-lock-keyword-face)))
+  "Zephir Mode face used to highlight keywords."
+  :group 'zephir-faces
+  :tag "Zephir Keyword")
+
+(defface zephir-function-call-face
+  '((t ()))
   "Zephir Mode face used to highlight function names in calles."
   :group 'zephir-faces
   :tag "Zephir Function Call")
 
-(defface zephir-method-call-face '((t (:inherit zephir-function-call-face)))
+(defface zephir-method-call-face
+  '((t (:inherit zephir-function-call-face)))
   "Zephir Mode face used to highlight method names in calles."
   :group 'zephir-faces
   :tag "Zephir Method Call")
+
+(defface zephir-variable-name-face
+  '((t (:inherit font-lock-variable-name-face)))
+  "Zephir Mode face used to highlight variable names."
+  :group 'zephir-faces
+  :tag "Zephir Variable Name")
+
+(defface zephir-property-name-face
+  '((t (:inherit zephir-variable-name-face)))
+  "Zephir Mode face used to highlight property names."
+  :group 'zephir-faces
+  :tag "Zephir Property Name")
+
+(defface zephir-operator-face
+  '((t ()))
+  "Zephir Mode face used to operators."
+  :group 'zephir-faces
+  :tag "Zephir Operator")
+
+(defface zephir-object-operator-face
+  '((t (:inherit zephir-operator-face)))
+  "Zephir Mode face used to object operators (->)."
+  :group 'zephir-faces
+  :tag "Zephir Object Operaor")
+
+(defface zephir-constant-assign-face
+  '((t (:inherit font-lock-type-face)))
+  "Zephir Mode face used to highlight constant assigning (\"const\" statement)."
+  :group 'zephir-faces
+  :tag "Zephir Constant Assign")
 
 (provide 'zephir-face)
 ;;; zephir-face.el ends here

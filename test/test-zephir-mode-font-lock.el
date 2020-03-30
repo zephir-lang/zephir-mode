@@ -99,6 +99,11 @@
             '(("abstract" keyword "class" keyword "Kernel" type)))))
 
 (describe "Fontification constants"
+  (it "fontifies constant definition"
+    (expect "const FOO = 42;"
+            :to-be-fontified-as
+            '(("const" zephir-keyword "FOO" zephir-constant-assign))))
+
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
@@ -109,34 +114,39 @@
             '(("__CLASS__" builtin "__METHOD__" builtin "__NAMESPACE__" builtin))))
 
   (it "fontifies regular form of constants"
-    (expect "self::HTML5; Logger::ALERT; const FOO = 5;"
+    (expect "self::HTML5; Logger::ALERT;"
             :to-be-fontified-as
-            '(("HTML5" constant "ALERT" constant "FOO" constant)))))
+            '(("HTML5" constant "ALERT" constant)))))
 
 (describe "Fontification variables"
   (it "fontifies variables"
     (expect "$compilationContext->classDefinition->classEntry"
             :to-be-fontified-as
-            '(("classDefinition" variable-name "classEntry" variable-name))))
+            '(("->" zephir-object-operator "classDefinition" zephir-property-name
+               "->" zephir-object-operator "classEntry" zephir-property-name))))
 
   (it "fontifies methods call"
     (expect "$compilationContext->classDefinition->get()"
             :to-be-fontified-as
-            '(("classDefinition" variable-name "get" zephir-method-call)))
+            '(("->" zephir-object-operator "classDefinition" zephir-property-name
+               "->" zephir-object-operator "get" zephir-method-call)))
 
     (expect "foo->var->bar()"
             :to-be-fontified-as
-            '(("var" variable-name "bar" zephir-method-call)))))
+            '(("->" zephir-object-operator "var" zephir-property-name
+               "->" zephir-object-operator "bar" zephir-method-call)))))
 
 (describe "Fontification keywords"
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
-            '(("this" constant "foo" variable-name "this" constant)))
+            '(("this" constant "->" zephir-object-operator
+               "foo" zephir-property-name "this" constant)))
 
     (expect "$this->foo = $this;"
             :to-be-fontified-as
-            '(("this" constant "foo" variable-name "this" constant))))
+            '(("this" constant "->" zephir-object-operator
+               "foo" zephir-property-name "this" constant))))
 
   (it "fontifies booleans and null"
     (expect "null, false, true"
