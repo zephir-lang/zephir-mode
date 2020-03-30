@@ -112,18 +112,22 @@
 
 ;;;; Requirements
 
+(require 'zephir-face)
+
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
 
 ;; Pacify the byte compiler
 (eval-when-compile
-  (require 'rx)     ; `rx'
+  (require 'rx)
+
   ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
 
-(require 'imenu)    ; `imenu-generic-expression'
-(require 'pkg-info) ; `pkg-info-version-info'
+(require 'font-lock)
+(require 'imenu)
+(require 'pkg-info)
 
 
 ;;;; Customization
@@ -240,11 +244,11 @@ etc.  Return nil, if point is not in an IPG."
   (defconst zephir-rx-constituents
     `(
       ;; Identifier
-      (identifier . ,(rx symbol-start
-                         (? ?$)
+      (identifier . ,(rx (? ?$)
+                         word-start
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
-                         symbol-end))
+                         word-end))
       ;; Builtin declarations and reserved keywords
       (builtin-decl . ,(rx symbol-start
                            (or "class"
@@ -380,6 +384,15 @@ respectively."
 
      ;; Object name, group #2.
      "\\(" root-ns (zephir-rx classlike) "\\)")))
+
+(defun zephir-create-regexp-for-constant ()
+  "Make a regular expression for a constant definition.
+
+The regular expression will have two capture groups which will be
+the word ‘const’ and the name of a constant respectively."
+  (zephir-rx word-start (group "const")
+             (+ (syntax whitespace)) (? "&")
+             (group identifier)))
 
 (defun zephir-create-regexp-for-function (&optional visibility)
   "Make a regular expression for a function with the given VISIBILITY.
@@ -605,64 +618,111 @@ This uses CTX as a current parse state."
 
 ;;;; Font Locking
 
+(defun zephir-font-lock-syntactic-face (state)
+  "Specify font lock faces based on syntax table entries.
+Uses STATE as a syntax context."
+  (cond
+   ;; Multiline commentary
+   ((nth 4 state)
+    (if (save-excursion
+          (goto-char (zephir-comment-start-pos state))
+          (looking-at-p "/\\*\\*"))
+        font-lock-doc-face
+      font-lock-comment-face))))
+
 (defvar zephir-font-lock-keywords
-  `(
+  `(;; Fontify methods call like ‘object->method()’
+    (,(zephir-rx (group "->") (group identifier)
+                 (* (syntax whitespace))"(")
+     (1 'zephir-object-operator-face)
+     (2 'zephir-method-call-face))
+
+    ;; Highlight occurrences of user defined constants
+    (,(zephir-create-regexp-for-constant)
+     (1 'zephir-keyword-face)
+     (2 'zephir-constant-assign-face))
+
+    ;; Highlight occurrences of the word ‘this’
+    (,(zephir-rx word-start (group "this") word-end)
+     1 'zephir-this-face)
+
+    ;; Highlight properties like ‘object->property’
+    (,(zephir-rx (group "->") (group identifier)
+                 (* (syntax whitespace)))
+     (1 'zephir-object-operator-face)
+     (2 'zephir-property-name-face))
+
+    ;; Highlight function/method name i.e. ‘function foo ()’
+    (,(zephir-rx word-start (group fn-decl)
+                 (+ (syntax whitespace))
+                 (group identifier)
+                 (* (syntax whitespace)) "(")
+     (1 font-lock-keyword-face)
+     (2 'zephir-function-name-face))
+
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
+
     ;; ‘class Foo’
     (,(zephir-create-regexp-for-classlike)
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘namespace Foo’
     (,(zephir-create-regexp-for-classlike "namespace")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘interface Foo’
     (,(zephir-create-regexp-for-classlike "interface")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘use Foo’
     (,(zephir-create-regexp-for-classlike "use")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘... as Foo’
     (,(zephir-create-regexp-for-classlike "as")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘... implements Foo’
     (,(zephir-create-regexp-for-classlike "implements")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; ‘... extends Foo’
     (,(zephir-create-regexp-for-classlike "extends")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
+
     ;; Magic constants
     (,(zephir-rx (group magic-const))
      1 font-lock-builtin-face)
+
     ;; User-defined constants
     (,(zephir-rx (group (or constant builtin-const)))
      1 font-lock-constant-face)
-    ;; Highlight special variables
-    (,(zephir-rx (group symbol-start "this" word-end)
-                 (0+ "->" identifier))
-     1 font-lock-constant-face)
+
     ;; Visibility
     (,(rx-to-string `(group
                       symbol-start
                       (or ,@zephir-possible-visiblities)
                       symbol-end))
      (1 font-lock-keyword-face))
+
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
     ;; TODO(serghei): <visibility> static function <name>
     ;; TODO(serghei): deprecated function <name>
-    ;; TODO(serghei): function <name>
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
+     (2 'zephir-function-name-face))
+
     ;; Data types
     (,(zephir-rx (group data-type))
      1 font-lock-type-face))
@@ -699,14 +759,7 @@ This uses CTX as a current parse state."
                  (any "=" ";" "{"))
      1)
     ("Constants"
-     ,(zephir-rx line-start
-                 (* (syntax whitespace))
-                 "const"
-                 (+ (syntax whitespace))
-                 (group identifier)
-                 (* (syntax whitespace))
-                 "=")
-     1))
+     ,(zephir-create-regexp-for-constant) 2))
   "Imenu generic expression for `zephir-mode'.
 For more see `imenu-generic-expression'.")
 
@@ -719,15 +772,22 @@ For more see `imenu-generic-expression'.")
     (modify-syntax-entry ?_   "_"      table)
     (modify-syntax-entry ?$   "_"      table)
 
+    ;; Punctuaction constituents
+    (modify-syntax-entry ?+   "."      table)
+    (modify-syntax-entry ?-   "."      table)
+    (modify-syntax-entry ?=   "."      table)
+    (modify-syntax-entry ?%   "."      table)
+    (modify-syntax-entry ?<   "."      table)
+    (modify-syntax-entry ?>   "."      table)
+    (modify-syntax-entry ?&   "."      table)
+    (modify-syntax-entry ?|   "."      table)
+
     ;; Characters used to delimit string constants
     (modify-syntax-entry ?\"  "\""     table)
     (modify-syntax-entry ?\'  "\""     table)
 
     ;; Comment enders
     (modify-syntax-entry ?\n  "> b"    table)
-
-    ;; Give CR the same syntax as newline
-    (modify-syntax-entry ?\^m "> b"    table)
 
     ;; Set up block and line oriented comments
     (modify-syntax-entry ?/   ". 124b" table)
@@ -766,12 +826,14 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   (setq-local comment-end "")
 
   ;; Font locking
-  (setq font-lock-defaults
-        '((zephir-font-lock-keywords) ; keywords
-          nil                         ; keywords-only
-          nil))                       ; case-fold
+  (setq-local font-lock-syntactic-face-function
+              #'zephir-font-lock-syntactic-face)
+  (setq-local font-lock-defaults
+              '((zephir-font-lock-keywords) ; keywords
+                nil                         ; keywords-only
+                nil))                       ; case-fold
 
-  ;; TODO(serghei): Paragaphs
+  ;; TODO(serghei): Paragraphs
 
   ;; Imenu
   (setq-local imenu-generic-expression zephir-imenu-generic-expression)
@@ -791,5 +853,4 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
 (add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
 
 (provide 'zephir-mode)
-
 ;;; zephir-mode.el ends here

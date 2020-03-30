@@ -46,6 +46,22 @@
 
 ;;;; Tests
 
+(describe "Fontification of comments"
+  (it "fontifies C-style comments"
+    (expect "// Some text"
+            :to-be-fontified-as
+            '(("// " comment-delimiter "Some text" comment))))
+
+  (it "fontifies C++-style comments"
+    (expect "/* Some text */"
+            :to-be-fontified-as
+            '(("/* " comment-delimiter "Some text */" comment))))
+
+  (it "fontifies docblocks"
+    (expect "/** Some text */"
+            :to-be-fontified-as
+            '(("/** Some text */" doc)))))
+
 (describe "Fontification of classes"
   (it "fontifies classes"
     (expect "class A extends B implements C {}"
@@ -83,6 +99,15 @@
             '(("abstract" keyword "class" keyword "Kernel" type)))))
 
 (describe "Fontification constants"
+  (it "fontifies constant definition"
+    (expect "const FOO = 42;"
+            :to-be-fontified-as
+            '(("const" zephir-keyword "FOO" zephir-constant-assign)))
+
+    (expect "const &a = 13;"
+            :to-be-fontified-as
+            '(("const" zephir-keyword "a" zephir-constant-assign))))
+
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
@@ -93,18 +118,42 @@
             '(("__CLASS__" builtin "__METHOD__" builtin "__NAMESPACE__" builtin))))
 
   (it "fontifies regular form of constants"
-    (expect "self::HTML5; Logger::ALERT; const FOO = 5;"
+    (expect "self::HTML5; Logger::ALERT;"
             :to-be-fontified-as
-            '(("HTML5" constant "ALERT" constant "FOO" constant)))))
+            '(("HTML5" constant "ALERT" constant)))))
+
+(describe "Fontification variables"
+  (it "fontifies variables"
+    (expect "$compilationContext->classDefinition->classEntry"
+            :to-be-fontified-as
+            '(("->" zephir-object-operator "classDefinition" zephir-property-name
+               "->" zephir-object-operator "classEntry" zephir-property-name))))
+
+  (it "fontifies methods call"
+    (expect "$compilationContext->classDefinition->get()"
+            :to-be-fontified-as
+            '(("->" zephir-object-operator "classDefinition" zephir-property-name
+               "->" zephir-object-operator "get" zephir-method-call)))
+
+    (expect "foo->var->bar()"
+            :to-be-fontified-as
+            '(("->" zephir-object-operator "var" zephir-property-name
+               "->" zephir-object-operator "bar" zephir-method-call)))))
 
 (describe "Fontification keywords"
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
-            '(("this" constant "this" constant))))
+            '(("this" zephir-this "->" zephir-object-operator
+               "foo" zephir-property-name "this" zephir-this)))
+
+    (expect "$this->foo = $this;"
+            :to-be-fontified-as
+            '(("this" zephir-this-face "->" zephir-object-operator
+               "foo" zephir-property-name "this" zephir-this-face))))
 
   (it "fontifies booleans and null"
-    (expect "[ null, false, true ]"
+    (expect "null, false, true"
             :to-be-fontified-as
             '(("null" constant "false" constant "true" constant))))
 
@@ -149,29 +198,38 @@
             '(("private" keyword)))))
 
 (describe "Fontification of function headers"
-  (it "fontifies standard <visibility> function <name> () headers"
+  (it "fontifies standard ‘function <name> ()’ headers"
+    (expect "function foo () {}"
+            :to-be-fontified-as
+            '(("function" keyword "foo" zephir-function-name)))
+
+    (expect "function $foo() {}"
+            :to-be-fontified-as
+            '(("function" keyword "$foo" zephir-function-name))))
+
+  (it "fontifies standard ‘<visibility> function <name> ()’ headers"
     (expect "public function foo () {}"
             :to-be-fontified-as
-            '(("public" keyword "function" keyword "foo" function-name)))
+            '(("public" keyword "function" keyword "foo" zephir-function-name)))
 
     (expect "protected function bar () {}"
             :to-be-fontified-as
-            '(("protected" keyword "function" keyword "bar" function-name)))
+            '(("protected" keyword "function" keyword "bar" zephir-function-name)))
 
     (expect "private function baz () {}"
             :to-be-fontified-as
-            '(("private" keyword "function" keyword "baz" function-name)))
+            '(("private" keyword "function" keyword "baz" zephir-function-name)))
 
     (expect "internal function foo () {}"
             :to-be-fontified-as
-            '(("internal" keyword "function" keyword "foo" function-name)))
+            '(("internal" keyword "function" keyword "foo" zephir-function-name)))
 
     (expect "scoped function test () {}"
             :to-be-fontified-as
-            '(("scoped" keyword "function" keyword "test" function-name)))
+            '(("scoped" keyword "function" keyword "test" zephir-function-name)))
 
     (expect "internal function fuz () {}"
             :to-be-fontified-as
-            '(("internal" keyword "function" keyword "fuz" function-name)))))
+            '(("internal" keyword "function" keyword "fuz" zephir-function-name)))))
 
 ;;; test-zephir-mode-font-lock.el ends here
