@@ -765,15 +765,22 @@ For more see `imenu-generic-expression'.")
     (modify-syntax-entry ?_   "_"      table)
     (modify-syntax-entry ?$   "_"      table)
 
+    ;; Punctuaction constituents
+    (modify-syntax-entry ?+   "."      table)
+    (modify-syntax-entry ?-   "."      table)
+    (modify-syntax-entry ?=   "."      table)
+    (modify-syntax-entry ?%   "."      table)
+    (modify-syntax-entry ?<   "."      table)
+    (modify-syntax-entry ?>   "."      table)
+    (modify-syntax-entry ?&   "."      table)
+    (modify-syntax-entry ?|   "."      table)
+
     ;; Characters used to delimit string constants
     (modify-syntax-entry ?\"  "\""     table)
     (modify-syntax-entry ?\'  "\""     table)
 
     ;; Comment enders
     (modify-syntax-entry ?\n  "> b"    table)
-
-    ;; Give CR the same syntax as newline
-    (modify-syntax-entry ?\^m "> b"    table)
 
     ;; Set up block and line oriented comments
     (modify-syntax-entry ?/   ". 124b" table)
