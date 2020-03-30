@@ -618,59 +618,71 @@ Uses STATE as a syntax context."
       font-lock-comment-face))))
 
 (defvar zephir-font-lock-keywords
-  `(
-    ;; Builtin declaration
-    (,(zephir-rx (group builtin-decl))
-     1 font-lock-keyword-face)
-    ;; ‘class Foo’
-    (,(zephir-create-regexp-for-classlike)
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘namespace Foo’
-    (,(zephir-create-regexp-for-classlike "namespace")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘interface Foo’
-    (,(zephir-create-regexp-for-classlike "interface")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘use Foo’
-    (,(zephir-create-regexp-for-classlike "use")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘... as Foo’
-    (,(zephir-create-regexp-for-classlike "as")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘... implements Foo’
-    (,(zephir-create-regexp-for-classlike "implements")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; ‘... extends Foo’
-    (,(zephir-create-regexp-for-classlike "extends")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-    ;; Magic constants
-    (,(zephir-rx (group magic-const))
-     1 font-lock-builtin-face)
-    ;; User-defined constants
-    (,(zephir-rx (group (or constant builtin-const)))
-     1 font-lock-constant-face)
-    ;; Highlight special variables
-    (,(zephir-rx (group symbol-start "this" word-end)
+  `(;; Highlight special variables
+    (,(zephir-rx (0+ ?$) word-start (group "this") word-end
                  (0+ "->" identifier))
      1 font-lock-constant-face)
-    ;; object->poperty
+
+    ;; Highlight properties like ‘object->poperty’
     (,(zephir-rx "->"
                  (group identifier)
                  (* (syntax whitespace)))
      1 font-lock-variable-name-face)
+
+    ;; Builtin declaration
+    (,(zephir-rx (group builtin-decl))
+     1 font-lock-keyword-face)
+
+    ;; ‘class Foo’
+    (,(zephir-create-regexp-for-classlike)
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘namespace Foo’
+    (,(zephir-create-regexp-for-classlike "namespace")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘interface Foo’
+    (,(zephir-create-regexp-for-classlike "interface")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘use Foo’
+    (,(zephir-create-regexp-for-classlike "use")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘... as Foo’
+    (,(zephir-create-regexp-for-classlike "as")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘... implements Foo’
+    (,(zephir-create-regexp-for-classlike "implements")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; ‘... extends Foo’
+    (,(zephir-create-regexp-for-classlike "extends")
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+
+    ;; Magic constants
+    (,(zephir-rx (group magic-const))
+     1 font-lock-builtin-face)
+
+    ;; User-defined constants
+    (,(zephir-rx (group (or constant builtin-const)))
+     1 font-lock-constant-face)
+
     ;; Visibility
     (,(rx-to-string `(group
                       symbol-start
                       (or ,@zephir-possible-visiblities)
                       symbol-end))
      (1 font-lock-keyword-face))
+
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
     ;; TODO(serghei): <visibility> static function <name>
@@ -680,6 +692,7 @@ Uses STATE as a syntax context."
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face))
+
     ;; Data types
     (,(zephir-rx (group data-type))
      1 font-lock-type-face))

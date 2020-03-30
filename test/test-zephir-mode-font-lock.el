@@ -117,6 +117,10 @@
   (it "fontifies ‘this’ keyword"
     (expect "this->foo = this;"
             :to-be-fontified-as
+            '(("this" constant "foo" variable-name "this" constant)))
+
+    (expect "$this->foo = $this;"
+            :to-be-fontified-as
             '(("this" constant "foo" variable-name "this" constant))))
 
   (it "fontifies booleans and null"
