@@ -50,6 +50,36 @@
     (zephir-test-indent
      '("\"" "Hello World" "\""))))
 
+(describe "Block indentation"
+  (it "properly indents ‘if’ blocks"
+    (zephir-test-indent
+     '("if !fetch prefix, options[\"prefix\"] {"
+       "    let prefix = \"\";"
+       "    unset(options[\"prefix\"]);"
+       "}"))
+
+    (zephir-test-indent
+     '("if this->has(asset) {"
+       "    return false;"
+       "} else { "
+       "    return true;"
+       "}")))
+
+  (it "properly indents ‘classlike’ blocks"
+    (zephir-test-indent
+     '("class A"
+       "{"
+       "    public b;"
+       "    public function foo() {"
+       "        let b = 42;"
+       "    }"
+       "    public function bar()"
+       "    {"
+       "        let b = 13;"
+       "    }"
+       "}")))
+  )
+
 (describe "Argguments list indentation"
   (it "indents regular function calls"
     (zephir-test-indent
@@ -74,7 +104,7 @@
        "    $arg2,"
        "    array $arg3 = []"
        ") {"
-       "// method body" ;; TODO(serghei): implement me
+       "    // method body"
        "}"))))
 
 (describe "Array indentation"
