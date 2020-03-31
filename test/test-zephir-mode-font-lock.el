@@ -257,6 +257,24 @@
             :to-be-fontified-as
             '(("fn" zephir-keyword-face "foo" zephir-function-name
                "int" zephir-type)
-              ("bool" zephir-type "istring" zephir-type)))))
+              ("bool" zephir-type "istring" zephir-type))))
+
+  (it "fontifies parametrized function headers"
+    (expect "function go (a, &b, $c, &$d) {}"
+            :to-be-fontified-as
+            '(("function" zephir-keyword-face "go" zephir-function-name
+               "a" zephir-variable-name "b" zephir-variable-name
+               "$c" zephir-variable-name "$d" zephir-variable-name)))
+
+    (expect "fn test (int a, string b, bool c, <A> d, const <\\A\\B> &$c) {}"
+            :to-be-fontified-as
+            ;; FIXME: ‘"const" zephir-variable-name’ => keyword, not variable
+            '(("fn" zephir-keyword-face "test" zephir-function-name
+               "int" zephir-type "a" zephir-variable-name
+               "string" zephir-type "b" zephir-variable-name
+               "bool" zephir-type "c" zephir-variable-name
+               "A" zephir-type "d" zephir-variable-name
+               "const" zephir-variable-name "\\A\\B" zephir-type
+               "$c" zephir-variable-name)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

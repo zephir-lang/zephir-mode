@@ -112,6 +112,7 @@
 
 ;;;; Requirements
 
+(require 'subr-x)
 (require 'zephir-face)
 
 ;; Tell the byte compiler about autoloaded functions from packages
@@ -232,6 +233,18 @@ etc.  Return nil, if point is not in an IPG."
       (when (and opoint
                  (progn (goto-char opoint) (looking-at-p re-open)))
         opoint))))
+
+(defun zephir-in-param-list-p ()
+  "Determine whether `point' is in a function parameter list."
+  (ignore-errors
+    (save-excursion
+      (when-let ((open-paren-pt (zephir-in-ipg "(")))
+        open-paren-pt
+        (goto-char open-paren-pt)
+        (forward-symbol -1)
+        (or (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>" )
+            (progn (forward-symbol -1)
+                   (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
 
 
 ;;;; Specialized rx
@@ -657,12 +670,32 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
-    ;; Type hints i.e. ‘function foo (int a, string b)’
-    (,(zephir-rx (? ?!) word-boundary (group data-type)
+    ;; Type hints i.e. ‘int a’
+    (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                 word-boundary (group data-type) (? ?!)
                  (+ (syntax whitespace)) (? ?&)
                  (group identifier))
      (1 'zephir-type-face)
      (2 'zephir-variable-name-face))
+
+    ;; Type hints i.e. ‘<AdapterFactory> factory’
+    (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                 "<" (group (+ (or (syntax word) (syntax symbol) "\\"))) ">"
+                 (+ (syntax whitespace)) (? ?&)
+                 (group identifier))
+     (1 'zephir-type-face)
+     (2 'zephir-variable-name-face))
+
+    ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
+    (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
+                 (* (syntax whitespace)) (in "," ")"))
+     (,(zephir-rx identifier)
+      (if (save-excursion (backward-char)
+                          (zephir-in-param-list-p))
+          (forward-symbol -1)
+        (end-of-line))
+      (end-of-line)
+      (0 'zephir-variable-name-face)))
 
     ;; Return type hints
     (,(zephir-rx (or (:")" (* (syntax whitespace)) "->") "|")
@@ -734,6 +767,7 @@ Uses STATE as a syntax context."
      (1 font-lock-keyword-face)
      (2 'zephir-function-name-face)))
   "Font lock keywords for Zephir Mode.")
+
 
 
 ;;;; Alignment
