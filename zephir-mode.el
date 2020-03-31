@@ -657,7 +657,7 @@ Uses STATE as a syntax context."
                  (+ (syntax whitespace))
                  (group identifier)
                  (* (syntax whitespace)) "(")
-     (1 font-lock-keyword-face)
+     (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
     ;; Builtin declaration
