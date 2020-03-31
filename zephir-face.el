@@ -88,6 +88,12 @@
   :group 'zephir-faces
   :tag "Zephir Object Operator")
 
+(defface zephir-type-face
+  '((t (:inherit font-lock-type-face)))
+  "Zephir Mode face used to highlight types."
+  :group 'zephir-faces
+  :tag "Zephir Type")
+
 (defface zephir-constant-face
   '((t (:inherit font-lock-constant-face)))
   "Zephir Mode face used to highlight constants."

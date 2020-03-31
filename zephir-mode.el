@@ -287,8 +287,7 @@ etc.  Return nil, if point is not in an IPG."
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
       ;; Data types
-      (data-type . ,(rx symbol-start
-                        (or (and (? "u") "int")
+      (data-type . ,(rx (or (and (? "u") "int")
                             (and "bool" (? "ean"))
                             (and (? "u") "long")
                             (and (? "u") "char")
@@ -299,8 +298,7 @@ etc.  Return nil, if point is not in an IPG."
                             "object"
                             "var"
                             "void"
-                            "array")
-                        symbol-end)))
+                            "array"))))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -340,10 +338,10 @@ See `rx' documentation for more information about REGEXPS param."
       (rx-to-string (cond ((null sexps) (error "No regexp is provided"))
                           ((cdr sexps)  `(and ,@sexps))
                           (t            (car sexps)))
-                    t))))
+                    t)))
 
-(defun zephir-create-regexp-for-classlike (&optional type)
-  "Make a regular expression for a ‘classlike’ with the given TYPE.
+  (defun zephir-create-regexp-for-classlike (&optional type)
+    "Make a regular expression for a ‘classlike’ with the given TYPE.
 
 Optional TYPE must be a string that specifies the type of a
 object, such as ‘interface’ or ‘namespace’.
@@ -353,49 +351,49 @@ keywords that can appear in ‘classlike’ signatures,
 e.g. ‘abstract’ or ‘final’.  The regular expression will have two
 capture groups which will be TYPE and the name of an object
 respectively."
-  (let ((type (or type "class"))
-        (line-start "")
-        (modifier "")
-        (root-ns ""))
-    (cond
-     ((string= type "class")
-      (setq line-start "^"
-            ;; Class modifier, e.g. if “abstract” or “final”
-            modifier "\\(?:\\(?:abstract\\|final\\)?\\s-+\\)?"))
-     ((string= type "interface")
-      (setq line-start "^"))
-     ((string= type "namespace")
-      (setq line-start "^"))
-     ((or (string= type "extends")
-          (string= type "implements")
-          (string= type "use"))
-      (setq root-ns "\\\\?")))
+    (let ((type (or type "class"))
+          (line-start "")
+          (modifier "")
+          (root-ns ""))
+      (cond
+       ((string= type "class")
+        (setq line-start "^"
+              ;; Class modifier, e.g. if “abstract” or “final”
+              modifier "\\(?:\\(?:abstract\\|final\\)?\\s-+\\)?"))
+       ((string= type "interface")
+        (setq line-start "^"))
+       ((string= type "namespace")
+        (setq line-start "^"))
+       ((or (string= type "extends")
+            (string= type "implements")
+            (string= type "use"))
+        (setq root-ns "\\\\?")))
 
-    ;; Concatenate regexp parts
-    (concat
-     line-start
-     "\\s-*"
-     modifier
+      ;; Concatenate regexp parts
+      (concat
+       line-start
+       "\\s-*"
+       modifier
 
-     ;; Object type, group #1
-     "\\(" type "\\)"
+       ;; Object type, group #1
+       "\\(" type "\\)"
 
-     "\\s-+"
+       "\\s-+"
 
-     ;; Object name, group #2.
-     "\\(" root-ns (zephir-rx classlike) "\\)")))
+       ;; Object name, group #2.
+       "\\(" root-ns (zephir-rx classlike) "\\)")))
 
-(defun zephir-create-regexp-for-constant ()
-  "Make a regular expression for a constant definition.
+  (defun zephir-create-regexp-for-constant ()
+    "Make a regular expression for a constant definition.
 
 The regular expression will have two capture groups which will be
 the word ‘const’ and the name of a constant respectively."
-  (zephir-rx word-start (group "const")
-             (+ (syntax whitespace)) (? "&")
-             (group identifier)))
+    (zephir-rx word-start (group "const")
+               (+ (syntax whitespace)) (? "&")
+               (group identifier)))
 
-(defun zephir-create-regexp-for-function (&optional visibility)
-  "Make a regular expression for a function with the given VISIBILITY.
+  (defun zephir-create-regexp-for-function (&optional visibility)
+    "Make a regular expression for a function with the given VISIBILITY.
 
 Optional VISIBILITY, when passed, must be a string that specifies
 the visibility for a Zephir function, e.g. ‘scoped’ or ‘public’.
@@ -406,26 +404,26 @@ keywords that can appear in method signatures, e.g. ‘final’ or
 ‘deprecated’.  The regular expression will have two capture
 groups which will be the word ‘function’ (or ‘fn’) and the name
 of a function respectively."
-  (let ((visibility (or visibility zephir-possible-visiblities)))
-    (when (stringp visibility)
-      (setq visibility (list visibility)))
-    (rx-to-string `(: line-start
-                      (* (syntax whitespace))
-                      (? "deprecated" (+ (syntax whitespace)))
-                      (* (or "abstract" "final")
-                         (+ (syntax whitespace)))
-                      (or ,@visibility)
-                      (+ (syntax whitespace))
-                      (? "static" (+ (syntax whitespace)))
-                      (group (or "fn" "function"))
-                      (+ (syntax whitespace))
-                      (group symbol-start
-                             (? ?$)
-                             (any "A-Z" "a-z" ?_)
-                             (0+ (any "A-Z" "a-z" "0-9" ?_))
-                             symbol-end)
-                      (* (syntax whitespace))
-		      "("))))
+    (let ((visibility (or visibility zephir-possible-visiblities)))
+      (when (stringp visibility)
+        (setq visibility (list visibility)))
+      (rx-to-string `(: line-start
+                        (* (syntax whitespace))
+                        (? "deprecated" (+ (syntax whitespace)))
+                        (* (or "abstract" "final")
+                           (+ (syntax whitespace)))
+                        (or ,@visibility)
+                        (+ (syntax whitespace))
+                        (? "static" (+ (syntax whitespace)))
+                        (group (or "fn" "function"))
+                        (+ (syntax whitespace))
+                        (group symbol-start
+                               (? ?$)
+                               (any "A-Z" "a-z" ?_)
+                               (0+ (any "A-Z" "a-z" "0-9" ?_))
+                               symbol-end)
+                        (* (syntax whitespace))
+		        "(")))))
 
 
 ;;;; Navigation
@@ -621,14 +619,13 @@ This uses CTX as a current parse state."
 (defun zephir-font-lock-syntactic-face (state)
   "Specify font lock faces based on syntax table entries.
 Uses STATE as a syntax context."
-  (cond
-   ;; Multiline commentary
-   ((nth 4 state)
+  (if (nth 3 state)
+      font-lock-string-face
     (if (save-excursion
           (goto-char (zephir-comment-start-pos state))
-          (looking-at-p "/\\*\\*"))
+          (looking-at "/\\*\\*"))
         font-lock-doc-face
-      font-lock-comment-face))))
+      font-lock-comment-face)))
 
 (defvar zephir-font-lock-keywords
   `(;; Fontify methods call like ‘object->method()’
@@ -657,8 +654,15 @@ Uses STATE as a syntax context."
                  (+ (syntax whitespace))
                  (group identifier)
                  (* (syntax whitespace)) "(")
-     (1 font-lock-keyword-face)
+     (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
+
+    ;; Type hints i.e. ‘function foo (int a, string b)’
+    (,(zephir-rx (? ?!) word-boundary (group data-type)
+                 (+ (syntax whitespace)) (? ?&)
+                 (group identifier))
+     (1 'zephir-type-face)
+     (2 'zephir-variable-name-face))
 
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
@@ -721,11 +725,7 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
-     (2 'zephir-function-name-face))
-
-    ;; Data types
-    (,(zephir-rx (group data-type))
-     1 font-lock-type-face))
+     (2 'zephir-function-name-face)))
   "Font lock keywords for Zephir Mode.")
 
 
