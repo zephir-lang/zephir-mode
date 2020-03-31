@@ -243,6 +243,20 @@
     (expect "internal function fuz () {}"
             :to-be-fontified-as
             '(("internal" keyword "function" zephir-keyword-face
-               "fuz" zephir-function-name)))))
+               "fuz" zephir-function-name))))
+
+  (it "fontifies return type hints headers"
+    (expect "fn foo() -> array | int | <Foo> | <\\A\\B\\C> | void"
+            :to-be-fontified-as
+            '(("fn" zephir-keyword-face "foo" zephir-function-name
+               "array" zephir-type "int" zephir-type "Foo" zephir-type
+               "\\A\\B\\C" zephir-type "void" zephir-type)))
+
+    (expect "fn foo() -> int
+             | bool | istring"
+            :to-be-fontified-as
+            '(("fn" zephir-keyword-face "foo" zephir-function-name
+               "int" zephir-type)
+              ("bool" zephir-type "istring" zephir-type)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

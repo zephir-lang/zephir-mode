@@ -664,6 +664,13 @@ Uses STATE as a syntax context."
      (1 'zephir-type-face)
      (2 'zephir-variable-name-face))
 
+    ;; Return type hints
+    (,(zephir-rx (or (:")" (* (syntax whitespace)) "->") "|")
+                 (* (syntax whitespace)) (? ?<)
+                 (group (+ (or (syntax word) (syntax symbol) "\\")))
+                 (? ?>) (* (syntax whitespace)))
+     1 'zephir-type-face)
+
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
