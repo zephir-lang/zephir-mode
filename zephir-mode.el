@@ -619,14 +619,13 @@ This uses CTX as a current parse state."
 (defun zephir-font-lock-syntactic-face (state)
   "Specify font lock faces based on syntax table entries.
 Uses STATE as a syntax context."
-  (cond
-   ;; Multiline commentary
-   ((nth 4 state)
+  (if (nth 3 state)
+      font-lock-string-face
     (if (save-excursion
           (goto-char (zephir-comment-start-pos state))
-          (looking-at-p "/\\*\\*"))
+          (looking-at "/\\*\\*"))
         font-lock-doc-face
-      font-lock-comment-face))))
+      font-lock-comment-face)))
 
 (defvar zephir-font-lock-keywords
   `(;; Fontify methods call like ‘object->method()’
