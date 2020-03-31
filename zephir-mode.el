@@ -669,17 +669,26 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
-    ;; Type hints i.e. ‘function foo (int a, string b)’
-    (,(zephir-rx (? ?!) word-boundary (group data-type)
+    ;; Type hints i.e. ‘int a’
+    (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                 word-boundary (group data-type) (? ?!)
                  (+ (syntax whitespace)) (? ?&)
-                 identifier)
-     (1 'zephir-type-face))
+                 (group identifier))
+     (1 'zephir-type-face)
+     (2 'zephir-variable-name-face))
 
-    ;; Continued formal parameter list.
-    ;; This compliments previous rule
+    ;; Type hints i.e. ‘<AdapterFactory> factory’
+    (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                 "<" (group (+ (or (syntax word) (syntax symbol) "\\"))) ">"
+                 (+ (syntax whitespace)) (? ?&)
+                 (group identifier))
+     (1 'zephir-type-face)
+     (2 'zephir-variable-name-face))
+
+    ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
     (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
                  (* (syntax whitespace)) (in "," ")"))
-     (,(zephir-rx (? ?&) identifier)
+     (,(zephir-rx identifier)
       (if (save-excursion (backward-char)
                           (zephir-in-param-list-p))
           (forward-symbol -1)
