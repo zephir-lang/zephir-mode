@@ -257,6 +257,15 @@
             :to-be-fontified-as
             '(("fn" zephir-keyword-face "foo" zephir-function-name
                "int" zephir-type)
-              ("bool" zephir-type "istring" zephir-type)))))
+              ("bool" zephir-type "istring" zephir-type))))
+
+  (it "fontifies parametrized function headers"
+    (expect "fn test (int a, string b, bool c, A d) {}"
+            :to-be-fontified-as
+            '(("fn" zephir-keyword-face "test" zephir-function-name
+               "int" zephir-type "a" zephir-variable-name
+               "string" zephir-type "b" zephir-variable-name
+               "bool" zephir-type "c" zephir-variable-name
+               "A" zephir-variable-name "d" zephir-variable-name)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

@@ -147,6 +147,38 @@
        (re-search-forward (zephir-create-regexp-for-classlike "extends"))
        (expect (point) :to-be 58))))
 
+  (describe "zephir-in-param-list-p"
+    (it "determines position the regular function's parameter list"
+      (with-zephir-buffer
+       '("function foo (int a, string <*>b) {}")
+       (expect (zephir-in-param-list-p)))
+
+      (with-zephir-buffer
+       '("function              "
+         "foo            ("
+         "int a, string <*>b) {}")
+       (expect (zephir-in-param-list-p)))
+
+      (with-zephir-buffer
+       '("function1 foo (int a, string <*>b) {}")
+       (expect (zephir-in-param-list-p) :to-be nil))
+
+      (with-zephir-buffer
+       '("function foo (int a, string b) {<*>}")
+       (expect (zephir-in-param-list-p) :to-be nil)))
+
+    (it "determines position the anonimous function's parameter list"
+      (with-zephir-buffer
+       '("let function (int a, string <*>b) {}")
+       (expect (zephir-in-param-list-p)))
+
+      (with-zephir-buffer
+       '("let "
+         "function "
+         "(int a, "
+         "string b<*>b) {}")
+       (expect (zephir-in-param-list-p)))))
+
   (describe "zephir-in-listlike"
     (it "determines the position of the openning ‘[’"
       (with-zephir-buffer
