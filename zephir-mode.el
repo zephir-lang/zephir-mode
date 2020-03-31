@@ -639,133 +639,135 @@ Uses STATE as a syntax context."
         font-lock-doc-face
       font-lock-comment-face)))
 
-(defvar zephir-font-lock-keywords
-  `(;; Fontify methods call like ‘object->method()’
-    (,(zephir-rx (group "->") (group identifier)
-                 (* (syntax whitespace))"(")
-     (1 'zephir-object-operator-face)
-     (2 'zephir-method-call-face))
+(eval-when-compile
+  (defvar zephir-font-lock-keywords
+    `(;; Fontify methods call like ‘object->method()’
+      (,(zephir-rx (group "->") (group identifier)
+                   (* (syntax whitespace))"(")
+       (1 'zephir-object-operator-face)
+       (2 'zephir-method-call-face))
 
-    ;; Highlight occurrences of user defined constants
-    (,(zephir-create-regexp-for-constant)
-     (1 'zephir-keyword-face)
-     (2 'zephir-constant-assign-face))
+      ;; Highlight occurrences of user defined constants
+      (,(zephir-create-regexp-for-constant)
+       (1 'zephir-keyword-face)
+       (2 'zephir-constant-assign-face))
 
-    ;; Highlight occurrences of the word ‘this’
-    (,(zephir-rx word-start (group "this") word-end)
-     1 'zephir-this-face)
+      ;; Highlight occurrences of the word ‘this’
+      (,(zephir-rx word-start (group "this") word-end)
+       1 'zephir-this-face)
 
-    ;; Highlight properties like ‘object->property’
-    (,(zephir-rx (group "->") (group identifier)
-                 (* (syntax whitespace)))
-     (1 'zephir-object-operator-face)
-     (2 'zephir-property-name-face))
+      ;; Highlight properties like ‘object->property’
+      (,(zephir-rx (group "->") (group identifier)
+                   (* (syntax whitespace)))
+       (1 'zephir-object-operator-face)
+       (2 'zephir-property-name-face))
 
-    ;; Highlight function/method name i.e. ‘function foo ()’
-    (,(zephir-rx word-start (group fn-decl)
-                 (+ (syntax whitespace))
-                 (group identifier)
-                 (* (syntax whitespace)) "(")
-     (1 'zephir-keyword-face)
-     (2 'zephir-function-name-face))
+      ;; Highlight function/method name i.e. ‘function foo ()’
+      (,(zephir-rx word-start (group fn-decl)
+                   (+ (syntax whitespace))
+                   (group identifier)
+                   (* (syntax whitespace)) "(")
+       (1 'zephir-keyword-face)
+       (2 'zephir-function-name-face))
 
-    ;; Type hints i.e. ‘int a’
-    (,(zephir-rx (? "const" (+ (syntax whitespace)))
-                 word-boundary (group data-type) (? ?!)
-                 (+ (syntax whitespace)) (? ?&)
-                 (group identifier))
-     (1 'zephir-type-face)
-     (2 'zephir-variable-name-face))
+      ;; Type hints i.e. ‘int a’
+      (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                   word-boundary (group data-type) (? ?!)
+                   (+ (syntax whitespace)) (? ?&)
+                   (group identifier))
+       (1 'zephir-type-face)
+       (2 'zephir-variable-name-face))
 
-    ;; Type hints i.e. ‘<AdapterFactory> factory’
-    (,(zephir-rx (? "const" (+ (syntax whitespace)))
-                 "<" (group (+ (or (syntax word) (syntax symbol) "\\"))) ">"
-                 (+ (syntax whitespace)) (? ?&)
-                 (group identifier))
-     (1 'zephir-type-face)
-     (2 'zephir-variable-name-face))
+      ;; Type hints i.e. ‘<AdapterFactory> factory’
+      (,(zephir-rx (? "const" (+ (syntax whitespace)))
+                   "<" (group (+ (or (syntax word) (syntax symbol) "\\"))) ">"
+                   (+ (syntax whitespace)) (? ?&)
+                   (group identifier))
+       (1 'zephir-type-face)
+       (2 'zephir-variable-name-face))
 
-    ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
-    (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
-                 (* (syntax whitespace)) (in "," ")"))
-     (,(zephir-rx identifier)
-      (if (save-excursion (backward-char)
-                          (zephir-in-param-list-p))
-          (forward-symbol -1)
-        (end-of-line))
-      (end-of-line)
-      (0 'zephir-variable-name-face)))
+      ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
+      (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
+                   (* (syntax whitespace)) (in "," ")"))
+       (,(zephir-rx identifier)
+        (if (save-excursion (backward-char)
+                            (zephir-in-param-list-p))
+            (forward-symbol -1)
+          (end-of-line))
+        (end-of-line)
+        (0 'zephir-variable-name-face)))
 
-    ;; Return type hints
-    (,(zephir-rx (or (:")" (* (syntax whitespace)) "->") "|")
-                 (* (syntax whitespace)) (? ?<)
-                 (group (+ (or (syntax word) (syntax symbol) "\\")))
-                 (? ?>) (* (syntax whitespace)))
-     1 'zephir-type-face)
+      ;; Return type hints
+      (,(zephir-rx (or (:")" (* (syntax whitespace)) "->") "|")
+                   (* (syntax whitespace)) (? ?<)
+                   (group (+ (or (syntax word) (syntax symbol) "\\")))
+                   (? ?>) (* (syntax whitespace)))
+       1 'zephir-type-face)
 
-    ;; Builtin declaration
-    (,(zephir-rx (group builtin-decl))
-     1 font-lock-keyword-face)
+      ;; Builtin declaration
+      (,(zephir-rx (group builtin-decl))
+       1 font-lock-keyword-face)
 
-    ;; ‘class Foo’
-    (,(zephir-create-regexp-for-classlike)
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘class Foo’
+      (,(zephir-create-regexp-for-classlike)
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘namespace Foo’
-    (,(zephir-create-regexp-for-classlike "namespace")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘namespace Foo’
+      (,(zephir-create-regexp-for-classlike "namespace")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘interface Foo’
-    (,(zephir-create-regexp-for-classlike "interface")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘interface Foo’
+      (,(zephir-create-regexp-for-classlike "interface")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘use Foo’
-    (,(zephir-create-regexp-for-classlike "use")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘use Foo’
+      (,(zephir-create-regexp-for-classlike "use")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘... as Foo’
-    (,(zephir-create-regexp-for-classlike "as")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘... as Foo’
+      (,(zephir-create-regexp-for-classlike "as")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘... implements Foo’
-    (,(zephir-create-regexp-for-classlike "implements")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘... implements Foo’
+      (,(zephir-create-regexp-for-classlike "implements")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; ‘... extends Foo’
-    (,(zephir-create-regexp-for-classlike "extends")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
+      ;; ‘... extends Foo’
+      (,(zephir-create-regexp-for-classlike "extends")
+       (1 font-lock-keyword-face)
+       (2 font-lock-type-face))
 
-    ;; Magic constants
-    (,(zephir-rx (group magic-const))
-     1 font-lock-builtin-face)
+      ;; Magic constants
+      (,(zephir-rx (group magic-const))
+       1 font-lock-builtin-face)
 
-    ;; User-defined constants
-    (,(zephir-rx (group (or constant builtin-const)))
-     1 font-lock-constant-face)
+      ;; User-defined constants
+      (,(zephir-rx (group (or constant builtin-const)))
+       1 font-lock-constant-face)
 
-    ;; Visibility
-    (,(rx-to-string `(group
-                      symbol-start
-                      (or ,@zephir-possible-visiblities)
-                      symbol-end))
-     (1 font-lock-keyword-face))
+      ;; Visibility
+      (,(rx-to-string `(group
+                        symbol-start
+                        (or ,@zephir-possible-visiblities)
+                        symbol-end))
+       (1 font-lock-keyword-face))
 
-    ;; Function names, i.e. ‘function foo’
-    ;; TODO(serghei): deprecated <visibility> function <name>
-    ;; TODO(serghei): <visibility> static function <name>
-    ;; TODO(serghei): deprecated function <name>
-    ;; TODO(serghei): let foo = function () {}
-    (,(zephir-create-regexp-for-function)
-     (1 font-lock-keyword-face)
-     (2 'zephir-function-name-face)))
-  "Font lock keywords for Zephir Mode.")
+      ;; Function names, i.e. ‘function foo’
+      ;; TODO(serghei): deprecated <visibility> function <name>
+      ;; TODO(serghei): <visibility> static function <name>
+      ;; TODO(serghei): deprecated function <name>
+      ;; TODO(serghei): let foo = function () {}
+      (,(zephir-create-regexp-for-function)
+       (1 font-lock-keyword-face)
+       (2 'zephir-function-name-face)))
+    "Font lock keywords for Zephir Mode."))
+
 
 
 ;;;; Alignment
