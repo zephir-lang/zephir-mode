@@ -157,15 +157,13 @@
             :to-be-fontified-as
             '(("null" constant "false" constant "true" constant))))
 
-  (it "fontifies data types"
-    (expect "int uint bool boolean float double long ulong
-     char uchar string istring resource object var void array callable"
+  (it "fontifies type hints"
+    (expect "int foo; bool &bar, double $baz; istring &$buz"
             :to-be-fontified-as
-            '(("int" type "uint" type "bool" type "boolean" type "float" type
-               "double" type "long" type "ulong" type)
-              ("char" type "uchar" type "string" type "istring" type
-               "resource" type "object" type "var" type "void" type
-               "array" type "callable" type)))))
+            '(("int" zephir-type "foo" zephir-variable-name
+               "bool" zephir-type "bar" zephir-variable-name
+               "double" zephir-type "$baz" zephir-variable-name
+               "istring" zephir-type "$buz" zephir-variable-name)))))
 
 (describe "Fontification of visibility"
   (it "fontifies property visibility"

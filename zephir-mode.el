@@ -287,8 +287,7 @@ etc.  Return nil, if point is not in an IPG."
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
       ;; Data types
-      (data-type . ,(rx symbol-start
-                        (or (and (? "u") "int")
+      (data-type . ,(rx (or (and (? "u") "int")
                             (and "bool" (? "ean"))
                             (and (? "u") "long")
                             (and (? "u") "char")
@@ -299,8 +298,7 @@ etc.  Return nil, if point is not in an IPG."
                             "object"
                             "var"
                             "void"
-                            "array")
-                        symbol-end)))
+                            "array"))))
     "Additional special sexps for `zephir-rx'.")
 
   (defmacro zephir-rx (&rest sexps)
@@ -660,6 +658,13 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
+    ;; Type hints i.e. ‘function foo (int a, string b)’
+    (,(zephir-rx (? ?!) word-boundary (group data-type)
+                 (+ (syntax whitespace)) (? ?&)
+                 (group identifier))
+     (1 'zephir-type-face)
+     (2 'zephir-variable-name-face))
+
     ;; Builtin declaration
     (,(zephir-rx (group builtin-decl))
      1 font-lock-keyword-face)
@@ -721,11 +726,7 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 font-lock-keyword-face)
-     (2 'zephir-function-name-face))
-
-    ;; Data types
-    (,(zephir-rx (group data-type))
-     1 font-lock-type-face))
+     (2 'zephir-function-name-face)))
   "Font lock keywords for Zephir Mode.")
 
 
