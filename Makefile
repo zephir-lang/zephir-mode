@@ -24,6 +24,12 @@ include default.mk
 	@$(RUNEMACS) --eval '(setq byte-compile-error-on-warn t)' \
 		-f batch-byte-compile $<
 
+$(AUTOLOADS): $(SRCS)
+	@$(EMACSBATCH) --eval \
+		"(progn \
+		  (require 'package) \
+		  (package-generate-autoloads \"zephir-mode\" default-directory))"
+
 ## Public targets
 
 .PHONY: .title
@@ -41,6 +47,9 @@ checkdoc:
 
 .PHONY: build
 build: $(OBJS)
+
+.PHONY: autoloads
+autoloads: $(AUTOLOADS)
 
 .PHONY: test
 test:
@@ -65,6 +74,7 @@ help: .title
 	@echo '  init:       Initialize the project (has to be launched first)'
 	@echo '  checkdoc:   Checks Zephir Mode code for errors in the documentation'
 	@echo '  build:      Byte compile Zephir Mode package'
+	@echo '  autoloads:  Generate autoloads file'
 	@echo '  test:       Run the non-interactive unit test suite'
 	@echo '  clean:      Remove all byte compiled Elisp files, documentation,'
 	@echo '              build artifacts and tarball'
