@@ -275,6 +275,16 @@
                "bool" zephir-type "c" zephir-variable-name
                "A" zephir-type "d" zephir-variable-name
                "const" zephir-variable-name "\\A\\B" zephir-type
-               "$c" zephir-variable-name)))))
+               "$c" zephir-variable-name))))
+
+  (it "fontifies default values for function's parameters"
+    (expect "function test (a = null, b=false, c=CONST_VAL, d = 42, e=\"str\")"
+            :to-be-fontified-as
+            '(("function" zephir-keyword-face "test" zephir-function-name
+               "a" zephir-variable-name "null" constant
+               "b" zephir-variable-name "false" constant
+               "c" zephir-variable-name "CONST_VAL" constant
+               "d" zephir-variable-name
+               "e" zephir-variable-name "\"str\"" string)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

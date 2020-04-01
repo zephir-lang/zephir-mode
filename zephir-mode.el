@@ -647,10 +647,18 @@ Uses STATE as a syntax context."
      (1 'zephir-object-operator-face)
      (2 'zephir-method-call-face))
 
-    ;; Highlight occurrences of user defined constants
+    ;; Highlight definition of user defined constants
     (,(zephir-create-regexp-for-constant)
      (1 'zephir-keyword-face)
      (2 'zephir-constant-assign-face))
+
+    ;; Highlight occurrences of magic constants
+    (,(zephir-rx (group magic-const))
+     1 font-lock-builtin-face)
+
+    ;; Highlight occurrences of built-in constants
+    (,(zephir-rx (group (or constant builtin-const)))
+     1 font-lock-constant-face)
 
     ;; Highlight occurrences of the word ‘this’
     (,(zephir-rx word-start (group "this") word-end)
@@ -688,7 +696,7 @@ Uses STATE as a syntax context."
 
     ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
     (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
-                 (* (syntax whitespace)) (in "," ")"))
+                 (* (syntax whitespace)) (in "," ")" "="))
      (,(zephir-rx identifier)
       (if (save-excursion (backward-char)
                           (zephir-in-param-list-p))
@@ -742,14 +750,6 @@ Uses STATE as a syntax context."
     (,(zephir-create-regexp-for-classlike "extends")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
-
-    ;; Magic constants
-    (,(zephir-rx (group magic-const))
-     1 font-lock-builtin-face)
-
-    ;; User-defined constants
-    (,(zephir-rx (group (or constant builtin-const)))
-     1 font-lock-constant-face)
 
     ;; Visibility
     (,(rx-to-string `(group
