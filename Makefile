@@ -42,7 +42,9 @@ init: Cask
 
 .PHONY: checkdoc
 checkdoc:
-	@$(EMACSBATCH) --eval '(checkdoc-file "$(SRCS)")'
+	@for f in $(SRCS) ; do \
+		$(EMACSBATCH) --eval "(checkdoc-file \"$$f\")"; \
+	done
 	$(info Done.)
 
 .PHONY: build
@@ -60,7 +62,7 @@ clean:
 	$(info Remove all byte compiled Elisp files...)
 	@$(CASK) clean-elc
 	$(info Remove build artifacts...)
-	@$(RM) README ChangeLog coverage-final.json
+	@$(RM) README ChangeLog coverage-final.json $(AUTOLOADS)
 	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar
 
 .PHONY: help
