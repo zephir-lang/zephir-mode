@@ -42,10 +42,11 @@ init: Cask
 
 .PHONY: checkdoc
 checkdoc:
-	@for f in $(SRCS) ; do \
-		echo "Checking $$f ..."
-		$(EMACSBATCH) --eval "(checkdoc-file \"$$f\")"; \
-	done && echo "Done."
+	@for f in $(SRCS) ; do                                    \
+		echo -n "Checking $$f ...";                       \
+		$(EMACSBATCH) --eval "(checkdoc-file \"$$f\")" && \
+		echo " done";                                     \
+	done
 
 .PHONY: build
 build: $(OBJS)
