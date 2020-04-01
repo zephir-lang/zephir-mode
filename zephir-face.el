@@ -100,6 +100,12 @@
   :group 'zephir-faces
   :tag "Zephir Constant")
 
+(defface zephir-magical-constant-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Zephir Mode face used to highlight magical constants."
+  :group 'zephir-faces
+  :tag "Zephir Magical Constant")
+
 (defface zephir-constant-assign-face
   '((t (:inherit font-lock-type-face)))
   "Zephir Mode face used to highlight constant assigning (‘const’ statement)."

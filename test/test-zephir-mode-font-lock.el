@@ -55,6 +55,7 @@
   (it "fontifies C++-style comments"
     (expect "/* Some text */"
             :to-be-fontified-as
+            ;; TODO(serghei): ‘ */’ -> ‘comment-delimiter’
             '(("/* " comment-delimiter "Some text */" comment))))
 
   (it "fontifies docblocks"
@@ -111,16 +112,20 @@
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
-            '(("__LINE__" builtin "__FILE__" builtin "__FUNCTION__" builtin)))
+            '(("__LINE__" zephir-magical-constant
+               "__FILE__" zephir-magical-constant
+               "__FUNCTION__" zephir-magical-constant)))
 
     (expect "__CLASS__ __METHOD__ __NAMESPACE__"
             :to-be-fontified-as
-            '(("__CLASS__" builtin "__METHOD__" builtin "__NAMESPACE__" builtin))))
+            '(("__CLASS__" zephir-magical-constant
+               "__METHOD__" zephir-magical-constant
+               "__NAMESPACE__" zephir-magical-constant))))
 
   (it "fontifies regular form of constants"
     (expect "self::HTML5; Logger::ALERT;"
             :to-be-fontified-as
-            '(("HTML5" constant "ALERT" constant)))))
+            '(("HTML5" zephir-constant "ALERT" zephir-constant)))))
 
 (describe "Fontification variables"
   (it "fontifies variables"
@@ -155,7 +160,8 @@
   (it "fontifies booleans and null"
     (expect "null, false, true"
             :to-be-fontified-as
-            '(("null" constant "false" constant "true" constant))))
+            '(("null" zephir-constant "false" zephir-constant
+               "true" zephir-constant))))
 
   (it "fontifies type hints"
     (expect "int foo; bool &bar, double $baz; istring &$buz"
@@ -281,9 +287,9 @@
     (expect "function test (a = null, b=false, c=CONST_VAL, d = 42, e=\"str\")"
             :to-be-fontified-as
             '(("function" zephir-keyword-face "test" zephir-function-name
-               "a" zephir-variable-name "null" constant
-               "b" zephir-variable-name "false" constant
-               "c" zephir-variable-name "CONST_VAL" constant
+               "a" zephir-variable-name "null" zephir-constant
+               "b" zephir-variable-name "false" zephir-constant
+               "c" zephir-variable-name "CONST_VAL" zephir-constant
                "d" zephir-variable-name
                "e" zephir-variable-name "\"str\"" string)))))
 

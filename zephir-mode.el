@@ -654,11 +654,11 @@ Uses STATE as a syntax context."
 
     ;; Highlight occurrences of magic constants
     (,(zephir-rx (group magic-const))
-     1 font-lock-builtin-face)
+     1 'zephir-magical-constant-face)
 
     ;; Highlight occurrences of built-in constants
     (,(zephir-rx (group (or constant builtin-const)))
-     1 font-lock-constant-face)
+     1 'zephir-constant-face)
 
     ;; Highlight occurrences of the word ‘this’
     (,(zephir-rx word-start (group "this") word-end)
