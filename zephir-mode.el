@@ -265,13 +265,7 @@ etc.  Return nil, if point is not in an IPG."
       ;; Builtin declarations and reserved keywords
       (builtin-decl . ,(rx symbol-start
                            (or "class"
-                               "interface"
-                               "namespace"
-                               "abstract"
-                               "final"
-                               "use"
-                               "extends"
-                               "implements")
+                               "interface")
                            symbol-end))
       ;; Magic constants
       (magic-const . ,(rx symbol-start
@@ -641,7 +635,31 @@ Uses STATE as a syntax context."
       font-lock-comment-face)))
 
 (defvar zephir-font-lock-keywords
-  `(;; Fontify methods call like ‘object->method()’
+  `(;; Class declaration specification keywords (‘implements’, ‘extends’)
+    (,(zephir-create-regexp-for-classlike "implements")
+     (1 'zephir-class-declaration-spec-face)
+     (2 font-lock-type-face))
+    (,(zephir-create-regexp-for-classlike "extends")
+     (1 'zephir-class-declaration-spec-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of namespace declarations (‘namespace Foo’)
+    (,(zephir-create-regexp-for-classlike "namespace")
+     (1 'zephir-namespace-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of import statements (‘use Foo’)
+    (,(zephir-create-regexp-for-classlike "use")
+     (1 'zephir-import-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of
+    (,(zephir-rx symbol-start (group (or "abstract" "final")) symbol-end
+                 (+ (syntax whitespace))
+                 symbol-start "class" symbol-end)
+     1 'zephir-class-modifier-face)
+
+    ;; Fontify methods call like ‘object->method()’
     (,(zephir-rx (group "->") (group identifier)
                  (* (syntax whitespace))"(")
      (1 'zephir-object-operator-face)
@@ -721,33 +739,13 @@ Uses STATE as a syntax context."
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
 
-    ;; ‘namespace Foo’
-    (,(zephir-create-regexp-for-classlike "namespace")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
     ;; ‘interface Foo’
     (,(zephir-create-regexp-for-classlike "interface")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
 
-    ;; ‘use Foo’
-    (,(zephir-create-regexp-for-classlike "use")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
     ;; ‘... as Foo’
     (,(zephir-create-regexp-for-classlike "as")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
-    ;; ‘... implements Foo’
-    (,(zephir-create-regexp-for-classlike "implements")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
-    ;; ‘... extends Foo’
-    (,(zephir-create-regexp-for-classlike "extends")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
 

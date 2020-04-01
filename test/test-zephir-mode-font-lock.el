@@ -67,23 +67,24 @@
   (it "fontifies classes"
     (expect "class A extends B implements C {}"
             :to-be-fontified-as
-            '(("class" keyword "A" type "extends" keyword "B" type
-               "implements" keyword "C" type))))
+            '(("class" keyword "A" type
+               "extends" zephir-class-declaration-spec "B" type
+               "implements" zephir-class-declaration-spec "C" type))))
 
   (it "fontifies ‘use’ keyword"
     (expect "use Phalcon\\Url;"
             :to-be-fontified-as
-            '(("use" keyword "Phalcon\\Url" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type))))
 
   (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"
             :to-be-fontified-as
-            '(("use" keyword "Phalcon\\Url" type "as" keyword "PhUrl" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type "as" keyword "PhUrl" type))))
 
   (it "fontifies namespaces"
     (expect "namespace Phalcon\\Url;"
             :to-be-fontified-as
-            '(("namespace" keyword "Phalcon\\Url" type))))
+            '(("namespace" zephir-namespace-declaration "Phalcon\\Url" type))))
 
   (it "fontifies interfaces"
     (expect "interface UrlInterface {}"
@@ -93,11 +94,11 @@
   (it "fontifies class modifiers"
     (expect "final class Kernel {}"
             :to-be-fontified-as
-            '(("final" keyword "class" keyword "Kernel" type)))
+            '(("final" zephir-class-modifier "class" keyword "Kernel" type)))
 
     (expect "abstract class Kernel {}"
             :to-be-fontified-as
-            '(("abstract" keyword "class" keyword "Kernel" type)))))
+            '(("abstract" zephir-class-modifier "class" keyword "Kernel" type)))))
 
 (describe "Fontification constants"
   (it "fontifies constant definition"

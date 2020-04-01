@@ -111,7 +111,7 @@ decorate each of symbol."
 (defun get-str-faces (str)
   "Find contiguous spans of non-default faces in STR.
 E.g. for properly fontified Zephir string ‘abstract class Kernel {}’
- it should return:
+it should return:
    '(\"abstract\" font-lock-keyword-face
     \"class\" font-lock-keyword-face
     \"Kernel\" font-lock-type-face)"
