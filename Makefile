@@ -24,6 +24,12 @@ include default.mk
 	@$(RUNEMACS) --eval '(setq byte-compile-error-on-warn t)' \
 		-f batch-byte-compile $<
 
+$(AUTOLOADS): $(SRCS)
+	@$(EMACSBATCH) --eval \
+		"(progn \
+		  (require 'package) \
+		  (package-generate-autoloads \"zephir-mode\" default-directory))"
+
 ## Public targets
 
 .PHONY: .title
@@ -36,11 +42,17 @@ init: Cask
 
 .PHONY: checkdoc
 checkdoc:
-	@$(EMACSBATCH) --eval '(checkdoc-file "$(SRCS)")'
-	$(info Done.)
+	@for f in $(SRCS) ; do                                    \
+		echo -n "Checking $$f ...";                       \
+		$(EMACSBATCH) --eval "(checkdoc-file \"$$f\")" && \
+		echo " done";                                     \
+	done
 
 .PHONY: build
 build: $(OBJS)
+
+.PHONY: autoloads
+autoloads: $(AUTOLOADS)
 
 .PHONY: test
 test:
@@ -52,7 +64,7 @@ clean:
 	@$(CASK) clean-elc
 	$(info Remove build artifacts...)
 	@$(RM) README ChangeLog coverage-final.json
-	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar
+	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar $(AUTOLOADS)
 
 .PHONY: help
 help: .title
@@ -65,6 +77,7 @@ help: .title
 	@echo '  init:       Initialize the project (has to be launched first)'
 	@echo '  checkdoc:   Checks Zephir Mode code for errors in the documentation'
 	@echo '  build:      Byte compile Zephir Mode package'
+	@echo '  autoloads:  Generate autoloads file'
 	@echo '  test:       Run the non-interactive unit test suite'
 	@echo '  clean:      Remove all byte compiled Elisp files, documentation,'
 	@echo '              build artifacts and tarball'

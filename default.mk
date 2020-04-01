@@ -44,5 +44,6 @@ PACKAGE = zephir-mode
 ARCHIVE_NAME = $(PACKAGE)-$(VERSION)
 
 # File lists
-SRCS = zephir-mode.el
+AUTOLOADS = zephir-mode-autoloads.el
+SRCS = zephir-mode.el zephir-face.el
 OBJS = $(SRCS:.el=.elc)

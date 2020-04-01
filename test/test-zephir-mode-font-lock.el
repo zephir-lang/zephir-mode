@@ -55,6 +55,7 @@
   (it "fontifies C++-style comments"
     (expect "/* Some text */"
             :to-be-fontified-as
+            ;; TODO(serghei): ‘ */’ -> ‘comment-delimiter’
             '(("/* " comment-delimiter "Some text */" comment))))
 
   (it "fontifies docblocks"
@@ -66,23 +67,24 @@
   (it "fontifies classes"
     (expect "class A extends B implements C {}"
             :to-be-fontified-as
-            '(("class" keyword "A" type "extends" keyword "B" type
-               "implements" keyword "C" type))))
+            '(("class" keyword "A" type
+               "extends" zephir-class-declaration-spec "B" type
+               "implements" zephir-class-declaration-spec "C" type))))
 
   (it "fontifies ‘use’ keyword"
     (expect "use Phalcon\\Url;"
             :to-be-fontified-as
-            '(("use" keyword "Phalcon\\Url" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type))))
 
   (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"
             :to-be-fontified-as
-            '(("use" keyword "Phalcon\\Url" type "as" keyword "PhUrl" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type "as" keyword "PhUrl" type))))
 
   (it "fontifies namespaces"
     (expect "namespace Phalcon\\Url;"
             :to-be-fontified-as
-            '(("namespace" keyword "Phalcon\\Url" type))))
+            '(("namespace" zephir-namespace-declaration "Phalcon\\Url" type))))
 
   (it "fontifies interfaces"
     (expect "interface UrlInterface {}"
@@ -92,11 +94,11 @@
   (it "fontifies class modifiers"
     (expect "final class Kernel {}"
             :to-be-fontified-as
-            '(("final" keyword "class" keyword "Kernel" type)))
+            '(("final" zephir-class-modifier "class" keyword "Kernel" type)))
 
     (expect "abstract class Kernel {}"
             :to-be-fontified-as
-            '(("abstract" keyword "class" keyword "Kernel" type)))))
+            '(("abstract" zephir-class-modifier "class" keyword "Kernel" type)))))
 
 (describe "Fontification constants"
   (it "fontifies constant definition"
@@ -111,16 +113,20 @@
   (it "fontifies built-in constants"
     (expect "__LINE__ __FILE__ __FUNCTION__"
             :to-be-fontified-as
-            '(("__LINE__" builtin "__FILE__" builtin "__FUNCTION__" builtin)))
+            '(("__LINE__" zephir-magical-constant
+               "__FILE__" zephir-magical-constant
+               "__FUNCTION__" zephir-magical-constant)))
 
     (expect "__CLASS__ __METHOD__ __NAMESPACE__"
             :to-be-fontified-as
-            '(("__CLASS__" builtin "__METHOD__" builtin "__NAMESPACE__" builtin))))
+            '(("__CLASS__" zephir-magical-constant
+               "__METHOD__" zephir-magical-constant
+               "__NAMESPACE__" zephir-magical-constant))))
 
   (it "fontifies regular form of constants"
     (expect "self::HTML5; Logger::ALERT;"
             :to-be-fontified-as
-            '(("HTML5" constant "ALERT" constant)))))
+            '(("HTML5" zephir-constant "ALERT" zephir-constant)))))
 
 (describe "Fontification variables"
   (it "fontifies variables"
@@ -149,13 +155,14 @@
 
     (expect "$this->foo = $this;"
             :to-be-fontified-as
-            '(("this" zephir-this-face "->" zephir-object-operator
-               "foo" zephir-property-name "this" zephir-this-face))))
+            '(("this" zephir-this "->" zephir-object-operator
+               "foo" zephir-property-name "this" zephir-this))))
 
   (it "fontifies booleans and null"
     (expect "null, false, true"
             :to-be-fontified-as
-            '(("null" constant "false" constant "true" constant))))
+            '(("null" zephir-constant "false" zephir-constant
+               "true" zephir-constant))))
 
   (it "fontifies type hints"
     (expect "int foo; bool &bar, double $baz; istring &$buz"
@@ -169,112 +176,122 @@
   (it "fontifies property visibility"
     (expect "internal foo;"
             :to-be-fontified-as
-            '(("internal" keyword)))
+            '(("internal" zephir-keyword)))
 
     (expect "scoped bar;"
             :to-be-fontified-as
-            '(("scoped" keyword)))
+            '(("scoped" zephir-keyword)))
 
     (expect "inline baz;"
             :to-be-fontified-as
-            '(("inline" keyword)))
+            '(("inline" zephir-keyword)))
 
     (expect "public bar;"
             :to-be-fontified-as
-            '(("public" keyword)))
+            '(("public" zephir-keyword)))
 
     (expect "protected foo;"
             :to-be-fontified-as
-            '(("protected" keyword)))
+            '(("protected" zephir-keyword)))
 
     (expect "private bar;"
             :to-be-fontified-as
-            '(("private" keyword)))
+            '(("private" zephir-keyword)))
 
     (expect "private privateProperty;"
             :to-be-fontified-as
-            '(("private" keyword)))))
+            '(("private" zephir-keyword)))))
 
 (describe "Fontification of function headers"
   (it "fontifies standard ‘function <name> ()’ headers"
     (expect "function foo () {}"
             :to-be-fontified-as
-            '(("function" zephir-keyword-face "foo" zephir-function-name)))
+            '(("function" zephir-keyword "foo" zephir-function-name)))
 
     (expect "function $foo() {}"
             :to-be-fontified-as
-            '(("function" zephir-keyword-face "$foo" zephir-function-name))))
+            '(("function" zephir-keyword "$foo" zephir-function-name))))
 
   (it "fontifies standard ‘fn <name> ()’ headers"
     (expect "fn foo () {}"
             :to-be-fontified-as
-            '(("fn" zephir-keyword-face "foo" zephir-function-name)))
+            '(("fn" zephir-keyword "foo" zephir-function-name)))
 
     (expect "fn $foo() {}"
             :to-be-fontified-as
-            '(("fn" zephir-keyword-face "$foo" zephir-function-name))))
+            '(("fn" zephir-keyword "$foo" zephir-function-name))))
 
   (it "fontifies standard ‘<visibility> function <name> ()’ headers"
     (expect "public function foo () {}"
             :to-be-fontified-as
-            '(("public" keyword "function" zephir-keyword-face
+            '(("public" zephir-keyword"function" zephir-keyword
                "foo" zephir-function-name)))
 
     (expect "protected function bar () {}"
             :to-be-fontified-as
-            '(("protected" keyword "function" zephir-keyword-face
+            '(("protected" zephir-keyword "function" zephir-keyword
                "bar" zephir-function-name)))
 
     (expect "private function baz () {}"
             :to-be-fontified-as
-            '(("private" keyword "function" zephir-keyword-face
+            '(("private" zephir-keyword "function" zephir-keyword
                "baz" zephir-function-name)))
 
     (expect "internal function foo () {}"
             :to-be-fontified-as
-            '(("internal" keyword "function" zephir-keyword-face
+            '(("internal" zephir-keyword "function" zephir-keyword
                "foo" zephir-function-name)))
 
     (expect "scoped function test () {}"
             :to-be-fontified-as
-            '(("scoped" keyword "function" zephir-keyword-face
+            '(("scoped" zephir-keyword "function" zephir-keyword
                "test" zephir-function-name)))
 
     (expect "internal function fuz () {}"
             :to-be-fontified-as
-            '(("internal" keyword "function" zephir-keyword-face
+            '(("internal" zephir-keyword "function" zephir-keyword
                "fuz" zephir-function-name))))
 
   (it "fontifies return type hints headers"
     (expect "fn foo() -> array | int | <Foo> | <\\A\\B\\C> | void"
             :to-be-fontified-as
-            '(("fn" zephir-keyword-face "foo" zephir-function-name
+            '(("fn" zephir-keyword "foo" zephir-function-name
                "array" zephir-type "int" zephir-type "Foo" zephir-type
                "\\A\\B\\C" zephir-type "void" zephir-type)))
 
     (expect "fn foo() -> int
              | bool | istring"
             :to-be-fontified-as
-            '(("fn" zephir-keyword-face "foo" zephir-function-name
+            '(("fn" zephir-keyword "foo" zephir-function-name
                "int" zephir-type)
               ("bool" zephir-type "istring" zephir-type))))
 
   (it "fontifies parametrized function headers"
     (expect "function go (a, &b, $c, &$d) {}"
             :to-be-fontified-as
-            '(("function" zephir-keyword-face "go" zephir-function-name
+            '(("function" zephir-keyword "go" zephir-function-name
                "a" zephir-variable-name "b" zephir-variable-name
                "$c" zephir-variable-name "$d" zephir-variable-name)))
 
     (expect "fn test (int a, string b, bool c, <A> d, const <\\A\\B> &$c) {}"
             :to-be-fontified-as
             ;; FIXME: ‘"const" zephir-variable-name’ => keyword, not variable
-            '(("fn" zephir-keyword-face "test" zephir-function-name
+            '(("fn" zephir-keyword "test" zephir-function-name
                "int" zephir-type "a" zephir-variable-name
                "string" zephir-type "b" zephir-variable-name
                "bool" zephir-type "c" zephir-variable-name
                "A" zephir-type "d" zephir-variable-name
                "const" zephir-variable-name "\\A\\B" zephir-type
-               "$c" zephir-variable-name)))))
+               "$c" zephir-variable-name))))
+
+  (it "fontifies default values for function's parameters"
+    (expect "function test (a = null, b=false, c=CONST_VAL, d = 42, e=\"str\")"
+            :to-be-fontified-as
+            '(("function" zephir-keyword "test" zephir-function-name
+               "a" zephir-variable-name "null" zephir-constant
+               "b" zephir-variable-name "false" zephir-constant
+               "c" zephir-variable-name "CONST_VAL" zephir-constant
+               "d" zephir-variable-name
+               "e" zephir-variable-name "\"str\"" string)))))
 
 ;;; test-zephir-mode-font-lock.el ends here

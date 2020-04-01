@@ -110,10 +110,11 @@ decorate each of symbol."
 
 (defun get-str-faces (str)
   "Find contiguous spans of non-default faces in STR.
-E.g. for properly fontified Lua string \"local x = 100\" it should return
-  '(\"local\" font-lock-keyword-face
-    \"x\" font-lock-variable-name-face
-    \"100\" font-lock-constant-face)"
+E.g. for properly fontified Zephir string ‘abstract class Kernel {}’
+it should return:
+   '(\"abstract\" font-lock-keyword-face
+    \"class\" font-lock-keyword-face
+    \"Kernel\" font-lock-type-face)"
   (let ((pos 0)
         nextpos
         result prop newprop)
@@ -164,8 +165,8 @@ Fontification check failed for:
         (buttercup-fail "\
 Fontification check failed on line %d for:
 %S
-  Result faces:   %S
-  Expected faces: %S"
+  Expected faces: %S
+  Actual faces:   %S"
                         lineno text (car expected-faces) (car result-faces)))
       (setq expected-faces (cdr expected-faces)
             result-faces (cdr result-faces)
