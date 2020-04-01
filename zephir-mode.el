@@ -246,6 +246,46 @@ etc.  Return nil, if point is not in an IPG."
             (progn (forward-symbol -1)
                    (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
 
+(defconst zephir--language-keywords
+  '("array"
+    "as"
+    "break"
+    "try"
+    "catch"
+    "throw"
+    "clone"
+    "reverse"
+    "empty"
+    "fetch"
+    "let"
+    "if"
+    "else"
+    "elseif"
+    "while"
+    "break"
+    "continue"
+    "typeof"
+    "instanceof"
+    "loop"
+    "for"
+    "in"
+    "do"
+    "switch"
+    "case"
+    "default"
+    "eval"
+    "isset"
+    "likely"
+    "unlikely"
+    "static"
+    "unset"
+    "new"
+    "return"
+    "class"
+    "interface"
+    "echo")
+  "Zephir keywords not accounted for by any other `zephir-rx' constituents.")
+
 
 ;;;; Specialized rx
 
@@ -262,27 +302,27 @@ etc.  Return nil, if point is not in an IPG."
                          (any "A-Z" "a-z" ?_)
                          (0+ (any "A-Z" "a-z" "0-9" ?_))
                          word-end))
-      ;; Builtin declarations and reserved keywords
-      (builtin-decl . ,(rx symbol-start
-                           (or "class"
-                               "interface")
-                           symbol-end))
+
       ;; Magic constants
       (magic-const . ,(rx symbol-start
                           (or "__LINE__" "__FILE__" "__FUNCTION__"
                               "__CLASS__" "__METHOD__" "__NAMESPACE__")
                           symbol-end))
+
       ;; Predefined language constants
       (builtin-const . ,(rx symbol-start
                             (or "null" "true" "false")
                             symbol-end))
+
       ;; User-defined constants
       (constant . ,(rx symbol-start
                        (any "A-Z" ?_)
                        (+ (any "A-Z" "0-9" ?_))
                        symbol-end))
+
       ;; Function declaraion
       (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
+
       ;; Namespace, class or interface name
       (classlike . ,(rx symbol-start
                         (optional ?$)
@@ -293,6 +333,7 @@ etc.  Return nil, if point is not in an IPG."
                               (any "A-Z" "a-z" ?_)
                               (+ (any "A-Z" "a-z" "0-9" ?_))))
                         symbol-end))
+
       ;; Data types
       (data-type . ,(rx (or (and (? "u") "int")
                             (and "bool" (? "ean"))
@@ -317,9 +358,6 @@ are available:
 `identifier'
      Any valid identifier with optional dollar sign, e.g. function name,
      variable name, etc.
-
-`builtin-dcl'
-     Any valid builtin declaraion.
 
 `magic-const'
      Magical keyword that is expanded at compile time.
@@ -730,10 +768,6 @@ Uses STATE as a syntax context."
                  (? ?>) (* (syntax whitespace)))
      1 'zephir-type-face)
 
-    ;; Builtin declaration
-    (,(zephir-rx (group builtin-decl))
-     1 font-lock-keyword-face)
-
     ;; ‘class Foo’
     (,(zephir-create-regexp-for-classlike)
      (1 font-lock-keyword-face)
@@ -749,12 +783,14 @@ Uses STATE as a syntax context."
      (1 font-lock-keyword-face)
      (2 font-lock-type-face))
 
-    ;; Visibility
-    (,(rx-to-string `(group
-                      symbol-start
-                      (or ,@zephir-possible-visiblities)
-                      symbol-end))
-     (1 font-lock-keyword-face))
+    ;; Builtin declarations and reserverd keywords
+    (,(rx-to-string `(: word-start
+                        (group
+                         (or ,@(append
+                                zephir--language-keywords
+                                zephir-possible-visiblities))
+                        word-end)))
+     1 'zephir-keyword-face)
 
     ;; Function names, i.e. ‘function foo’
     ;; TODO(serghei): deprecated <visibility> function <name>
@@ -765,7 +801,6 @@ Uses STATE as a syntax context."
      (1 font-lock-keyword-face)
      (2 'zephir-function-name-face)))
   "Font lock keywords for Zephir Mode.")
-
 
 
 ;;;; Alignment
