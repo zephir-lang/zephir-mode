@@ -43,9 +43,9 @@ init: Cask
 .PHONY: checkdoc
 checkdoc:
 	@for f in $(SRCS) ; do \
+		echo "Checking $$f ..."
 		$(EMACSBATCH) --eval "(checkdoc-file \"$$f\")"; \
-	done
-	$(info Done.)
+	done && echo "Done."
 
 .PHONY: build
 build: $(OBJS)
@@ -62,8 +62,8 @@ clean:
 	$(info Remove all byte compiled Elisp files...)
 	@$(CASK) clean-elc
 	$(info Remove build artifacts...)
-	@$(RM) README ChangeLog coverage-final.json $(AUTOLOADS)
-	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar
+	@$(RM) README ChangeLog coverage-final.json
+	@$(RM) $(PACKAGE)-pkg.el $(PACKAGE)-*.tar $(AUTOLOADS)
 
 .PHONY: help
 help: .title
