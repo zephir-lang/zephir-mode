@@ -853,7 +853,7 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      ;; Look for symbols after the space (‘\\s-+’), they are properties.
      ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
-      ;; Set the limit of search to the current `implements' form only.
+      ;; Set the limit of search to the current property form only.
       (save-excursion
         (re-search-forward "\\s-" nil 'noerror)
         (forward-char -1)
