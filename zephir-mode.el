@@ -420,9 +420,7 @@ respectively."
       (setq line-start "^"))
      ((string= type "namespace")
       (setq line-start "^"))
-     ((or (string= type "extends")
-          (string= type "implements")
-          (string= type "use"))
+     ((string= type "extends")
       (setq root-ns "\\\\?")))
 
     ;; Concatenate regexp parts
@@ -684,13 +682,40 @@ Uses STATE as a syntax context."
       font-lock-comment-face)))
 
 (defvar zephir-font-lock-keywords
-  `(;; Class declaration specification keywords (‘implements’, ‘extends’)
-    (,(zephir-create-regexp-for-classlike "implements")
-     (1 'zephir-class-declaration-spec-face)
-     (2 font-lock-type-face))
+  `(;; Class declaration specification keywords.
+    ;;
+    ;; Highlight occurrences of ‘extends Foo\Bar’.
     (,(zephir-create-regexp-for-classlike "extends")
      (1 'zephir-class-declaration-spec-face)
      (2 font-lock-type-face))
+
+    ;; Highlight occurrences of ‘implements Foo, Bar’.
+    ;;
+    ;; The first regexp is the anchor of the fontification, meaning the
+    ;; "starting point" of the region:
+    ;;
+    ;;                  ------------ Starting point
+    ;;                  |
+    ;; class Terminator implements \Robot, \Machine
+    ;; {
+    ;; }
+    ;;
+    ("\\_<\\(implements\\)\\_>\\s-+"
+     ;; Fontify the `implements' as a `zephir-class-declaration-spec-face'.
+     (1 'zephir-class-declaration-spec-face)
+     ;; Look for symbols after the space (‘\\s-+’), they are classes.
+     ("\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)\\_>"
+      ;; Set the limit of search to the current `implements' form only.
+      (save-excursion
+        (re-search-forward "{\\|;\\|extends")
+        (forward-char -1)
+        (point))
+      ;; When we found all the types in the region (`implements' form)
+      ;; go back to the ‘\\s-+’ marker.
+      (progn (re-search-backward "\\_<\\(implements\\)\\_>\\s-+")
+             (forward-symbol 1))
+      ;; Fontify each matched symbol as class.
+      (1 font-lock-type-face)))
 
     ;; Highlight occurrences of namespace declarations (‘namespace Foo’)
     (,(zephir-create-regexp-for-classlike "namespace")
@@ -698,7 +723,8 @@ Uses STATE as a syntax context."
      (2 font-lock-type-face))
 
     ;; Highlight occurrences of import statements (‘use Foo’)
-    (,(rx-to-string `(: (* (syntax whitespace)) (group "use")
+    (,(rx-to-string `(: (* (syntax whitespace))
+                        symbol-start (group "use") symbol-end
                         (+ (syntax whitespace))
                         (group (+ (or (syntax word)
                                       (syntax symbol)
