@@ -72,9 +72,17 @@
                "implements" zephir-class-declaration-spec "C" type))))
 
   (it "fontifies ‘use’ keyword"
-    (expect "use Phalcon\\Url;"
+    (expect "use A\\B\\C;"
             :to-be-fontified-as
-            '(("use" zephir-import-declaration "Phalcon\\Url" type))))
+            '(("use" zephir-import-declaration "A\\B\\C" type)))
+
+    (expect "use A"
+            :to-be-fontified-as
+            '(("use" zephir-import-declaration "A" type)))
+
+    (expect "use \\Phalcon\\Url;"
+            :to-be-fontified-as
+            '(("use" zephir-import-declaration "\\Phalcon\\Url" type))))
 
   (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"

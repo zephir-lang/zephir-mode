@@ -698,7 +698,11 @@ Uses STATE as a syntax context."
      (2 font-lock-type-face))
 
     ;; Highlight occurrences of import statements (‘use Foo’)
-    (,(zephir-create-regexp-for-classlike "use")
+    (,(rx-to-string `(: (* (syntax whitespace)) (group "use")
+                        (+ (syntax whitespace))
+                        (group (+ (or (syntax word)
+                                      (syntax symbol)
+                                      ?\\)))))
      (1 'zephir-import-declaration-face)
      (2 font-lock-type-face))
 
