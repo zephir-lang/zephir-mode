@@ -173,7 +173,28 @@
             '(("int" zephir-type "foo" zephir-variable-name
                "bool" zephir-type "bar" zephir-variable-name
                "double" zephir-type "$baz" zephir-variable-name
-               "istring" zephir-type "$buz" zephir-variable-name)))))
+               "istring" zephir-type "$buz" zephir-variable-name))))
+
+  (it "doesn't fontify functions similar to keywords"
+    (expect "get_called_class(this);"
+            :to-be-fontified-as
+            '(("this" zephir-this)))
+
+    (expect "get_class(this);"
+            :to-be-fontified-as
+            '(("this" zephir-this)))
+
+    (expect "let myclass = 42;"
+            :to-be-fontified-as
+            '(("let" zephir-keyword)))
+
+    (expect " array_intersect(name, fieilds); "
+            :to-be-fontified-as
+            '(()))
+
+    (expect " array_diff (); "
+            :to-be-fontified-as
+            '(()))))
 
 (describe "Fontification of visibility"
   (it "fontifies property visibility"

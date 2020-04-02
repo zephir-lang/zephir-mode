@@ -794,12 +794,12 @@ Uses STATE as a syntax context."
      (2 font-lock-type-face))
 
     ;; Builtin declarations and reserverd keywords
-    (,(rx-to-string `(: word-start
+    (,(rx-to-string `(: symbol-start
                         (group
                          (or ,@(append
                                 zephir--language-keywords
                                 zephir-possible-visiblities))
-                        word-end)))
+                        symbol-end)))
      1 'zephir-keyword-face)
 
     ;; Function names, i.e. ‘function foo’
