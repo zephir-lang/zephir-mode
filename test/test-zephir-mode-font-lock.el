@@ -71,6 +71,14 @@
                "extends" zephir-class-declaration-spec "B" type
                "implements" zephir-class-declaration-spec "C" type))))
 
+  (it "fontifies ‘implement’ keyword"
+    (expect "implements \\A, b,   C, \\D\\E\\F,
+             foo;"
+            :to-be-fontified-as
+            '(("implements" zephir-class-declaration-spec
+               "A" type "b" type "C" type "D\\E\\F" type)
+              ("foo" type))))
+
   (it "fontifies ‘use’ keyword"
     (expect "use A\\B\\C;"
             :to-be-fontified-as
