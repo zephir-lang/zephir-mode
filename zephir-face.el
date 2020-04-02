@@ -118,6 +118,12 @@
   :group 'zephir-faces
   :tag "Zephir this")
 
+(defface zephir-class-declaration-face
+  '((t (:inherit zephir-keyword-face)))
+  "Zephir Mode Face used to class declarations (‘class’, ‘interface’)."
+  :group 'zephir-faces
+  :tag "Zephir Class Declaration")
+
 (defface zephir-class-declaration-spec-face
   '((t (:inherit zephir-keyword-face)))
   "Zephir Mode Face used to highlight class declaration specification keywords
@@ -142,6 +148,12 @@
   "Zephir Mode Face used to highlight class modifiers (‘final’, ‘abstract’)."
   :group 'zephir-faces
   :tag "Zephir Class Modifier")
+
+(defface zephir-method-modifier-face
+  '((t (:inherit zephir-keyword-face)))
+  "Zephir Mode Face used to highlight method modifiers (‘final’, ‘abstract’)."
+  :group 'zephir-faces
+  :tag "Zephir Method Modifier")
 
 (provide 'zephir-face)
 ;;; zephir-face.el ends here
