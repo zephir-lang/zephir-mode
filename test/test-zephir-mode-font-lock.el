@@ -228,7 +228,7 @@
             :to-be-fontified-as
             '(("internal" zephir-keyword)))
 
-    (expect "scoped bar;"
+    (expect "scoped bar = { get, set, toString };"
             :to-be-fontified-as
             '(("scoped" zephir-keyword)))
 
@@ -236,21 +236,34 @@
             :to-be-fontified-as
             '(("inline" zephir-keyword)))
 
-    (expect "public bar;"
+    (expect "public static hello = 42;"
             :to-be-fontified-as
-            '(("public" zephir-keyword)))
+            '(("public" zephir-keyword "static" zephir-keyword
+               "hello" zephir-property-name)))
+
+    (expect "public bar = { get };"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "bar" zephir-property-name
+               "get" zephir-keyword)))
+
+    ;; TODO(serghei): ‘public targetLocal = true { toString, get };’
+    (expect "public targetLocal = [] { toString, get };"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "targetLocal" zephir-property-name
+               "toString" zephir-keyword "get" zephir-keyword)))
 
     (expect "protected foo;"
             :to-be-fontified-as
-            '(("protected" zephir-keyword)))
+            '(("protected" zephir-keyword "foo" zephir-property-name)))
 
-    (expect "private bar;"
+    (expect "private baz = 1;"
             :to-be-fontified-as
-            '(("private" zephir-keyword)))
+            '(("private" zephir-keyword "baz" zephir-property-name)))
 
     (expect "private privateProperty;"
             :to-be-fontified-as
-            '(("private" zephir-keyword)))))
+            '(("private" zephir-keyword
+               "privateProperty" zephir-property-name)))))
 
 (describe "Fontification of function headers"
   (it "fontifies standard ‘function <name> ()’ headers"

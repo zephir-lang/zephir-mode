@@ -707,10 +707,10 @@ Uses STATE as a syntax context."
      ("\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)\\_>"
       ;; Set the limit of search to the current `implements' form only.
       (save-excursion
-        (re-search-forward "{\\|;\\|extends")
+        (re-search-forward "{\\|;\\|extends" nil 'noerror)
         (forward-char -1)
         (point))
-      ;; When we found all the types in the region (`implements' form)
+      ;; When we found all the classes in the region (`implements' form)
       ;; go back to the ‘\\s-+’ marker.
       (progn (re-search-backward "\\_<\\(implements\\)\\_>\\s-+")
              (forward-symbol 1))
@@ -845,7 +845,60 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 'zephir-keyword-face)
-     (2 'zephir-function-name-face)))
+     (2 'zephir-function-name-face))
+
+    ;; Highlight occurrences of class' properties (‘public foo’).
+    ;;
+    ;; The first regexp is the anchor of the fontification, meaning the
+    ;; "starting point" of the region:
+    ;;
+    ;; ------------------------- Starting point
+    ;; |
+    ;; public static myVar = [] { get, set, toString };
+    ;;
+    ("\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+"
+     ;; Fontify the property visibility as a `zephir-keyword-face'.
+     (1 'zephir-keyword-face)
+     ;; Look for symbols after the space (‘\\s-+’), they are properties.
+     ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
+      ;; Set the limit of search to the current property form only.
+      (save-excursion
+        (re-search-forward "\\(?:[;={]\\)" nil 'noerror)
+        (forward-char -1)
+        (point))
+      ;; When we found a property in the region go back to the ‘\\s-+’ marker.
+      (progn
+        (re-search-backward
+         "\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+")
+        (forward-symbol 1))
+      ;; Fontify each matched symbol as property.
+      (1 'zephir-property-name-face))
+     ;; When done with the symbols look for the ‘static’ word.
+     ("static"
+      ;; We are starting from the visibility word again.
+      (save-excursion
+        (re-search-forward "\\s-" nil 'noerror)
+        (forward-char -1)
+        (point))
+      ;; When we found a property in the region go back to the ‘\\s-+’ marker.
+      (progn
+        (re-search-backward
+         "\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+")
+        (forward-symbol 1))
+      ;; Fontify the found word as `zephir-keyword-face'.
+      (0 'zephir-keyword-face t))
+     ;; Finally search for ‘{ get, set, toString }’ form.
+     ("\\<\\(?:get\\|set\\|toString\\)\\>"
+      ;; We are starting from the visibility word again.
+      (save-excursion
+        (re-search-forward "}" nil 'noerror)
+        (forward-char -1)
+        (point))
+      ;; Do not move back when we've found all matches to ensure
+      ;; forward progress.  At this point we are done with the form.
+      nil
+      ;; Fontify the found word as `zephir-keyword-face'.
+      (0 'zephir-keyword-face t))))
   "Font lock keywords for Zephir Mode.")
 
 
