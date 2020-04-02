@@ -175,6 +175,16 @@
                "double" zephir-type "$baz" zephir-variable-name
                "istring" zephir-type "$buz" zephir-variable-name))))
 
+  (it "fontifies type casts ‘<type> variable = ...’"
+    (expect "<MyInterface> criteria = test();"
+            :to-be-fontified-as
+            '(("MyInterface" zephir-type "criteria" zephir-variable-name)))
+
+    (expect "<MyInterface> a, <MyInterface> b"
+            :to-be-fontified-as
+            '(("MyInterface" zephir-type "a" zephir-variable-name
+               "MyInterface" zephir-type "b" zephir-variable-name))))
+
   (it "doesn't fontify functions similar to keywords"
     (expect "get_called_class(this);"
             :to-be-fontified-as
