@@ -76,7 +76,7 @@
              foo;"
             :to-be-fontified-as
             '(("implements" zephir-class-declaration-spec
-               "A" type "b" type "C" type "D\\E\\F" type)
+               "\\A" type "b" type "C" type "\\D\\E\\F" type)
               ("foo" type))))
 
   (it "fontifies ‘use’ keyword"

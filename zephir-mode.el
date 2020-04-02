@@ -420,8 +420,7 @@ respectively."
       (setq line-start "^"))
      ((string= type "namespace")
       (setq line-start "^"))
-     ((or (string= type "extends")
-          (string= type "implements"))
+     ((string= type "extends")
       (setq root-ns "\\\\?")))
 
     ;; Concatenate regexp parts
@@ -705,7 +704,7 @@ Uses STATE as a syntax context."
      ;; Fontify the `implements' as a `zephir-class-declaration-spec-face'.
      (1 'zephir-class-declaration-spec-face)
      ;; Look for symbols after the space (‘\\s-+’), they are classes.
-     ("\\_<\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)\\_>"
+     ("\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)\\_>"
       ;; Set the limit of search to the current `implements' form only.
       (save-excursion
         (re-search-forward "{\\|;\\|extends")
@@ -716,7 +715,7 @@ Uses STATE as a syntax context."
       (progn (re-search-backward "\\_<\\(implements\\)\\_>\\s-+")
              (forward-symbol 1))
       ;; Fontify each matched symbol as class.
-      (0 font-lock-type-face)))
+      (1 font-lock-type-face)))
 
     ;; Highlight occurrences of namespace declarations (‘namespace Foo’)
     (,(zephir-create-regexp-for-classlike "namespace")
