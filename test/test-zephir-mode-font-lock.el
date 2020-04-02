@@ -236,9 +236,21 @@
             :to-be-fontified-as
             '(("inline" zephir-keyword)))
 
+    (expect "public static hello = 42;"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "static" zephir-keyword
+               "hello" zephir-property-name)))
+
     (expect "public bar = { get };"
             :to-be-fontified-as
-            '(("public" zephir-keyword "bar" zephir-property-name)))
+            '(("public" zephir-keyword "bar" zephir-property-name
+               "get" zephir-keyword)))
+
+    ;; TODO(serghei): ‘public targetLocal = true { toString, get };’
+    (expect "public targetLocal = [] { toString, get };"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "targetLocal" zephir-property-name
+               "toString" zephir-keyword "get" zephir-keyword)))
 
     (expect "protected foo;"
             :to-be-fontified-as
