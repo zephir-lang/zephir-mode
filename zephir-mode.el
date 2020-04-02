@@ -707,10 +707,10 @@ Uses STATE as a syntax context."
      ("\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)\\_>"
       ;; Set the limit of search to the current `implements' form only.
       (save-excursion
-        (re-search-forward "{\\|;\\|extends")
+        (re-search-forward "{\\|;\\|extends" nil 'noerror)
         (forward-char -1)
         (point))
-      ;; When we found all the types in the region (`implements' form)
+      ;; When we found all the classes in the region (`implements' form)
       ;; go back to the ‘\\s-+’ marker.
       (progn (re-search-backward "\\_<\\(implements\\)\\_>\\s-+")
              (forward-symbol 1))
@@ -845,7 +845,24 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
      (1 'zephir-keyword-face)
-     (2 'zephir-function-name-face)))
+     (2 'zephir-function-name-face))
+
+    ;; Highlight occurrences of class' properties (‘public foo’)
+    ("\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+"
+     ;; Fontify the property visibility as a `zephir-keyword-face'.
+     (1 'zephir-keyword-face)
+     ;; Look for symbols after the space (‘\\s-+’), they are properties.
+     ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
+      ;; Set the limit of search to the current `implements' form only.
+      (save-excursion
+        (re-search-forward "\\s-" nil 'noerror)
+        (forward-char -1)
+        (point))
+      ;; When we found a property in the region
+      ;; go back to the ‘\\s-+’ marker.
+      (re-search-backward "\\s-+")
+      ;; Fontify each matched symbol as property.
+      (1 'zephir-property-name-face))))
   "Font lock keywords for Zephir Mode.")
 
 
