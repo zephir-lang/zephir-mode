@@ -283,7 +283,9 @@ etc.  Return nil, if point is not in an IPG."
     "return"
     "class"
     "interface"
-    "echo")
+    "echo"
+    "final"
+    "abstract")
   "Zephir keywords not accounted for by any other `zephir-rx' constituents.")
 
 
@@ -691,11 +693,29 @@ Uses STATE as a syntax context."
      (1 'zephir-import-declaration-face)
      (2 font-lock-type-face))
 
-    ;; Highlight occurrences of
+    ;; Class declaration keywords ‘class Foo’, ‘interface Foo’
+    (,(zephir-create-regexp-for-classlike)
+     (1 'zephir-class-declaration-face)
+     (2 font-lock-type-face))
+    (,(zephir-create-regexp-for-classlike "interface")
+     (1 'zephir-class-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of class modifiers (‘abstract’, ‘final’)
     (,(zephir-rx symbol-start (group (or "abstract" "final")) symbol-end
                  (+ (syntax whitespace))
                  symbol-start "class" symbol-end)
      1 'zephir-class-modifier-face)
+
+    ;; Highlight occurrences of method modifiers (‘abstract’, ‘final’)
+    (,(rx-to-string `(: symbol-start (group (or "abstract" "final")) symbol-end
+                        (+ (syntax whitespace))
+                        (+ (or ,@(append
+                                  zephir-possible-visiblities
+                                  '("static")))
+                           (+ (syntax whitespace)))
+                        symbol-start "function" symbol-end))
+     1 'zephir-method-modifier-face)
 
     ;; Fontify methods call like ‘object->method()’
     (,(zephir-rx (group "->") (group identifier)
@@ -768,16 +788,6 @@ Uses STATE as a syntax context."
                  (? ?>) (* (syntax whitespace)))
      1 'zephir-type-face)
 
-    ;; ‘class Foo’
-    (,(zephir-create-regexp-for-classlike)
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
-    ;; ‘interface Foo’
-    (,(zephir-create-regexp-for-classlike "interface")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
     ;; ‘... as Foo’
     (,(zephir-create-regexp-for-classlike "as")
      (1 font-lock-keyword-face)
@@ -798,7 +808,7 @@ Uses STATE as a syntax context."
     ;; TODO(serghei): deprecated function <name>
     ;; TODO(serghei): let foo = function () {}
     (,(zephir-create-regexp-for-function)
-     (1 font-lock-keyword-face)
+     (1 'zephir-keyword-face)
      (2 'zephir-function-name-face)))
   "Font lock keywords for Zephir Mode.")
 

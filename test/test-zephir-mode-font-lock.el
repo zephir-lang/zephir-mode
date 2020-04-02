@@ -67,7 +67,7 @@
   (it "fontifies classes"
     (expect "class A extends B implements C {}"
             :to-be-fontified-as
-            '(("class" keyword "A" type
+            '(("class" zephir-class-declaration "A" type
                "extends" zephir-class-declaration-spec "B" type
                "implements" zephir-class-declaration-spec "C" type))))
 
@@ -79,7 +79,8 @@
   (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"
             :to-be-fontified-as
-            '(("use" zephir-import-declaration "Phalcon\\Url" type "as" keyword "PhUrl" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type "as"
+               keyword "PhUrl" type))))
 
   (it "fontifies namespaces"
     (expect "namespace Phalcon\\Url;"
@@ -89,16 +90,18 @@
   (it "fontifies interfaces"
     (expect "interface UrlInterface {}"
             :to-be-fontified-as
-            '(("interface" keyword "UrlInterface" type))))
+            '(("interface" zephir-class-declaration "UrlInterface" type))))
 
   (it "fontifies class modifiers"
     (expect "final class Kernel {}"
             :to-be-fontified-as
-            '(("final" zephir-class-modifier "class" keyword "Kernel" type)))
+            '(("final" zephir-class-modifier "class" zephir-class-declaration
+               "Kernel" type)))
 
     (expect "abstract class Kernel {}"
             :to-be-fontified-as
-            '(("abstract" zephir-class-modifier "class" keyword "Kernel" type)))))
+            '(("abstract" zephir-class-modifier "class" zephir-class-declaration
+               "Kernel" type)))))
 
 (describe "Fontification constants"
   (it "fontifies constant definition"
@@ -251,6 +254,18 @@
             :to-be-fontified-as
             '(("internal" zephir-keyword "function" zephir-keyword
                "fuz" zephir-function-name))))
+
+  (it "fontifies ‘<modifier> <visibility> function <name> ()’ headers"
+    (expect "final public function __construct() {}"
+            :to-be-fontified-as
+            '(("final" zephir-method-modifier "public" zephir-keyword
+               "function" zephir-keyword "__construct" zephir-function-name)))
+
+    (expect "abstract private static function test() {}"
+            :to-be-fontified-as
+            '(("abstract" zephir-method-modifier "private" zephir-keyword
+               "static" zephir-keyword "function" zephir-keyword
+               "test" zephir-function-name))))
 
   (it "fontifies return type hints headers"
     (expect "fn foo() -> array | int | <Foo> | <\\A\\B\\C> | void"
