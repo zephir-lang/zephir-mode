@@ -130,6 +130,9 @@
 (require 'imenu)
 (require 'pkg-info)
 
+(eval-when-compile
+  (require 'regexp-opt))
+
 
 ;;;; Customization
 
@@ -280,6 +283,12 @@ etc.  Return nil, if point is not in an IPG."
     "static"
     "unset"
     "new"
+    "fn"
+    "function"
+    "use"
+    "implements"
+    "extends"
+    "namespace"
     "return"
     "class"
     "interface"
@@ -794,12 +803,9 @@ Uses STATE as a syntax context."
      (2 font-lock-type-face))
 
     ;; Builtin declarations and reserverd keywords
-    (,(rx-to-string `(: symbol-start
-                        (group
-                         (or ,@(append
-                                zephir--language-keywords
-                                zephir-possible-visiblities))
-                        symbol-end)))
+    (,(regexp-opt (append zephir--language-keywords
+                          zephir-possible-visiblities)
+                  'symbols)
      1 'zephir-keyword-face)
 
     ;; Function names, i.e. ‘function foo’
