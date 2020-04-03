@@ -138,7 +138,7 @@
   :tag "Zephir Namespace Declaration")
 
 (defface zephir-import-declaration-face
-  '((t (:inherit zephir-keyword-zephir)))
+  '((t (:inherit zephir-keyword-face)))
   "Zephir Mode Face used to highlight import statements (‘use ... as ...’)."
   :group 'zephir-faces
   :tag "Zephir Import Statement")
