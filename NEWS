@@ -5,6 +5,11 @@ See the end of the file for license conditions.
 
 This file is about changes in Zephir Mode.
 
+* Zephir Mode 0.7.0
+** Improved font-locking for magic shortcuts.
+
+** Codebase was splitted to independent features.
+
 * Zephir Mode 0.6.0
 ** Introduced indentation support for blocks in { }.
 
