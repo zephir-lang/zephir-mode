@@ -64,29 +64,6 @@
 ;;   Move to the beginning or end of the current block with `beginning-of-defun'
 ;; (“C-M-a”) and `end-of-defun' (“C-M-e”) respectively.
 
-;;;; Indentation:
-
-;;   Automatic indentation with indentation cycling is provided, it allows you
-;; to navigate different available levels of indentation by hitting “TAB”
-;; several times.  There are two options to use auto-indentation when inserting
-;; newlines:
-;;
-;; 1) Enable the minor-mode `electric-indent-mode' (enabled by default) and use
-;;    “RET”.  If this mode is disabled use `newline-and-indent', bound to “C-j”.
-;;
-;; 2) Add the following hook in your init file:
-;;
-;;    (add-hook 'zephir-mode-hook
-;;      #'(lambda ()
-;;          (define-key zephir-mode-map "\C-m" 'newline-and-indent)))
-;;
-;;   The first option is prefered since you'll get the same behavior for all
-;; modes out-of-the-box.
-;;
-;;   `zephir-indent-tabs-mode' can be changed to insert tabs for indentation in
-;; Zephir Mode.  `zephir-indent-level' can be used to contol indentation level
-;; of Zephir statements.
-
 ;;;; Syntax checking:
 
 ;;   Presently flymake/flycheck support is NOT provided.
@@ -114,6 +91,8 @@
 
 (require 'subr-x)
 (require 'zephir-face)
+(require 'zephir-detect)
+(require 'zephir-indent)
 
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
@@ -121,17 +100,11 @@
 ;; Pacify the byte compiler
 (eval-when-compile
   (require 'rx)
-
-  ;; 25.x compat
-  (unless (fboundp 'prog-first-column)
-    (defun prog-first-column () 0)))
+  (require 'regexp-opt))
 
 (require 'font-lock)
 (require 'imenu)
 (require 'pkg-info)
-
-(eval-when-compile
-  (require 'regexp-opt))
 
 
 ;;;; Customization
@@ -151,18 +124,6 @@
   :tag "Hook"
   :type 'hook
   :group 'zephir)
-
-(defcustom zephir-indent-tabs-mode nil
-  "Indentation can insert tabs in Zephir Mode if this is non-nil."
-  :type 'boolean
-  :group 'zephir
-  :safe 'booleanp)
-
-(defcustom zephir-indent-level 4
-  "Indentation of Zephir statements."
-  :type 'integer
-  :group 'zephir
-  :safe 'integerp)
 
 
 ;;;; Version information
@@ -187,67 +148,6 @@ just return nil."
 
 
 ;;;; Utilities
-
-(defun zephir-syntax-context (&optional pos)
-  "Determine the syntax context at POS, defaulting to point.
-Return nil, if there is no special context at POS, or one of
-`comment'
-     POS is inside a comment
-`single-quoted'
-     POS is inside a single-quoted string
-`double-quoted'
-     POS is inside a double-quoted string"
-  (let ((state (save-excursion (syntax-ppss pos))))
-    (if (nth 4 state)
-        'comment
-      (pcase (nth 3 state)
-        (`?\' 'single-quoted)
-        (`?\" 'double-quoted)))))
-
-(defun zephir-in-string-or-comment-p (&optional pos)
-  "Determine whether POS is inside a string or a comment."
-  (not (null (zephir-syntax-context pos))))
-
-(defun zephir-in-string-p (&optional pos)
-  "Determine whether POS is inside a string.
-This function determines single-quoted as well as double-quoted strings."
-  (let ((ctx (zephir-syntax-context pos)))
-    (or (eq ctx 'single-quoted)
-        (eq ctx 'double-quoted))))
-
-(defun zephir-in-comment-p (&optional pos)
-  "Determine whether POS is inside a comment."
-  (and (zephir-in-string-or-comment-p pos)
-       (not (zephir-in-string-p pos))))
-
-(defun zephir-comment-start-pos (ctx)
-  "Return the position of comment containing current point.
-If point is not inside a comment, return nil.  Uses CTX as a syntax context."
-  (and ctx (nth 4 ctx) (nth 8 ctx)))
-
-(defun zephir-in-ipg (re-open)
-  "Return the position of RE-OPEN when `point' is inside an “IPG”.
-
-This function is intended to use when `point' is inside a
-parenthetical group (IPG) eg. in an array, argument list,
-etc.  Return nil, if point is not in an IPG."
-  (save-excursion
-    (let ((opoint (nth 1 (syntax-ppss))))
-      (when (and opoint
-                 (progn (goto-char opoint) (looking-at-p re-open)))
-        opoint))))
-
-(defun zephir-in-param-list-p ()
-  "Determine whether `point' is in a function parameter list."
-  (ignore-errors
-    (save-excursion
-      (when-let ((open-paren-pt (zephir-in-ipg "(")))
-        open-paren-pt
-        (goto-char open-paren-pt)
-        (forward-symbol -1)
-        (or (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>" )
-            (progn (forward-symbol -1)
-                   (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
 
 (defconst zephir--language-keywords
   '("array"
@@ -509,163 +409,6 @@ Implements Zephir version of `end-of-defun-function'.  For more
 see `zephir-beginning-of-defun'."
   (interactive "p")
   (zephir-beginning-of-defun (- (or arg 1))))
-
-
-;;;; Indentation code
-
-(defun zephir-indent-block (block-start)
-  "Return the proper indentation for the block.
-BLOCK-START must contain open bracket position of the block."
-  (save-excursion
-    (let ((offset 0))
-      (unless (looking-at-p "}")
-        (setq offset zephir-indent-level))
-      (when (and block-start (progn (goto-char block-start) (looking-at-p "{")))
-        (+ (current-indentation) offset)))))
-
-(defun zephir-indent-listlike (pt-start re-close)
-  "Return the proper indentation for the ‘listlike’.
-
-PT-START must contain open bracket position of the ‘listlike’.
-RE-CLOSE must contain the regular expression that uniquely
-identifies the close bracket of the ‘listlike’."
-  ;; The diagram below explains the purpose of the variables:
-  ;;
-  ;;    `pt-start'
-  ;;            |
-  ;;            |
-  ;;  let map = [
-  ;;      "none" : \Redis:SERIALIZER_NONE,
-  ;;      "php"  : \Redis:SERIALIZER_PHP
-  ;;          #];------------------------ `re-close'
-  ;;          |
-  ;;          |________ Suppose `point' is here (#)
-  ;;
-  (save-excursion
-    (if (looking-at-p re-close)
-        ;; Closing bracket on a line by itself
-        (progn
-          (goto-char pt-start)
-          ;; The code below will check for the following list styles:
-          ;;
-          ;; // array
-          ;; let attributes = [ "type" : "text/css",
-          ;;                    "href" : "main.css",
-          ;;                    "rel"  : "stylesheet" ];
-          ;;
-          ;; // arguments list
-          ;; create_instance_params( definition,
-          ;;                         options );
-          (if (save-excursion (forward-char) (eolp))
-              (current-indentation)
-            (current-column)))
-      ;; Otherwise, use normal indentation if the `point' is at the
-      ;; end of the line:
-      ;;
-      ;; // array
-      ;; let logger = [
-      ;;     Logger::ALERT    : LOG_ALERT,
-      ;;     Logger::CRITICAL : LOG_CRIT,
-      ;;     [ 1 ],
-      ;;     [
-      ;;         foo,
-      ;;         bar
-      ;;     ]
-      ;; ];
-      ;;
-      ;; // argument list
-      ;; this->interpolate(
-      ;;     item->getMessage(),
-      ;;     item->getContext()
-      ;; );
-      (goto-char pt-start)
-      (forward-char 1)
-      (if (eolp)
-          (+ (current-indentation) zephir-indent-level)
-        ;; Othewise, align as described above
-        (re-search-forward "\\S-")
-        (forward-char -1)
-        (current-column)))))
-
-(defun zephir--proper-indentation (ctx)
-  "Return the proper indentation for the current line.
-This uses CTX as a current parse state."
-  (save-excursion
-    ;; Move `point' to the first non-whitespace character in the current line
-    (back-to-indentation)
-
-    (cond
-     ;; Inside multiline string.
-     ;; If we're inside a string and strings aren't to be indented,
-     ;; return current indentation.
-     ((zephir-in-string-p) (current-indentation))
-
-     ;; Multiline commentary
-     ((zephir-in-comment-p)
-      ;; Make sure comment line is indentet proper way relative to
-      ;; open-comment (“/*”) for all possible use-cases.
-      ;;
-      ;;   /**
-      ;;    * This is the summary for a DocBlock.
-      ;;    *
-      ;;    * This is the description for a DocBlock.
-      ;;    */
-      ;;
-      ;;   /*
-      ;;    * C-style comments
-      ;;    * can contain multiple lines.
-      ;;    */
-      ;;
-      ;;   /*
-      ;;     C-style comments
-      ;;     can contain multiple lines.
-      ;;    */
-      (let ((asteriks-marker-p (looking-at-p "\\*+")))
-        (save-excursion
-          (goto-char (zephir-comment-start-pos ctx))
-          (+ (current-indentation)
-             (if asteriks-marker-p 0 1)
-             1))))
-
-     ;; TODO(serghei): Cover use-case for single-line comments (“//”)
-
-     ;; When `point' is inside an innermost parenthetical grouping
-     ((let ((array-start (zephir-in-ipg "\\["))
-            (arglist-start (zephir-in-ipg "("))
-            (block-start (zephir-in-ipg "{")))
-        (cond
-         (array-start (zephir-indent-listlike array-start "]"))
-         (arglist-start (zephir-indent-listlike arglist-start ")"))
-         (block-start (zephir-indent-block block-start)))))
-
-     ;; Otherwise indent to the first column
-     (t (prog-first-column)))))
-
-(defun zephir-indent-line ()
-  "Indent current line as Zephir code."
-  (interactive)
-  (if (bobp)
-      ;; First line is always non-indented
-      (indent-line-to 0)
-    (let* (
-           ;; Save the current parse state.
-           ;; We will need it in `zephir--proper-indentation'.
-           (ctx (save-excursion (syntax-ppss (point-at-bol))))
-
-           ;; The first non-whitespace character (l)
-           ;; |          +-------------------------- The offset (-)
-           ;; |          |
-           ;; |          |              +------------- Whitespace characters (.)
-           ;; |_________________________|______________
-           ;; let foo = bar;...........................#
-           ;;                                          |
-           ;;                                          |
-           ;; The current point position (#) ----------+
-	   ;;
-	   (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (indent-line-to (zephir--proper-indentation ctx))
-      ;; Move point to the previous offset
-      (when (> offset 0) (forward-char offset)))))
 
 
 ;;;; Font Locking
@@ -1019,12 +762,6 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line)
   (setq-local indent-tabs-mode zephir-indent-tabs-mode))
-
-
-;; Invoke zephir-mode when appropriate
-
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
 
 (provide 'zephir-mode)
 ;;; zephir-mode.el ends here

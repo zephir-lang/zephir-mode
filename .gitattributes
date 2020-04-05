@@ -1,6 +1,8 @@
-.git*           export-ignore
-.codecov.yml    export-ignore
-.elpaignore     export-ignore
+.git*            export-ignore
+.codecov.yml     export-ignore
+.elpaignore      export-ignore
 
-zephir-mode.el  export-subst
-zephir-face.el  export-subst
+zephir-mode.el   export-subst
+zephir-face.el   export-subst
+zephir-indent.el export-subst
+zephir-detect.el export-subst
