@@ -7,7 +7,7 @@
 ;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "25.1"))
 ;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
@@ -29,7 +29,7 @@
 
 ;;; Commentary:
 
-;; Face definitions for Zephir code.
+;; Face definitions for Zephir code.  This feature is used by `zephir-mode'.
 
 ;;; Code:
 
