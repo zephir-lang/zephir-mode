@@ -34,6 +34,8 @@
 
 ;;; Code:
 
+(require 'subr-x) ; `when-let'
+
 (defun zephir-syntax-context (&optional pos)
   "Determine the syntax context at POS, defaulting to point.
 Return nil, if there is no special context at POS, or one of

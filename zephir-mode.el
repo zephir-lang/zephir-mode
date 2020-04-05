@@ -89,7 +89,6 @@
 
 ;;;; Requirements
 
-(require 'subr-x)
 (require 'zephir-face)
 (require 'zephir-detect)
 (require 'zephir-indent)
