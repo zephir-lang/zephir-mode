@@ -263,7 +263,23 @@
     (expect "private privateProperty;"
             :to-be-fontified-as
             '(("private" zephir-keyword
-               "privateProperty" zephir-property-name)))))
+               "privateProperty" zephir-property-name))))
+
+  (it "does not confuse variables and methods with magic shortcuts"
+    (expect "var get;"
+            :to-be-fontified-as
+            '(("var" zephir-type "get" zephir-variable-name)))
+
+    (expect "this->set(name, def, true)"
+            :to-be-fontified-as
+            '(("this" zephir-this "->" zephir-object-operator
+               "set" zephir-method-call "true" zephir-constant)))
+
+    (expect "/** If the magic method starts with \"get\" we try to get a
+              * service with that name */"
+            :to-be-fontified-as
+            '(("/** If the magic method starts with \"get\" we try to get a" doc)
+              ("              * service with that name */" doc)))))
 
 (describe "Fontification of function headers"
   (it "fontifies standard ‘function <name> ()’ headers"

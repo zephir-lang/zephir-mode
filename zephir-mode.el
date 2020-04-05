@@ -895,7 +895,7 @@ Uses STATE as a syntax context."
       ;; forward progress.  At this point we are done with the form.
       nil
       ;; Fontify the found word as `zephir-keyword-face'.
-      (1 'zephir-keyword-face t))))
+      (1 'zephir-keyword-face))))
   "Font lock keywords for Zephir Mode.")
 
 
