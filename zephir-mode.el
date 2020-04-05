@@ -861,7 +861,7 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      ;; When done with the visibility look for the ‘static’ word.
      ;; At this moment we're at point after the ‘\\s-+’ (from previous regexp).
-     ("\\_<\\(static\\)\\_>"
+     ("\\<static\\>"
       ;; Set the limit of the seacrh to the current class property only.
       (save-excursion
         (re-search-forward "\\s-\\|;" nil 'noerror)
@@ -871,12 +871,12 @@ Uses STATE as a syntax context."
       ;; forward progress.
       nil
       ;; Fontify the found word as `zephir-keyword-face'.
-      (1 'zephir-keyword-face t))
+      (0 'zephir-keyword-face))
      ;; Look for symbols after the space (‘\\s-+’), this is a property name.
      ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
       ;; Set the limit of search to a property name only.
       (save-excursion
-        (re-search-forward "\\(?:[=;{]\\)" nil 'noerror)
+        (re-search-forward "=\\|;\\|{" nil 'noerror)
         (forward-char -1)
         (point))
       ;; Do not move back when we've found property name to ensure
@@ -884,18 +884,22 @@ Uses STATE as a syntax context."
       nil
       ;; Fontify each matched symbol as property.
       (1 'zephir-property-name-face))
-     ;; Finally search for ‘{ get, set, toString }’ form.
-     ("[,{]\\s-*\\_<\\(\\(?:get\\|set\\|toString\\)\\)\\_>"
+     ;; Finally search for magic shortcuts.  They are in the following form:
+     ;;
+     ;;   public foo = 42 { get, set, toString };
+     ;;                   ^^^^^^^^^^^^^^^^^^^^^^
+     ;;
+     ("\\<\\(?:get\\|set\\|toString\\)\\>"
       ;; Set the limit of search to the current property form only.
       (save-excursion
-        (re-search-forward "\\(?:;\\)" nil 'noerror)
+        (re-search-forward ";\\|}" nil 'noerror)
         (forward-char -1)
         (point))
       ;; Do not move back when we've found all matches to ensure
       ;; forward progress.  At this point we are done with the form.
       nil
       ;; Fontify the found word as `zephir-keyword-face'.
-      (1 'zephir-keyword-face))))
+      (0 'zephir-keyword-face))))
   "Font lock keywords for Zephir Mode.")
 
 
