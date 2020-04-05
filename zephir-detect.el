@@ -7,7 +7,7 @@
 ;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
-;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "25.1"))
+;; Package-Requires: ((emacs "25.1"))
 ;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
@@ -29,7 +29,8 @@
 
 ;;; Commentary:
 
-;; Various Zephir detect functions and variables are defined here.
+;; Various Zephir detect functions and variables are defined here.  This feature
+;; is used by `zephir-mode'.
 
 ;;; Code:
 
