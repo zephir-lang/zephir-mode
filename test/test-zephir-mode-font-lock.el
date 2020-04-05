@@ -241,16 +241,57 @@
             '(("public" zephir-keyword "static" zephir-keyword
                "hello" zephir-property-name)))
 
-    (expect "public bar = { get };"
+    (expect "public bar = 2020 { get };"
             :to-be-fontified-as
             '(("public" zephir-keyword "bar" zephir-property-name
                "get" zephir-keyword)))
 
-    ;; TODO(serghei): ‘public targetLocal = true { toString, get };’
-    (expect "public targetLocal = [] { toString, get };"
+    (expect "public targetLocal=[] { toString, get };"
             :to-be-fontified-as
             '(("public" zephir-keyword "targetLocal" zephir-property-name
                "toString" zephir-keyword "get" zephir-keyword)))
+
+    (expect "public targetLocal = true { toString, get };"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "targetLocal" zephir-property-name
+               "true" zephir-constant "toString" zephir-keyword
+               "get" zephir-keyword)))
+
+    (expect "public foo = 42 { toString, get}
+             private bar {get} // comment"
+            :to-be-fontified-as
+            '(("public" zephir-keyword "foo" zephir-property-name
+               "toString" zephir-keyword "get" zephir-keyword)
+              ("private" zephir-keyword "bar" zephir-property-name
+               "get" zephir-keyword "// " comment-delimiter
+               "comment" comment)))
+
+    (expect "protected myProperty {
+             set, get, toString
+            };"
+            :to-be-fontified-as
+            '(("protected" zephir-keyword "myProperty" zephir-property-name)
+              ("set" zephir-keyword "get" zephir-keyword
+               "toString" zephir-keyword)
+              ()))
+
+    (expect "protected staticProperty = \"get\" {
+             set,
+             get,
+             getter
+            };"
+            :to-be-fontified-as
+            '(("protected" zephir-keyword "staticProperty" zephir-property-name
+               "\"get\"" string)
+              ("set" zephir-keyword)
+              ("get" zephir-keyword)
+              ()
+              ()))
+
+    (expect "protected static errorMessages { get };"
+            :to-be-fontified-as
+            '(("protected" zephir-keyword "static" zephir-keyword
+               "errorMessages" zephir-property-name "get" zephir-keyword)))
 
     (expect "protected foo;"
             :to-be-fontified-as
@@ -263,7 +304,23 @@
     (expect "private privateProperty;"
             :to-be-fontified-as
             '(("private" zephir-keyword
-               "privateProperty" zephir-property-name)))))
+               "privateProperty" zephir-property-name))))
+
+  (it "does not confuse variables and methods with magic shortcuts"
+    (expect "var get;"
+            :to-be-fontified-as
+            '(("var" zephir-type "get" zephir-variable-name)))
+
+    (expect "this->set(name, def, true)"
+            :to-be-fontified-as
+            '(("this" zephir-this "->" zephir-object-operator
+               "set" zephir-method-call "true" zephir-constant)))
+
+    (expect "/** If the magic method starts with \"get\" we try to get a
+              * service with that name */"
+            :to-be-fontified-as
+            '(("/** If the magic method starts with \"get\" we try to get a" doc)
+              ("              * service with that name */" doc)))))
 
 (describe "Fontification of function headers"
   (it "fontifies standard ‘function <name> ()’ headers"
