@@ -52,7 +52,7 @@
 ;; this to your Emacs configuration:
 ;;
 ;;    (add-hook 'zephir-mode-hook
-;;      #(lambda () (subword-mode 1)))
+;;      #'(lambda () (subword-mode 1)))
 
 ;;;; Imenu:
 
@@ -847,7 +847,7 @@ Uses STATE as a syntax context."
      (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
-    ;; Highlight occurrences of class' properties (‘public foo’).
+    ;; Highlight occurrences of class member variables (‘public foo’).
     ;;
     ;; The first regexp is the anchor of the fontification, meaning the
     ;; "starting point" of the region:
@@ -859,46 +859,43 @@ Uses STATE as a syntax context."
     ("\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+"
      ;; Fontify the property visibility as a `zephir-keyword-face'.
      (1 'zephir-keyword-face)
-     ;; Look for symbols after the space (‘\\s-+’), they are properties.
-     ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
-      ;; Set the limit of search to the current property form only.
+     ;; When done with the visibility look for the ‘static’ word.
+     ;; At this moment we're at point after the ‘\\s-+’ (from previous regexp).
+     ("\\_<\\(static\\)\\_>"
+      ;; Set the limit of the seacrh to the current class property only.
       (save-excursion
-        (re-search-forward "\\(?:[;={]\\)" nil 'noerror)
+        (re-search-forward "\\s-\\|;" nil 'noerror)
         (forward-char -1)
         (point))
-      ;; When we found a property in the region go back to the ‘\\s-+’ marker.
-      (progn
-        (re-search-backward
-         "\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+")
-        (forward-symbol 1))
+      ;; Do not move back when we've found ‘static’ keyword to ensure
+      ;; forward progress.
+      nil
+      ;; Fontify the found word as `zephir-keyword-face'.
+      (1 'zephir-keyword-face t))
+     ;; Look for symbols after the space (‘\\s-+’), this is a property name.
+     ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
+      ;; Set the limit of search to a property name only.
+      (save-excursion
+        (re-search-forward "\\(?:[=;{]\\)" nil 'noerror)
+        (forward-char -1)
+        (point))
+      ;; Do not move back when we've found property name to ensure
+      ;; forward progress.
+      nil
       ;; Fontify each matched symbol as property.
       (1 'zephir-property-name-face))
-     ;; When done with the symbols look for the ‘static’ word.
-     ("static"
-      ;; We are starting from the visibility word again.
-      (save-excursion
-        (re-search-forward "\\s-" nil 'noerror)
-        (forward-char -1)
-        (point))
-      ;; When we found a property in the region go back to the ‘\\s-+’ marker.
-      (progn
-        (re-search-backward
-         "\\_<\\(p\\(?:r\\(?:ivate\\|otected\\)\\|ublic\\)\\)\\_>\\s-+")
-        (forward-symbol 1))
-      ;; Fontify the found word as `zephir-keyword-face'.
-      (0 'zephir-keyword-face t))
      ;; Finally search for ‘{ get, set, toString }’ form.
-     ("\\<\\(?:get\\|set\\|toString\\)\\>"
-      ;; We are starting from the visibility word again.
+     ("[,{]\\s-*\\_<\\(\\(?:get\\|set\\|toString\\)\\)\\_>"
+      ;; Set the limit of search to the current property form only.
       (save-excursion
-        (re-search-forward "}" nil 'noerror)
+        (re-search-forward "\\(?:;\\)" nil 'noerror)
         (forward-char -1)
         (point))
       ;; Do not move back when we've found all matches to ensure
       ;; forward progress.  At this point we are done with the form.
       nil
       ;; Fontify the found word as `zephir-keyword-face'.
-      (0 'zephir-keyword-face t))))
+      (1 'zephir-keyword-face t))))
   "Font lock keywords for Zephir Mode.")
 
 
