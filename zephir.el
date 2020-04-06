@@ -49,8 +49,44 @@
 
 ;;; Code:
 
-(require 'rx)     ; `rx'
+
+;;;; Requirements
+
+;; Pacify the byte compiler
+(eval-when-compile
+  (require 'rx))
+
 (require 'subr-x) ; `when-let'
+
+
+;;;; Customization
+
+;;;###autoload
+(defgroup zephir nil
+  "Major mode for editing Zephir code."
+  :tag "Zephir"
+  :prefix "zephir-"
+  :group 'languages
+  :link '(url-link :tag "GitHub Page" "https://github.com/zephir-lang/zephir-mode")
+  :link '(url-link :tag "Zephir Site" "https://zephir-lang.com")
+  :link '(emacs-commentary-link :tag "Commentary" "zephir-mode"))
+
+
+;;;; Zephir Keywords
+
+(defconst zephir-magical-constants
+  '("__LINE__"
+    "__FILE__"
+    "__FUNCTION__"
+    "__CLASS__"
+    "__METHOD__"
+    "__NAMESPACE__")
+  "Magical keyword that is expanded at compile time.
+These are different from “constants” in strict terms.")
+
+(defconst zephir-builtin-constants
+  '("null" "true" "false")
+  "Predefined language constants.")
 
 (defconst zephir-language-keywords
   '("array"
@@ -99,6 +135,34 @@
     "final"
     "abstract")
   "Zephir language keywords.")
+
+(defconst zephir-possible-visiblities
+  '("public" "protected" "private" "internal" "inline" "scoped")
+  "Possible values for visibility declaration in Zephir code.")
+
+(defconst zephir-name-start-re "[$_[:alpha:]]"
+  "Regexp matching the start of a Zephir identifier, whithout groupping.")
+
+(defconst zephir-name-re
+  (concat zephir-name-start-re "\\(?:\\s_\\|\\sw\\)*")
+  "Regexp matching a Zephir identifier, whithout groupping.")
+
+(defconst zephir-classlike-re
+  (concat zephir-name-re "\\(?:\\s_\\|\\sw\\|\\\\\\)*")
+  "Regexp matching a Zephir ‘classlike’, whithout groupping.")
+
+(defconst zephir-data-type-re
+  (concat "u?int\\|bool\\(?:ean\\)?\\|u?long\\|u?char\\|i?string"
+          "\\|\\(?:calla\\|dou\\)ble\\|float\\|resource\\|object"
+          "\\|var\\|void\\|array")
+  "Regexp matching possible data types in Zephir, whithout groupping.")
+
+(defconst zephir-constant-re
+  (concat "\\<\\(const\\)\\s-+&?\\(" zephir-name-re "\\)")
+  "Regular expression for a constant definition.
+
+The regular expression will have two capture groups which will be
+the word ‘const’ and the name of a constant respectively.")
 
 (defun zephir-syntax-context (&optional pos)
   "Determine the syntax context at POS, defaulting to point.
@@ -161,9 +225,9 @@ etc.  Return nil, if point is not in an IPG."
             (progn (forward-symbol -1)
                    (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
 
-(defconst zephir-possible-visiblities
-  '("public" "protected" "private" "internal" "inline" "scoped")
-  "Possible values for visibility declaration in Zephir code.")
+
+;;;; Utils
+
 
 (defun zephir-create-regexp-for-classlike (&optional type)
   "Make a regular expression for a ‘classlike’ with the given TYPE.
@@ -204,21 +268,10 @@ respectively."
      "\\s-+"
 
      ;; Object name, group #2.
-     "\\(" root-ns (zephir-rx classlike) "\\)")))
+     "\\(" root-ns zephir-classlike-re "\\)")))
 
-(eval-when-compile
-  (defun zephir-create-regexp-for-constant ()
-    "Make a regular expression for a constant definition.
-
-The regular expression will have two capture groups which will be
-the word ‘const’ and the name of a constant respectively."
-    (zephir-rx word-start (group "const")
-               (+ (syntax whitespace)) (? "&")
-               (group identifier)))
-
-
-  (defun zephir-create-regexp-for-function (&optional visibility)
-    "Make a regular expression for a function with the given VISIBILITY.
+(defun zephir-create-regexp-for-function (&optional visibility)
+  "Make a regular expression for a function with the given VISIBILITY.
 
 Optional VISIBILITY, when passed, must be a string that specifies
 the visibility for a Zephir function, e.g. ‘scoped’ or ‘public’.
@@ -229,122 +282,26 @@ keywords that can appear in method signatures, e.g. ‘final’ or
 ‘deprecated’.  The regular expression will have two capture
 groups which will be the word ‘function’ (or ‘fn’) and the name
 of a function respectively."
-    (let ((visibility (or visibility zephir-possible-visiblities)))
-      (when (stringp visibility)
-        (setq visibility (list visibility)))
-      (rx-to-string `(: line-start
-                        (* (syntax whitespace))
-                        (? "deprecated" (+ (syntax whitespace)))
-                        (* (or "abstract" "final")
-                           (+ (syntax whitespace)))
-                        (or ,@visibility)
-                        (+ (syntax whitespace))
-                        (? "static" (+ (syntax whitespace)))
-                        (group (or "fn" "function"))
-                        (+ (syntax whitespace))
-                        (group symbol-start
-                               (? ?$)
-                               (any "A-Z" "a-z" ?_)
-                               (0+ (any "A-Z" "a-z" "0-9" ?_))
-                               symbol-end)
-                        (* (syntax whitespace))
-		        "(")))))
-
-
-
-;;;; Specialized rx
-
-(eval-when-compile
-  (defconst zephir-rx-constituents
-    `(
-      ;; Identifier
-      (identifier . ,(rx (? ?$)
-                         word-start
-                         (any "A-Z" "a-z" ?_)
-                         (0+ (any "A-Z" "a-z" "0-9" ?_))
-                         word-end))
-
-      ;; Magic constants
-      (magic-const . ,(rx symbol-start
-                          (or "__LINE__" "__FILE__" "__FUNCTION__"
-                              "__CLASS__" "__METHOD__" "__NAMESPACE__")
-                          symbol-end))
-
-      ;; Predefined language constants
-      (builtin-const . ,(rx symbol-start
-                            (or "null" "true" "false")
-                            symbol-end))
-
-      ;; User-defined constants
-      (constant . ,(rx symbol-start
-                       (any "A-Z" ?_)
-                       (+ (any "A-Z" "0-9" ?_))
-                       symbol-end))
-
-      ;; Function declaraion
-      (fn-decl . ,(rx symbol-start (or "fn" "function") symbol-end))
-
-      ;; Namespace, class or interface name
-      (classlike . ,(rx symbol-start
-                        (optional ?$)
-                        (any "A-Z" "a-z" ?_)
-                        (0+ (any "A-Z" "a-z" "0-9" ?_))
-                        (0+
-                         (and "\\"
-                              (any "A-Z" "a-z" ?_)
-                              (+ (any "A-Z" "a-z" "0-9" ?_))))
-                        symbol-end))
-
-      ;; Data types
-      (data-type . ,(rx (or (and (? "u") "int")
-                            (and "bool" (? "ean"))
-                            (and (? "u") "long")
-                            (and (? "u") "char")
-                            (and (? "i") "string")
-                            (and (or "dou" "calla") "ble")
-                            "float"
-                            "resource"
-                            "object"
-                            "var"
-                            "void"
-                            "array"))))
-    "Additional special sexps for `zephir-rx'.")
-
-  (defmacro zephir-rx (&rest sexps)
-    "Zephir-specific replacement for `rx'.
-
-In addition to the standard forms of `rx', the following forms
-are available:
-
-`identifier'
-     Any valid identifier with optional dollar sign, e.g. function name,
-     variable name, etc.
-
-`magic-const'
-     Magical keyword that is expanded at compile time.
-
-`builtin-const'
-     Predefined language constants.
-
-`constant'
-     User-defined constants.
-     By convention, constant identifiers are always uppercase.
-
-`fn-decl'
-     A function declaraion.
-
-`classlike'
-     A valid namespace, class or interface name without leading ‘\\’.
-
-`data-type'
-     Any valid data type.
-
-See `rx' documentation for more information about REGEXPS param."
-    (let ((rx-constituents (append zephir-rx-constituents rx-constituents)))
-      (rx-to-string (cond ((null sexps) (error "No regexp is provided"))
-                          ((cdr sexps)  `(and ,@sexps))
-                          (t            (car sexps)))
-                    t))))
+  (let ((visibility (or visibility zephir-possible-visiblities)))
+    (when (stringp visibility)
+      (setq visibility (list visibility)))
+    (rx-to-string `(: line-start
+                      (* (syntax whitespace))
+                      (? "deprecated" (+ (syntax whitespace)))
+                      (* (or "abstract" "final")
+                         (+ (syntax whitespace)))
+                      (or ,@visibility)
+                      (+ (syntax whitespace))
+                      (? "static" (+ (syntax whitespace)))
+                      (group (or "fn" "function"))
+                      (+ (syntax whitespace))
+                      (group symbol-start
+                             (? ?$)
+                             (any "A-Z" "a-z" ?_)
+                             (0+ (any "A-Z" "a-z" "0-9" ?_))
+                             symbol-end)
+                      (* (syntax whitespace))
+		      "("))))
 
 
 ;;;; Movement
@@ -396,16 +353,14 @@ see `zephir-beginning-of-defun'."
     ("Private Methods"
      ,(zephir-create-regexp-for-function '("private")) 2)
     ("Properties"
-     ,(zephir-rx line-start
-                 (* (syntax whitespace))
-                 (or "public" "protected" "private")
-                 (+ (syntax whitespace))
-                 (group identifier)
-                 (* (syntax whitespace))
-                 (any "=" ";" "{"))
+     ,(rx-to-string `(: (* (syntax whitespace))
+                        (or "public" "protected" "private")
+                        (+ (syntax whitespace))
+                        (group ,@zephir-name-re)
+                        (* (syntax whitespace))
+                        (any "=" ";" "{")))
      1)
-    ("Constants"
-     ,(zephir-create-regexp-for-constant) 2))
+    ("Constants" ,zephir-constant-re 2))
   "Imenu generic expression for `zephir-mode'.
 For more see `imenu-generic-expression'.")
 

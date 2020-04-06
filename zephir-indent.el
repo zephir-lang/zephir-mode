@@ -50,6 +50,9 @@
 
 ;;; Code:
 
+
+;;;; Requirements
+
 (require 'zephir)
 
 ;; Pacify the byte compiler
@@ -57,6 +60,9 @@
   ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
+
+
+;;;; Customization
 
 (defcustom zephir-indent-tabs-mode nil
   "Indentation can insert tabs in Zephir Mode if this is non-nil."
@@ -69,6 +75,9 @@
   :type 'integer
   :group 'zephir
   :safe 'integerp)
+
+
+;;;; Indentation
 
 (defun zephir-indent-block (block-start)
   "Return the proper indentation for the block.

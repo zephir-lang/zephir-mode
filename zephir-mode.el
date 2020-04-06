@@ -60,27 +60,10 @@
 ;; Tell the byte compiler about autoloaded functions from packages
 (declare-function pkg-info-version-info "pkg-info" (package))
 
-;; Pacify the byte compiler
-(eval-when-compile
-  (require 'rx)
-  (require 'regexp-opt))
-
-(require 'font-lock)
-(require 'imenu)
 (require 'pkg-info)
 
 
 ;;;; Customization
-
-;;;###autoload
-(defgroup zephir nil
-  "Major mode for editing Zephir code."
-  :tag "Zephir"
-  :prefix "zephir-"
-  :group 'languages
-  :link '(url-link :tag "GitHub Page" "https://github.com/zephir-lang/zephir-mode")
-  :link '(url-link :tag "Zephir Site" "https://zephir-lang.com")
-  :link '(emacs-commentary-link :tag "Commentary" "zephir-mode"))
 
 (defcustom zephir-mode-hook nil
   "List of functions to call when entering Zephir Mode."

@@ -31,7 +31,18 @@
 
 ;;; Code:
 
+
+;;;; Requirements
+
 (require 'zephir)
+
+;; Pacify the byte compiler
+(eval-when-compile
+  (require 'rx)
+  (require 'regexp-opt))
+
+
+;;;; Customization
 
 ;;;###autoload
 (defgroup zephir-faces nil
@@ -166,6 +177,9 @@ Uses STATE as a syntax context."
         font-lock-doc-face
       font-lock-comment-face)))
 
+
+;;;; Font locking
+
 (defvar zephir-font-lock-keywords
   `(;; Class declaration specification keywords.
     ;;
@@ -226,9 +240,9 @@ Uses STATE as a syntax context."
      (2 font-lock-type-face))
 
     ;; Highlight occurrences of class modifiers (‘abstract’, ‘final’)
-    (,(zephir-rx symbol-start (group (or "abstract" "final")) symbol-end
-                 (+ (syntax whitespace))
-                 symbol-start "class" symbol-end)
+    (,(rx symbol-start (group (or "abstract" "final")) symbol-end
+          (+ (syntax whitespace))
+          symbol-start "class" symbol-end)
      1 'zephir-class-modifier-face)
 
     ;; Highlight occurrences of method modifiers (‘abstract’, ‘final’)
@@ -238,66 +252,66 @@ Uses STATE as a syntax context."
                                   zephir-possible-visiblities
                                   '("static")))
                            (+ (syntax whitespace)))
-                        symbol-start "function" symbol-end))
+                        symbol-start
+                        (or "fn" "function")
+                        symbol-end))
      1 'zephir-method-modifier-face)
 
     ;; Fontify methods call like ‘object->method()’
-    (,(zephir-rx (group "->") (group identifier)
-                 (* (syntax whitespace))"(")
+    (,(concat "\\(->\\)"
+              "\\(" zephir-name-re "\\)\\s-*(")
      (1 'zephir-object-operator-face)
      (2 'zephir-method-call-face))
 
-    ;; Highlight definition of user defined constants
-    (,(zephir-create-regexp-for-constant)
-     (1 'zephir-keyword-face)
-     (2 'zephir-constant-assign-face))
-
     ;; Highlight occurrences of magic constants
-    (,(zephir-rx (group magic-const))
+    (,(regexp-opt zephir-magical-constants 'symbols)
      1 'zephir-magical-constant-face)
 
+    ;; Highlight definition of user defined constants
+    (,zephir-constant-re
+     (1 'zephir-keyword-face)
+     (2 'zephir-constant-assign-face))
+    ("\\_<[A-Z_][0-9A-Z_]+\\_>" 0 'zephir-constant-face)
+
     ;; Highlight occurrences of built-in constants
-    (,(zephir-rx (group (or constant builtin-const)))
+    (,(regexp-opt zephir-builtin-constants 'symbols)
      1 'zephir-constant-face)
 
     ;; Highlight occurrences of the word ‘this’
-    (,(zephir-rx word-start (group "this") word-end)
-     1 'zephir-this-face)
+    ("\\<\\(this\\)\\>" 1 'zephir-this-face)
 
     ;; Highlight properties like ‘object->property’
-    (,(zephir-rx (group "->") (group identifier)
-                 (* (syntax whitespace)))
+    (,(concat "\\(->\\)"
+              "\\(" zephir-name-re "\\)")
      (1 'zephir-object-operator-face)
      (2 'zephir-property-name-face))
 
     ;; Highlight function/method name i.e. ‘function foo ()’
-    (,(zephir-rx word-start (group fn-decl)
-                 (+ (syntax whitespace))
-                 (group identifier)
-                 (* (syntax whitespace)) "(")
+    (,(concat (regexp-opt '("fn" "function") 'words)
+              "\\s-+\\("
+              zephir-name-re
+              "\\)\\s-*(")
      (1 'zephir-keyword-face)
      (2 'zephir-function-name-face))
 
     ;; Type hints i.e. ‘int a’
-    (,(zephir-rx (? "const" (+ (syntax whitespace)))
-                 word-boundary (group data-type) (? ?!)
-                 (+ (syntax whitespace)) (? ?&)
-                 (group identifier))
+    (,(concat "\\(?:const\\s-+\\)?"
+              "\\<\\b\\(" zephir-data-type-re "\\)!?"
+              "\\s-+&?\\(" zephir-name-re "\\)")
      (1 'zephir-type-face)
      (2 'zephir-variable-name-face))
 
     ;; Type hints i.e. ‘<AdapterFactory> factory’
-    (,(zephir-rx (? "const" (+ (syntax whitespace)))
-                 "<" (group (+ (or (syntax word) (syntax symbol) "\\"))) ">"
-                 (+ (syntax whitespace)) (? ?&)
-                 (group identifier))
+    (,(concat "\\(?:const\\s-+\\)?"
+              "<\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)>"
+              "\\s-+&?"
+              "\\(" zephir-name-re "\\)")
      (1 'zephir-type-face)
      (2 'zephir-variable-name-face))
 
     ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
-    (,(zephir-rx (* (syntax whitespace)) (? ?&) identifier
-                 (* (syntax whitespace)) (in "," ")" "="))
-     (,(zephir-rx identifier)
+    (,(concat "\\s-*&?" zephir-name-re "\\s-*[),=]")
+     (,zephir-name-re
       (if (save-excursion (backward-char)
                           (zephir-in-param-list-p))
           (forward-symbol -1)
@@ -306,10 +320,10 @@ Uses STATE as a syntax context."
       (0 'zephir-variable-name-face)))
 
     ;; Return type hints
-    (,(zephir-rx (or (:")" (* (syntax whitespace)) "->") "|")
-                 (* (syntax whitespace)) (? ?<)
-                 (group (+ (or (syntax word) (syntax symbol) "\\")))
-                 (? ?>) (* (syntax whitespace)))
+    (,(rx (or (:")" (* (syntax whitespace)) "->") "|")
+          (* (syntax whitespace)) (? ?<)
+          (group (+ (or (syntax word) (syntax symbol) "\\")))
+          (? ?>) (* (syntax whitespace)))
      1 'zephir-type-face)
 
     ;; ‘... as Foo’

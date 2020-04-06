@@ -10,6 +10,17 @@ This file is about changes in Zephir Mode.
 
 ** Codebase was splitted to independent features.
 
+** Removed zephir-create-regexp-for-constant.
+To get regular espression for a constant ‘zephir-constant-re’ was
+introduced.
+
+** Removed zephir-rx macro.
+Instead, the following constants were introduced:
+- zephir-magical-constants
+- zephir-name-re
+- zephir-classlike-re
+- zephir-data-type-re
+
 * Zephir Mode 0.6.0
 ** Introduced indentation support for blocks in { }.
 
