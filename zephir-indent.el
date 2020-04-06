@@ -50,7 +50,7 @@
 
 ;;; Code:
 
-(require 'zephir-detect)
+(require 'zephir)
 
 ;; Pacify the byte compiler
 (eval-when-compile
