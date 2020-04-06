@@ -7,7 +7,5 @@ Cask             export-ignore
 Makefile         export-ignore
 default.mk       export-ignore
 
-zephir-mode.el   export-subst
-zephir-face.el   export-subst
-zephir-indent.el export-subst
 zephir.el        export-subst
+zephir-mode.el   export-subst

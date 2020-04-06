@@ -5,7 +5,6 @@
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;;         immerrr <immerrr+lua@gmail.com>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.

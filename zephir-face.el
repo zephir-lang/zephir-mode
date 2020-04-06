@@ -4,11 +4,9 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
 ;; Package-Requires: ((emacs "25.1"))
-;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
 
