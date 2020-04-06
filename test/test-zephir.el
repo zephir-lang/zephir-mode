@@ -42,6 +42,54 @@
 
 ;;; Code:
 
+(describe "Navigation"
+  (it "moves back to the beginning of a defun"
+    (with-zephir-buffer
+     "    public function foo () {
+      }
+
+     // Some comment"
+     (goto-char (point-max))
+     (back-to-indentation)
+     (expect (looking-at "// Some comment"))
+     (beginning-of-defun)
+     (expect (looking-at "public function foo"))))
+
+  (it "moves back to the ARGth beginning of a defun"
+    (with-zephir-buffer
+     "public function bar () {
+      }
+
+      public function foo () {
+      }
+
+     // Some comment"
+     (goto-char (point-max))
+     (back-to-indentation)
+     (expect (looking-at "// Some comment"))
+     (beginning-of-defun 2)
+     (expect (looking-at "public function bar"))))
+
+  (it "moves forward to the end of a defun"
+    (with-zephir-buffer
+     "public function foo () {
+      }
+     // Some comment"
+     (expect (looking-at "public function foo"))
+     (end-of-defun)
+     (expect (looking-at "\\s-*// Some comment"))))
+
+  (it "moves forward to the ARGth end of a defun"
+    (with-zephir-buffer
+     "public function foo () {
+      }
+      public function bar () {
+      }
+     // Some comment"
+     (expect (looking-at "public function foo"))
+     (end-of-defun 2)
+     (expect (looking-at "\\s-*// Some comment")))))
+
 (describe "Positioning"
   (describe "create regexp for function"
     (it "finds functions w/o ‘visibility’"
