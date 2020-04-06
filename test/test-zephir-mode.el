@@ -1,10 +1,9 @@
-;;; test-zephir-mode-generic.el --- Zephir Mode: Generic tests -*- lexical-binding: t; -*-
+;;; test-zephir-mode.el --- Zephir Mode: Generic tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -49,4 +48,4 @@
      ""
      (expect (derived-mode-p 'prog-mode)))))
 
-;;; test-zephir-mode-generic.el ends here
+;;; test-zephir-mode.el ends here

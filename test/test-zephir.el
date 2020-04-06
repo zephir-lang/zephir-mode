@@ -1,10 +1,9 @@
-;;; test-zephir-mode-utils.el --- Zephir Mode: Utils tests -*- lexical-binding: t; -*-
+;;; test-zephir.el --- Zephir: Common tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -26,7 +25,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test `zephir-mode' utils using `buttercup'.
+;; Define test-suites to test `zephir' using `buttercup'.
 
 (require 'buttercup)
 
@@ -42,6 +41,54 @@
   (load (concat current-dir "utils.el") nil 'nomessage 'nosuffix))
 
 ;;; Code:
+
+(describe "Navigation"
+  (it "moves back to the beginning of a defun"
+    (with-zephir-buffer
+     "    public function foo () {
+      }
+
+     // Some comment"
+     (goto-char (point-max))
+     (back-to-indentation)
+     (expect (looking-at "// Some comment"))
+     (beginning-of-defun)
+     (expect (looking-at "public function foo"))))
+
+  (it "moves back to the ARGth beginning of a defun"
+    (with-zephir-buffer
+     "public function bar () {
+      }
+
+      public function foo () {
+      }
+
+     // Some comment"
+     (goto-char (point-max))
+     (back-to-indentation)
+     (expect (looking-at "// Some comment"))
+     (beginning-of-defun 2)
+     (expect (looking-at "public function bar"))))
+
+  (it "moves forward to the end of a defun"
+    (with-zephir-buffer
+     "public function foo () {
+      }
+     // Some comment"
+     (expect (looking-at "public function foo"))
+     (end-of-defun)
+     (expect (looking-at "\\s-*// Some comment"))))
+
+  (it "moves forward to the ARGth end of a defun"
+    (with-zephir-buffer
+     "public function foo () {
+      }
+      public function bar () {
+      }
+     // Some comment"
+     (expect (looking-at "public function foo"))
+     (end-of-defun 2)
+     (expect (looking-at "\\s-*// Some comment")))))
 
 (describe "Positioning"
   (describe "create regexp for function"
@@ -201,4 +248,4 @@
        "public function <*>foo() {}"
        (expect (zephir-in-ipg "\\[") :to-be nil)))))
 
-;;; test-zephir-mode-utils.el ends here
+;;; test-zephir.el ends here

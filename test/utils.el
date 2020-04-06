@@ -5,7 +5,6 @@
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;;         immerrr <immerrr+lua@gmail.com>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -39,7 +38,7 @@
        ;; Don't load old byte-compiled versions
        (load-prefer-newer t))
   ;; Load the file under test
-  (load (expand-file-name "zephir-detect" source-directory) nil 'nomessage)
+  (load (expand-file-name "zephir" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-indent" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-face" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))

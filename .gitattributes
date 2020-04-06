@@ -1,8 +1,11 @@
 .git*            export-ignore
+test             export-ignore
 .codecov.yml     export-ignore
 .elpaignore      export-ignore
+.dir-locals.el   export-ignore
+Cask             export-ignore
+Makefile         export-ignore
+default.mk       export-ignore
 
+zephir.el        export-subst
 zephir-mode.el   export-subst
-zephir-face.el   export-subst
-zephir-indent.el export-subst
-zephir-detect.el export-subst

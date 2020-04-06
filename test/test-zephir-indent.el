@@ -1,10 +1,9 @@
-;;; zephir-mode-indent-test.el --- Zephir Mode: Indentation tests -*- lexical-binding: t; -*-
+;;; test-zephir-indent.el --- Zephir Mode: Indentation tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -26,7 +25,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test `zephir-mode' indentation using `buttercup'.
+;; Define test-suites to test `zephir-indent' using `buttercup'.
 
 ;;; Code:
 
@@ -167,4 +166,4 @@
     (expect (zephir-get-indented-code "   /* test */")
             :to-equal "/* test */")))
 
-;;; test-zephir-mode-indent.el ends here
+;;; test-zephir-indent.el ends here

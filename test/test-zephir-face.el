@@ -1,10 +1,9 @@
-;;; test-zephir-mode-font-lock.el --- Zephir Mode: Font locking tests -*- lexical-binding: t; -*-
+;;; test-zephir-face.el --- Zephir Mode: Font locking tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 
 ;; This file is NOT part of GNU Emacs.
@@ -26,7 +25,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test `zephir-mode' font locking using `buttercup'.
+;; Define test-suites to test `zephir-face' using `buttercup'.
 
 ;;; Code:
 
@@ -426,4 +425,4 @@
                "d" zephir-variable-name
                "e" zephir-variable-name "\"str\"" string)))))
 
-;;; test-zephir-mode-font-lock.el ends here
+;;; test-zephir-face.el ends here

@@ -4,11 +4,9 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
 ;; Package-Requires: ((emacs "25.1"))
-;; Revision: $Format:%h (%cD %d)$
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -52,13 +50,19 @@
 
 ;;; Code:
 
-(require 'zephir-detect)
+
+;;;; Requirements
+
+(require 'zephir)
 
 ;; Pacify the byte compiler
 (eval-when-compile
   ;; 25.x compat
   (unless (fboundp 'prog-first-column)
     (defun prog-first-column () 0)))
+
+
+;;;; Customization
 
 (defcustom zephir-indent-tabs-mode nil
   "Indentation can insert tabs in Zephir Mode if this is non-nil."
@@ -71,6 +75,9 @@
   :type 'integer
   :group 'zephir
   :safe 'integerp)
+
+
+;;;; Indentation
 
 (defun zephir-indent-block (block-start)
   "Return the proper indentation for the block.
