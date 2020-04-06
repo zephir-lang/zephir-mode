@@ -375,7 +375,7 @@ Uses STATE as a syntax context."
      ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
       ;; Set the limit of search to a property name only.
       (save-excursion
-        (re-search-forward "=\\|;\\|{" nil 'noerror)
+        (re-search-forward "=\\|;\\|{\\|\n" nil 'noerror)
         (forward-char -1)
         (point))
       ;; Do not move back when we've found property name to ensure
