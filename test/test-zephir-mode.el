@@ -1,4 +1,4 @@
-;;; test-zephir-mode-generic.el --- Zephir Mode: Generic tests -*- lexical-binding: t; -*-
+;;; test-zephir-mode.el --- Zephir Mode: Generic tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
@@ -48,4 +48,4 @@
      ""
      (expect (derived-mode-p 'prog-mode)))))
 
-;;; test-zephir-mode-generic.el ends here
+;;; test-zephir-mode.el ends here
