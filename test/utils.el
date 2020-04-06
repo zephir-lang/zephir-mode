@@ -39,7 +39,7 @@
        ;; Don't load old byte-compiled versions
        (load-prefer-newer t))
   ;; Load the file under test
-  (load (expand-file-name "zephir-detect" source-directory) nil 'nomessage)
+  (load (expand-file-name "zephir" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-indent" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-face" source-directory) nil 'nomessage)
   (load (expand-file-name "zephir-mode" source-directory) nil 'nomessage))

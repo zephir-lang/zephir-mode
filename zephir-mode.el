@@ -4,7 +4,7 @@
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
+;; Version: 0.7.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
 ;; Package-Requires: ((cl-lib "0.5") (pkg-info "0.4") (emacs "25.1"))
@@ -30,13 +30,8 @@
 ;;; Commentary:
 
 ;;   GNU Emacs major mode for editing Zephir code.  Provides syntax
-;;   highlighting, indentation, movement, Imenu and navigation support.
-;;
-;;   Zephir -- is a high level language that eases the creation and
-;; maintainability of extensions for PHP.  Zephir extensions are
-;; exported to C code that can be compiled and optimized by major C
-;; compilers such as gcc/clang/vc++.  Functionality is exposed to the
-;; PHP language.  For more information see URL `https://zephir-lang.com'.
+;; highlighting, indentation, movement, Imenu and navigation support.
+
 
 ;;;; Subword Mode:
 
@@ -89,8 +84,8 @@
 
 ;;;; Requirements
 
+(require 'zephir)
 (require 'zephir-face)
-(require 'zephir-detect)
 (require 'zephir-indent)
 
 ;; Tell the byte compiler about autoloaded functions from packages
@@ -761,6 +756,9 @@ Turning on Zephir Mode calls the value of `prog-mode-hook' and then of
   ;; Indentation
   (setq-local indent-line-function #'zephir-indent-line)
   (setq-local indent-tabs-mode zephir-indent-tabs-mode))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
 
 (provide 'zephir-mode)
 ;;; zephir-mode.el ends here

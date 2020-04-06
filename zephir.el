@@ -1,10 +1,10 @@
-;;; zephir-detect.el --- Zephir detection -*- lexical-binding: t; -*-
+;;; zephir.el --- Common functionality to support Zephir language -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
 ;; Author: Serghei Iakovlev <egrep@protonmail.ch>
 ;; Maintainer: Serghei Iakovlev <egrep@protonmail.ch>
-;; Version: 0.6.0
+;; Version: 0.7.0
 ;; URL: https://github.com/zephir-lang/zephir-mode
 ;; Keywords: languages
 ;; Package-Requires: ((emacs "25.1"))
@@ -29,8 +29,13 @@
 
 ;;; Commentary:
 
-;; Various Zephir detect functions and variables are defined here.  This feature
-;; is used by `zephir-mode'.
+;;   This file provides common variable and functions for Zephir packages.
+;;
+;;   Zephir -- is a high level language that eases the creation and
+;; maintainability of extensions for PHP.  Zephir extensions are exported to C
+;; code that can be compiled and optimized by major C compilers such as
+;; gcc/clang/vc++.  Functionality is exposed to the PHP language.  For more
+;; information see URL `https://zephir-lang.com'.
 
 ;;; Code:
 
@@ -97,8 +102,5 @@ etc.  Return nil, if point is not in an IPG."
             (progn (forward-symbol -1)
                    (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
 
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.zep\\'" . zephir-mode))
-
-(provide 'zephir-detect)
-;;; zephir-detect.el ends here
+(provide 'zephir)
+;;; zephir.el ends here
