@@ -353,12 +353,8 @@ see `zephir-beginning-of-defun'."
     ("Private Methods"
      ,(zephir-create-regexp-for-function '("private")) 2)
     ("Properties"
-     ,(rx-to-string `(: (* (syntax whitespace))
-                        (or "public" "protected" "private")
-                        (+ (syntax whitespace))
-                        (group ,@zephir-name-re)
-                        (* (syntax whitespace))
-                        (any "=" ";" "{")))
+     ,(concat (regexp-opt '("public" "protected" "private") 'words)
+              "\\s-+" zephir-name-re "\\s-*[;={]")
      1)
     ("Constants" ,zephir-constant-re 2))
   "Imenu generic expression for `zephir-mode'.
