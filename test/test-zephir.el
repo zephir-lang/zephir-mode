@@ -1,4 +1,4 @@
-;;; test-zephir-mode-utils.el --- Zephir Mode: Utils tests -*- lexical-binding: t; -*-
+;;; test-zephir.el --- Zephir: Common tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2020 Free Software Foundation, Inc
 
@@ -25,7 +25,7 @@
 
 ;;; Commentary:
 
-;; Define test-suites to test `zephir-mode' utils using `buttercup'.
+;; Define test-suites to test `zephir' using `buttercup'.
 
 (require 'buttercup)
 
@@ -200,4 +200,4 @@
        "public function <*>foo() {}"
        (expect (zephir-in-ipg "\\[") :to-be nil)))))
 
-;;; test-zephir-mode-utils.el ends here
+;;; test-zephir.el ends here
