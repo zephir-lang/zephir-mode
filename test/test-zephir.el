@@ -43,6 +43,14 @@
 ;;; Code:
 
 (describe "Navigation"
+  (it "does not move back to the beginning of a defun if there is no function"
+    (with-zephir-buffer
+     "// Start
+      // End"
+     (expect (looking-at "// Start"))
+     (expect (beginning-of-defun) :to-be nil)
+     (expect (looking-at "// Start"))))
+
   (it "moves back to the beginning of a defun"
     (with-zephir-buffer
      "    public function foo () {
@@ -53,7 +61,7 @@
      (back-to-indentation)
      (expect (looking-at "// Some comment"))
      (beginning-of-defun)
-     (expect (looking-at "public function foo"))))
+     (expect (looking-at "\\s-+public function foo"))))
 
   (it "moves back to the ARGth beginning of a defun"
     (with-zephir-buffer
@@ -69,6 +77,16 @@
      (expect (looking-at "// Some comment"))
      (beginning-of-defun 2)
      (expect (looking-at "public function bar"))))
+
+  (it "does not move forward to the end of a defun if there is no function"
+    (with-zephir-buffer
+     "// Start
+      // End"
+     (goto-char (point-max))
+     (back-to-indentation)
+     (expect (looking-at "\\s-*// End"))
+     (expect (end-of-defun) :to-be nil)
+     (expect (point) :to-be (point-max))))
 
   (it "moves forward to the end of a defun"
     (with-zephir-buffer
