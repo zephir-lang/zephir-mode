@@ -94,8 +94,8 @@
   (it "fontifies ‘use .. as’ statement"
     (expect "use Phalcon\\Url as PhUrl;"
             :to-be-fontified-as
-            '(("use" zephir-import-declaration "Phalcon\\Url" type "as"
-               keyword "PhUrl" type))))
+            '(("use" zephir-import-declaration "Phalcon\\Url" type
+               "as" zephir-keyword "PhUrl" type))))
 
   (it "fontifies namespaces"
     (expect "namespace Phalcon\\Url;"

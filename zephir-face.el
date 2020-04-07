@@ -180,14 +180,53 @@ Uses STATE as a syntax context."
 
 ;;;; Font locking
 
-(defvar zephir-font-lock-keywords
-  `(;; Class declaration specification keywords.
-    ;;
-    ;; Highlight occurrences of ‘extends Foo\Bar’.
+(defconst zephir--font-lock-keywords-1
+  `(;; Highlight occurrences of class declaration specification
     (,(zephir-create-regexp-for-classlike "extends")
      (1 'zephir-class-declaration-spec-face)
      (2 font-lock-type-face))
 
+    ;; Highlight occurrences of namespace declarations
+    (,(zephir-create-regexp-for-classlike "namespace")
+     (1 'zephir-namespace-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of class declarations
+    (,(zephir-create-regexp-for-classlike "class")
+     (1 'zephir-class-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of interface declarations
+    (,(zephir-create-regexp-for-classlike "interface")
+     (1 'zephir-class-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of class modifiers
+    (,(concat (regexp-opt '("abstract" "final") 'symbols)
+              "\\s-+"
+              "\\_<class\\_>")
+     1 'zephir-class-modifier-face)
+
+    ;; Highlight occurrences of import statements
+    (,(rx-to-string `(: (* (syntax whitespace))
+                        symbol-start (group "use") symbol-end
+                        (+ (syntax whitespace))
+                        (group (+ (or (syntax word)
+                                      (syntax symbol)
+                                      ?\\)))))
+     (1 'zephir-import-declaration-face)
+     (2 font-lock-type-face))
+
+    ;; Highlight occurrences of import aliases
+    (,(concat "\\<as\\s-+"
+              "\\(" zephir-name-re "\\)")
+     1 font-lock-type-face))
+  "Level one font lock keywords for `zephir-mode'.")
+
+(defconst zephir-font-lock-keywords
+  (append
+   zephir--font-lock-keywords-1
+   `(
     ;; Highlight occurrences of ‘implements Foo, Bar’.
     ;;
     ;; The first regexp is the anchor of the fontification, meaning the
@@ -215,35 +254,6 @@ Uses STATE as a syntax context."
              (forward-symbol 1))
       ;; Fontify each matched symbol as class.
       (1 font-lock-type-face)))
-
-    ;; Highlight occurrences of namespace declarations (‘namespace Foo’)
-    (,(zephir-create-regexp-for-classlike "namespace")
-     (1 'zephir-namespace-declaration-face)
-     (2 font-lock-type-face))
-
-    ;; Highlight occurrences of import statements (‘use Foo’)
-    (,(rx-to-string `(: (* (syntax whitespace))
-                        symbol-start (group "use") symbol-end
-                        (+ (syntax whitespace))
-                        (group (+ (or (syntax word)
-                                      (syntax symbol)
-                                      ?\\)))))
-     (1 'zephir-import-declaration-face)
-     (2 font-lock-type-face))
-
-    ;; Class declaration keywords ‘class Foo’, ‘interface Foo’
-    (,(zephir-create-regexp-for-classlike)
-     (1 'zephir-class-declaration-face)
-     (2 font-lock-type-face))
-    (,(zephir-create-regexp-for-classlike "interface")
-     (1 'zephir-class-declaration-face)
-     (2 font-lock-type-face))
-
-    ;; Highlight occurrences of class modifiers (‘abstract’, ‘final’)
-    (,(rx symbol-start (group (or "abstract" "final")) symbol-end
-          (+ (syntax whitespace))
-          symbol-start "class" symbol-end)
-     1 'zephir-class-modifier-face)
 
     ;; Highlight occurrences of method modifiers (‘abstract’, ‘final’)
     (,(rx-to-string `(: symbol-start (group (or "abstract" "final")) symbol-end
@@ -326,11 +336,6 @@ Uses STATE as a syntax context."
           (? ?>) (* (syntax whitespace)))
      1 'zephir-type-face)
 
-    ;; ‘... as Foo’
-    (,(zephir-create-regexp-for-classlike "as")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face))
-
     ;; Builtin declarations and reserverd keywords
     (,(regexp-opt (append zephir-language-keywords
                           zephir-possible-visiblities)
@@ -375,7 +380,7 @@ Uses STATE as a syntax context."
      ("\\(\\$?\\<[A-Z_a-z][0-9A-Z_a-z]*\\>\\)"
       ;; Set the limit of search to a property name only.
       (save-excursion
-        (re-search-forward "=\\|;\\|{\\|\n" nil 'noerror)
+        (re-search-forward "=\\|;\\|{" nil 'noerror)
         (forward-char -1)
         (point))
       ;; Do not move back when we've found property name to ensure
@@ -398,7 +403,7 @@ Uses STATE as a syntax context."
       ;; forward progress.  At this point we are done with the form.
       nil
       ;; Fontify the found word as `zephir-keyword-face'.
-      (0 'zephir-keyword-face))))
+      (0 'zephir-keyword-face)))))
   "Font lock keywords for Zephir Mode.")
 
 (provide 'zephir-face)
