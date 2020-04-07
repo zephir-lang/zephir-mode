@@ -164,6 +164,9 @@ These are different from “constants” in strict terms.")
 The regular expression will have two capture groups which will be
 the word ‘const’ and the name of a constant respectively.")
 
+
+;;;; Utils
+
 (defun zephir-syntax-context (&optional pos)
   "Determine the syntax context at POS, defaulting to point.
 Return nil, if there is no special context at POS, or one of
@@ -224,10 +227,6 @@ etc.  Return nil, if point is not in an IPG."
         (or (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>" )
             (progn (forward-symbol -1)
                    (looking-at-p "\\_<f\\(?:unctio\\)?n\\_>")))))))
-
-
-;;;; Utils
-
 
 (defun zephir-create-regexp-for-classlike (&optional type)
   "Make a regular expression for a ‘classlike’ with the given TYPE.
@@ -308,14 +307,19 @@ of a function respectively."
 
 (defun zephir-beginning-of-defun (&optional arg)
   "Move the beginning of the ARGth Zephir function from point.
-Implements Zephir version of `beginning-of-defun-function'."
+
+Implements Zephir version of `beginning-of-defun-function'.
+
+With ARGument, do it that many times.  Negative ARG -N
+means move forward to Nth following beginning of function."
   (interactive "p")
-  (let ((arg (or arg 1))
+  (let (found-p
+        (defun-re (zephir-create-regexp-for-function))
+        (arg (or arg 1))
         (case-fold-search t))
     (while (> arg 0)
-      (re-search-backward (zephir-create-regexp-for-function) nil 'noerror)
-      (back-to-indentation)
-      (setq arg (1- arg)))
+      (setq found-p (re-search-backward defun-re nil t)
+            arg (1- arg)))
     (while (< arg 0)
       (end-of-line 1)
       (let ((opoint (point)))
@@ -323,12 +327,13 @@ Implements Zephir version of `beginning-of-defun-function'."
         (forward-list 2)
         (forward-line 1)
         (when (eq opoint (point))
-          (re-search-forward (zephir-create-regexp-for-function) nil 'noerror)
-          (back-to-indentation))
-        (setq arg (1+ arg))))))
+          (setq found-p (re-search-forward defun-re nil t)))
+        (setq arg (1+ arg))))
+    (not (null found-p))))
 
 (defun zephir-end-of-defun (&optional arg)
   "Move the end of the ARG'th Zephir function from point.
+
 Implements Zephir version of `end-of-defun-function'.  For more
 see `zephir-beginning-of-defun'."
   (interactive "p")

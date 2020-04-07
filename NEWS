@@ -21,6 +21,8 @@ Instead, the following constants were introduced:
 - zephir-classlike-re
 - zephir-data-type-re
 
+** Improved Zephir version of beginning-of-defun-function.
+
 * Zephir Mode 0.6.0
 ** Introduced indentation support for blocks in { }.
 
