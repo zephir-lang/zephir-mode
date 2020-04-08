@@ -6,6 +6,8 @@ See the end of the file for license conditions.
 This file is about changes in Zephir Mode.
 
 * Zephir Mode 0.7.0
+** Add font lock support for logical and comparison operators.
+
 ** Improved font-locking for magic shortcuts.
 
 ** Codebase was splitted to independent features.

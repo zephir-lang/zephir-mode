@@ -93,9 +93,15 @@
   :group 'zephir-faces
   :tag "Zephir Operator")
 
+(defface zephir-comparison-operator-face
+  '((t (:inherit zephir-operator-face)))
+  "Zephir Mode face used to comparison operators (‘==’, ‘!=’, ‘===’, ...)."
+  :group 'zephir-faces
+  :tag "Zephir Comparison Operator")
+
 (defface zephir-logical-operator-face
   '((t (:inherit zephir-operator-face)))
-  "Zephir Mode face used to logical operators (‘&&’, ‘||’, ‘!’, etc)."
+  "Zephir Mode face used to logical operators (‘&&’, ‘||’, ‘!’, ...)."
   :group 'zephir-faces
   :tag "Zephir Logical Operator")
 
@@ -233,7 +239,11 @@ Uses STATE as a syntax context."
   (append
    zephir--font-lock-keywords-1
    `(;; Highlight occurrences of logical operators
-     ("\\(!\\|&&\\|||\\)[^=]" 1 'zephir-logical-operator-face)))
+     ("\\(!\\|&&\\|||\\)[^=]" 1 'zephir-logical-operator-face)
+
+     ;; TODO(serghei): Highlight occurrences of comparison operators
+     ;; ("\\([!=]=\\{1,2\\}[>]?\\|[<>]=?\\)" 1 'zephir-comparison-operator-face)
+     ))
   "Level two font lock keywords for `zephir-mode'.")
 
 (defconst zephir-font-lock-keywords
@@ -345,9 +355,13 @@ Uses STATE as a syntax context."
     ;; Return type hints
     (,(rx (or (:")" (* (syntax whitespace)) "->") "|")
           (* (syntax whitespace))
-          ?< (group (+ (or (syntax word) (syntax symbol) "\\"))) ?>
+          (group "<")
+          (group (+ (or (syntax word) (syntax symbol) "\\")))
+          (group ">")
           (* (syntax whitespace)))
-     1 'zephir-type-face)
+     (1 nil t)
+     (2 'zephir-type-face)
+     (3 nil t))
     (,(concat "\\(?:)\\s-*->\\||\\)"
               "\\s-*"
               "\\(" zephir-data-type-re "\\)")

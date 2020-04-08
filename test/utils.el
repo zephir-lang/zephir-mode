@@ -174,6 +174,8 @@ Fontification check failed on line %d for:
             lineno (1+ lineno)))
     (cons t "Fontification check passed")))
 
+;;;; Custom Matchers
+
 (buttercup-define-matcher :to-be-fontified-as (text faces)
   (to-be-fontified-as (funcall text) (funcall faces)))
 
