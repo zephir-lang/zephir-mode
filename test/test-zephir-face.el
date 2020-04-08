@@ -45,6 +45,14 @@
 
 ;;;; Tests
 
+(describe "Fontification of operators"
+  (it "fontifies logical operatos"
+    (expect "a && b; string! foo; b || c; x != y"
+            :to-be-fontified-as
+            '(("&&" zephir-logical-operator "string" zephir-type
+               "!" zephir-logical-operator "foo" zephir-variable-name
+               "||" zephir-logical-operator)))))
+
 (describe "Fontification of comments"
   (it "fontifies C-style comments"
     (expect "// Some text"

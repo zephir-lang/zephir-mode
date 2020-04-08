@@ -93,6 +93,12 @@
   :group 'zephir-faces
   :tag "Zephir Operator")
 
+(defface zephir-logical-operator-face
+  '((t (:inherit zephir-operator-face)))
+  "Zephir Mode face used to logical operators (‘&&’, ‘||’, ‘!’, etc)."
+  :group 'zephir-faces
+  :tag "Zephir Logical Operator")
+
 (defface zephir-object-operator-face
   '((t (:inherit zephir-operator-face)))
   "Zephir Mode face used to object operators (‘->’)."
@@ -223,9 +229,16 @@ Uses STATE as a syntax context."
      1 font-lock-type-face))
   "Level one font lock keywords for `zephir-mode'.")
 
-(defconst zephir-font-lock-keywords
+(defconst zephir--font-lock-keywords-2
   (append
    zephir--font-lock-keywords-1
+   `(;; Highlight occurrences of logical operators
+     ("\\(!\\|&&\\|||\\)[^=]" 1 'zephir-logical-operator-face)))
+  "Level two font lock keywords for `zephir-mode'.")
+
+(defconst zephir-font-lock-keywords
+  (append
+   zephir--font-lock-keywords-2
    `(
     ;; Highlight occurrences of ‘implements Foo, Bar’.
     ;;
@@ -331,9 +344,13 @@ Uses STATE as a syntax context."
 
     ;; Return type hints
     (,(rx (or (:")" (* (syntax whitespace)) "->") "|")
-          (* (syntax whitespace)) (? ?<)
-          (group (+ (or (syntax word) (syntax symbol) "\\")))
-          (? ?>) (* (syntax whitespace)))
+          (* (syntax whitespace))
+          ?< (group (+ (or (syntax word) (syntax symbol) "\\"))) ?>
+          (* (syntax whitespace)))
+     1 'zephir-type-face)
+    (,(concat "\\(?:)\\s-*->\\||\\)"
+              "\\s-*"
+              "\\(" zephir-data-type-re "\\)")
      1 'zephir-type-face)
 
     ;; Builtin declarations and reserverd keywords
