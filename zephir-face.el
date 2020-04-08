@@ -117,6 +117,12 @@
   :group 'zephir-faces
   :tag "Zephir Type")
 
+(defface zephir-type-<>-face
+  '((t ()))
+  "Zephir Mode face used to highlight angle brackets around the type (‘<Foo>’)."
+  :group 'zephir-faces
+  :tag "Zephir Type Brackets")
+
 (defface zephir-constant-face
   '((t (:inherit font-lock-constant-face)))
   "Zephir Mode face used to highlight constants."
@@ -239,11 +245,7 @@ Uses STATE as a syntax context."
   (append
    zephir--font-lock-keywords-1
    `(;; Highlight occurrences of logical operators
-     ("\\(!\\|&&\\|||\\)[^=]" 1 'zephir-logical-operator-face)
-
-     ;; TODO(serghei): Highlight occurrences of comparison operators
-     ;; ("\\([!=]=\\{1,2\\}[>]?\\|[<>]=?\\)" 1 'zephir-comparison-operator-face)
-     ))
+     ("\\(!\\|&&\\|||\\)[^=]" 1 'zephir-logical-operator-face)))
   "Level two font lock keywords for `zephir-mode'.")
 
 (defconst zephir-font-lock-keywords
@@ -336,11 +338,15 @@ Uses STATE as a syntax context."
 
     ;; Type hints i.e. ‘<AdapterFactory> factory’
     (,(concat "\\(?:const\\s-+\\)?"
-              "<\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)>"
+              "\\(<\\)"
+              "\\(\\(?:\\sw\\|\\s_\\|\\\\\\)+\\)"
+              "\\(>\\)"
               "\\s-+&?"
               "\\(" zephir-name-re "\\)")
-     (1 'zephir-type-face)
-     (2 'zephir-variable-name-face))
+     (1 'zephir-type-<>-face)
+     (2 'zephir-type-face)
+     (3 'zephir-type-<>-face)
+     (4 'zephir-variable-name-face))
 
     ;; Continued formal parameter list i.e. ‘function foo (a, b, c, d, e)’
     (,(concat "\\s-*&?" zephir-name-re "\\s-*[),=]")
@@ -359,13 +365,20 @@ Uses STATE as a syntax context."
           (group (+ (or (syntax word) (syntax symbol) "\\")))
           (group ">")
           (* (syntax whitespace)))
-     (1 nil t)
+     (1 'zephir-type-<>-face)
      (2 'zephir-type-face)
-     (3 nil t))
+     (3 'zephir-type-<>-face))
     (,(concat "\\(?:)\\s-*->\\||\\)"
               "\\s-*"
               "\\(" zephir-data-type-re "\\)")
      1 'zephir-type-face)
+
+     ;; Highlight occurrences of comparison operators
+    (,(rx (group
+           (or "===" "==" "!==" "!="
+	    "=>" "<="
+	    "<" (: (not "-") ">"))))
+     1 'zephir-comparison-operator-face)
 
     ;; Builtin declarations and reserverd keywords
     (,(regexp-opt (append zephir-language-keywords

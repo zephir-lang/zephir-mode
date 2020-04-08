@@ -51,7 +51,7 @@
             :to-be-fontified-as
             '(("&&" zephir-logical-operator "string" zephir-type
                "!" zephir-logical-operator "foo" zephir-variable-name
-               "||" zephir-logical-operator)))))
+               "||" zephir-logical-operator "!=" zephir-comparison-operator)))))
 
 (describe "Fontification of comments"
   (it "fontifies C-style comments"
@@ -201,12 +201,15 @@
   (it "fontifies type casts ‘<type> variable = ...’"
     (expect "<MyInterface> criteria = test();"
             :to-be-fontified-as
-            '(("MyInterface" zephir-type "criteria" zephir-variable-name)))
+            '(("<" zephir-type-<> "MyInterface" zephir-type ">" zephir-type-<>
+               "criteria" zephir-variable-name)))
 
     (expect "<MyInterface> a, <MyInterface> b"
             :to-be-fontified-as
-            '(("MyInterface" zephir-type "a" zephir-variable-name
-               "MyInterface" zephir-type "b" zephir-variable-name))))
+            '(("<" zephir-type-<> "MyInterface" zephir-type ">" zephir-type-<>
+               "a" zephir-variable-name
+               "<" zephir-type-<> "MyInterface" zephir-type ">" zephir-type-<>
+               "b" zephir-variable-name))))
 
   (it "doesn't fontify functions similar to keywords"
     (expect "get_called_class(this);"
@@ -395,8 +398,10 @@
     (expect "fn foo() -> array | int | <Foo> | <\\A\\B\\C> | void"
             :to-be-fontified-as
             '(("fn" zephir-keyword "foo" zephir-function-name
-               "array" zephir-type "int" zephir-type "Foo" zephir-type
-               "\\A\\B\\C" zephir-type "void" zephir-type)))
+               "array" zephir-type "int" zephir-type
+               "<" zephir-type-<> "Foo" zephir-type ">" zephir-type-<>
+               "<" zephir-type-<> "\\A\\B\\C" zephir-type ">" zephir-type-<>
+               "void" zephir-type)))
 
     (expect "fn foo() -> int
              | bool | istring"
@@ -419,8 +424,10 @@
                "int" zephir-type "a" zephir-variable-name
                "string" zephir-type "b" zephir-variable-name
                "bool" zephir-type "c" zephir-variable-name
-               "A" zephir-type "d" zephir-variable-name
-               "const" zephir-variable-name "\\A\\B" zephir-type
+               "<" zephir-type-<> "A" zephir-type ">" zephir-type-<>
+               "d" zephir-variable-name
+               "const" zephir-variable-name
+               "<" zephir-type-<> "\\A\\B" zephir-type ">" zephir-type-<>
                "$c" zephir-variable-name))))
 
   (it "fontifies default values for function's parameters"
