@@ -374,10 +374,8 @@ Uses STATE as a syntax context."
       1 'zephir-type-face)
 
      ;; Highlight occurrences of comparison operators
-     (,(rx (group
-            (or "===" "==" "!==" "!="
-	        "=>" "<="
-	        "<" (: (not "-") ">"))))
+     ;; TODO(serghei): Remove ‘[^-]’ from the regexp
+     (,"===\\|==\\|!==\\|!=\\|=>\\|<=\\|<\\|[^-]>"
       1 'zephir-comparison-operator-face)
 
      ;; Builtin declarations and reserverd keywords
